@@ -1,0 +1,22 @@
+
+> enfrio-next@0.1.0 dev
+> next dev --hostname 127.0.0.1 --port 3000
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://127.0.0.1:3000
+- Network:       http://127.0.0.1:3000
+
+✓ Starting...
+✓ Ready in 1213ms
+ GET / 200 in 594ms (compile: 313ms, render: 281ms)
+ GET /meta.json 404 in 172ms (compile: 99ms, render: 73ms)
+ GET /meta.json 404 in 59ms (compile: 6ms, render: 53ms)
+ GET /meta.json 404 in 48ms (compile: 6ms, render: 42ms)
+ GET /meta.json 404 in 53ms (compile: 6ms, render: 47ms)
+ GET /meta.json 404 in 54ms (compile: 6ms, render: 48ms)
+ GET /meta.json 404 in 48ms (compile: 5ms, render: 42ms)
+ GET /meta.json 404 in 76ms (compile: 7ms, render: 69ms)
+ GET / 200 in 112ms (compile: 5ms, render: 107ms)
+ GET /meta.json 404 in 56ms (compile: 7ms, render: 49ms)
+ GET /meta.json 404 in 41ms (compile: 6ms, render: 35ms)
+^C^C
