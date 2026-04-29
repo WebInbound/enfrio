@@ -76,6 +76,69 @@
         </div>
       </section>
 
+      <section class="section dark-block" id="mtower-sizer">
+        <div class="section-head reveal">
+          <p class="kicker">SIZING SIMULATOR</p>
+          <h2>Estimate how many M Tower units fit your thermal load.</h2>
+          <p>Provide engine power and application type. The simulator returns an indicative module count based on a 1500 kW per unit baseline. Final sizing is confirmed by Enfrio engineering on real project data.</p>
+        </div>
+
+        <div class="sizer reveal">
+          <div class="sizer-inputs">
+            <label class="sizer-field">
+              <span>Engine power (kW)</span>
+              <input type="number" id="sizer-power" min="100" max="100000" step="50" value="3000" inputmode="numeric" />
+            </label>
+
+            <label class="sizer-field">
+              <span>Application</span>
+              <select id="sizer-application">
+                <option value="diesel" data-factor="0.85">Diesel genset</option>
+                <option value="gas" data-factor="0.75">Gas engine</option>
+                <option value="datacenter" data-factor="1.00">Datacenter IT load</option>
+                <option value="custom" data-factor="1.00">Custom heat duty (1:1)</option>
+              </select>
+            </label>
+
+            <label class="sizer-field">
+              <span>Circuit type</span>
+              <select id="sizer-circuit">
+                <option value="single">Single circuit (HT)</option>
+                <option value="double">Double circuit (HT + LT)</option>
+              </select>
+            </label>
+
+            <label class="sizer-field sizer-check">
+              <input type="checkbox" id="sizer-redundancy" />
+              <span>N+1 redundancy (add a spare module)</span>
+            </label>
+          </div>
+
+          <div class="sizer-output" aria-live="polite">
+            <article class="sizer-result-card">
+              <p class="kicker">REQUIRED MODULES</p>
+              <p class="sizer-big" id="sizer-units">2</p>
+              <p class="sizer-sub">M Tower units</p>
+            </article>
+            <article class="sizer-result-card">
+              <p class="kicker">HEAT REJECTION</p>
+              <p class="sizer-big"><span id="sizer-heat">2550</span> kW</p>
+              <p class="sizer-sub">Estimated thermal load</p>
+            </article>
+            <article class="sizer-result-card">
+              <p class="kicker">CONFIGURATION</p>
+              <p class="sizer-big" id="sizer-config">Vertical bank</p>
+              <p class="sizer-sub" id="sizer-coverage">3000 kW capacity</p>
+            </article>
+          </div>
+
+          <div class="sizer-note">
+            <p class="micro-note">Indicative figures. Default factor: diesel 0.85, gas 0.75, datacenter 1.00. Double circuit reserves capacity across HT and LT loops. Site conditions (ambient temperature, altitude, water quality) and customer specifications can shift the final unit count.</p>
+            <div class="btn-row"><a class="btn solid" href="contact.html?subject=M%20Tower%20Sizing%20Inquiry" id="sizer-cta">Send sizing to Enfrio engineering</a></div>
+          </div>
+        </div>
+      </section>
+
       <section class="section cta reveal">
         <p class="kicker">M TOWER ENQUIRY</p>
         <h2>Need modular thermal capacity for a large-scale installation?</h2>
@@ -86,10 +149,10 @@
     <footer class="site-footer">
       <div class="site-footer-inner">
         <div class="footer-grid">
-          <div><h4>Enfrio Srl</h4><p>Engineering cooling for Automotive, Power Generation and Off Highway.</p></div>
+          <div><h4>Enfrio Srl</h4><p>Engine cooling for Power Generation and Datacenter.</p></div>
           <div><h4>Headquarters</h4><p>Via Cascina Nuova 27, 13875 Ponderano (BI), Italy</p><p>VAT: IT02553940020</p></div>
           <div><h4>Contact</h4><p><a href="mailto:info@enfrio.eu">info@enfrio.eu</a></p><p><a href="contact.html">Request a project call</a></p></div>
-          <div><h4>Compliance</h4><p><a href="assets/certificazioneiso.pdf" target="_blank" rel="noopener">ISO Certificate</a></p><p><a href="legal.html">Privacy & Cookies</a></p></div>
+          <div><h4>Compliance</h4><p><a href="assets/certificazioneiso.pdf" target="_blank" rel="noopener">ISO Certificate</a></p><p><a href="legal.html">Privacy & Cookies</a></p><p><a href="qhse.html">QHSE Policy</a></p></div>
         </div>
         <div class="footer-bottom"><p>&copy; <span id="year"></span> Enfrio Srl. All rights reserved.</p></div>
       </div>

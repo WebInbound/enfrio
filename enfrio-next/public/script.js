@@ -223,3 +223,65 @@ function classifyImageRatios() {
 
 classifyImageRatios();
 
+// M Tower sizing simulator
+function initMTowerSizer() {
+  const root = document.getElementById('mtower-sizer');
+  if (!root) return;
+
+  const powerInput = root.querySelector('#sizer-power');
+  const appSelect = root.querySelector('#sizer-application');
+  const circuitSelect = root.querySelector('#sizer-circuit');
+  const redundancyInput = root.querySelector('#sizer-redundancy');
+
+  const unitsOut = root.querySelector('#sizer-units');
+  const heatOut = root.querySelector('#sizer-heat');
+  const configOut = root.querySelector('#sizer-config');
+  const coverageOut = root.querySelector('#sizer-coverage');
+  const ctaLink = root.querySelector('#sizer-cta');
+
+  const UNIT_KW = 1500;
+
+  function configFor(units) {
+    if (units <= 1) return 'Standalone unit';
+    if (units <= 4) return 'Vertical bank';
+    if (units <= 8) return 'Dual-bank array';
+    return 'Custom large array';
+  }
+
+  function recompute() {
+    const power = Math.max(0, Number(powerInput.value) || 0);
+    const factor = Number(appSelect.options[appSelect.selectedIndex].dataset.factor) || 1;
+    const circuitMultiplier = circuitSelect.value === 'double' ? 1.05 : 1;
+    const redundancy = redundancyInput.checked ? 1 : 0;
+
+    const heat = Math.round(power * factor * circuitMultiplier);
+    const baseUnits = Math.max(1, Math.ceil(heat / UNIT_KW));
+    const units = baseUnits + redundancy;
+    const coverage = units * UNIT_KW;
+
+    unitsOut.textContent = units;
+    heatOut.textContent = heat.toLocaleString('en-US');
+    configOut.textContent = configFor(units);
+    coverageOut.textContent = `${coverage.toLocaleString('en-US')} kW capacity`;
+
+    if (ctaLink) {
+      const params = new URLSearchParams({
+        subject: 'M Tower Sizing Inquiry',
+        body: `Engine power: ${power} kW\nApplication: ${appSelect.value}\nCircuit: ${circuitSelect.value}\nRedundancy: ${redundancy ? 'N+1' : 'N'}\nEstimated heat rejection: ${heat} kW\nSuggested units: ${units}\n`,
+      });
+      ctaLink.href = `contact.html?${params.toString()}`;
+    }
+  }
+
+  ['input', 'change'].forEach((evt) => {
+    powerInput.addEventListener(evt, recompute);
+    appSelect.addEventListener(evt, recompute);
+    circuitSelect.addEventListener(evt, recompute);
+    redundancyInput.addEventListener(evt, recompute);
+  });
+
+  recompute();
+}
+
+initMTowerSizer();
+

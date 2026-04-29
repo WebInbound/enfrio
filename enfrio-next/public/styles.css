@@ -1442,3 +1442,129 @@ li {
   height: auto;
   display: block;
 }
+
+/* M Tower sizing simulator */
+.sizer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.sizer-inputs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid rgba(173, 217, 52, 0.3);
+  border-radius: 16px;
+  background: rgba(13, 22, 33, 0.6);
+}
+
+.sizer-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.92rem;
+}
+
+.sizer-field > span {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  color: #cad3df;
+}
+
+.sizer-field input[type="number"],
+.sizer-field select {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(173, 217, 52, 0.35);
+  background: rgba(7, 13, 22, 0.85);
+  color: #f4f8ff;
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.sizer-field input[type="number"]:focus,
+.sizer-field select:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(173, 217, 52, 0.18);
+}
+
+.sizer-field.sizer-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: #e3ebf5;
+}
+
+.sizer-field.sizer-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand);
+  cursor: pointer;
+}
+
+.sizer-output {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.sizer-result-card {
+  padding: 22px;
+  border: 1px solid rgba(173, 217, 52, 0.4);
+  border-radius: 16px;
+  background: linear-gradient(140deg, rgba(173, 217, 52, 0.08) 0%, rgba(13, 22, 33, 0.55) 100%);
+  text-align: left;
+}
+
+.sizer-result-card .kicker {
+  margin-bottom: 6px;
+  color: var(--brand);
+}
+
+.sizer-big {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin: 4px 0;
+  color: #f4f8ff;
+  line-height: 1.1;
+}
+
+.sizer-sub {
+  font-size: 0.88rem;
+  color: #b6c1cf;
+  margin: 0;
+}
+
+.sizer-note {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 22px;
+  border-radius: 14px;
+  background: rgba(7, 13, 22, 0.5);
+  border-left: 3px solid var(--brand);
+}
+
+.sizer-note .micro-note {
+  margin: 0;
+  color: #b6c1cf;
+  line-height: 1.55;
+}
+
+.sizer-note .btn-row {
+  margin: 0;
+}
+
+@media (max-width: 700px) {
+  .sizer-big { font-size: 2rem; }
+}
