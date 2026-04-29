@@ -65,8 +65,8 @@ export default function HomePage() {
         <div className="dominant-cluster reveal">
           <Image className="dominant focus-left" src="/assets/images/site/prod-line.jpg" alt="Enfrio production line" width={1400} height={900} />
           <div className="support">
-            <Image className="focus-left" src="/assets/images/site/mach-laser-a.jpg" alt="Laser cutting technology" width={900} height={600} />
-            <Image className="focus-top tall-shot" src="/assets/images/site/team-office-floor.jpg" alt="Enfrio team in office" width={800} height={1200} />
+            <Image className="focus-left" src="/assets/images/site/tube-bending-operator.jpg" alt="6-axis tube bending in operation" width={900} height={600} />
+            <Image className="focus-top tall-shot" src="/assets/images/site/assembly-worker.jpg" alt="Enfrio operator at the assembly station" width={800} height={1200} />
             <Image className="fit-contain" src="/assets/images/site/rad-engine-complete.jpg" alt="Integrated cooling unit with engine" width={1200} height={900} />
           </div>
         </div>
@@ -104,9 +104,9 @@ export default function HomePage() {
         <div id="wow-home" className="wow-showcase reveal" data-wow>
           <div className="wow-grid">
             <figure className="wow-media">
-              <Image className="active" data-id="fabrication" src="/assets/images/site/prod-welding.jpg" alt="Welding and fabrication" width={1400} height={900} />
-              <Image data-id="machinery" src="/assets/images/site/mach-laser-c.jpg" alt="Laser machinery" width={1400} height={900} />
-              <Image data-id="integration" className="fit-contain focus-left" src="/assets/images/site/product-complete-b.jpg" alt="Integrated radiator package" width={1400} height={900} />
+              <Image className="active" data-id="fabrication" src="/assets/images/site/welder-action.jpg" alt="Enfrio operator welding a radiator core in front of the company logo" width={1500} height={1000} />
+              <Image data-id="machinery" src="/assets/images/site/tube-bending-operator.jpg" alt="Operator at the 6-axis tube bending machine" width={1500} height={1000} />
+              <Image data-id="integration" className="fit-contain focus-left" src="/assets/images/site/handwork-detail.jpg" alt="Final hand assembly detail on a cooling unit" width={1500} height={1000} />
             </figure>
             <div className="wow-copy">
               <article className="wow-item active" data-id="fabrication">
@@ -118,8 +118,8 @@ export default function HomePage() {
                 <p>Bending and laser operations designed for repeatable industrial throughput.</p>
               </article>
               <article className="wow-item" data-id="integration">
-                <h3>System Integration</h3>
-                <p>Final package architecture aligned with real installation constraints.</p>
+                <h3>Hands-on Quality</h3>
+                <p>Hand-finished detail work on every cooling unit before it leaves the line.</p>
               </article>
             </div>
           </div>

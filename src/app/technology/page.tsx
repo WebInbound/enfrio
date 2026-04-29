@@ -56,10 +56,10 @@ export default function TechnologyPage() {
             </article>
           </div>
           <figure className="process-visual reveal">
-            <Image className="active" data-id="bending" src="/assets/images/site/mach-bending-c.jpg" alt="Tube bending machine" width={1400} height={900} />
+            <Image className="active" data-id="bending" src="/assets/images/site/tube-bending-operator.jpg" alt="6-axis tube bending machine in operation" width={1500} height={1000} />
             <Image data-id="laser" src="/assets/images/site/mach-laser-d.jpg" alt="Laser machine detail" width={1400} height={900} />
             <Image data-id="quality" src="/assets/images/site/quality-hexagon-a.jpg" alt="Hexagon quality control" width={1400} height={900} />
-            <Image data-id="assembly" src="/assets/images/site/prod-assembly-c.jpg" alt="Assembly process" width={1400} height={900} />
+            <Image data-id="assembly" src="/assets/images/site/handwork-detail.jpg" alt="Operator hand-finishing a finished cooling unit" width={1500} height={1000} />
           </figure>
         </div>
       </section>

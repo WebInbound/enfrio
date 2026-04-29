@@ -54,8 +54,8 @@ export default function TowerMPage() {
             <figcaption>Platform visualization for commercial and technical proposal phases.</figcaption>
           </figure>
           <figure className="photo-card">
-            <Image src="/assets/images/site/mtower-sheet.jpg" alt="M Tower technical sheet" width={1200} height={900} />
-            <figcaption>Technical summary visual for rapid stakeholder alignment.</figcaption>
+            <Image className="fit-contain" src="/assets/images/site/enfrio-system-infographic.jpg" alt="Enfrio cooling system overview infographic" width={1100} height={1500} />
+            <figcaption>System architecture overview: container fit, modular assembly and configuration variants.</figcaption>
           </figure>
         </div>
       </section>

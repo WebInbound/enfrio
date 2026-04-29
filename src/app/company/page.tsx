@@ -47,9 +47,9 @@ export default function CompanyPage() {
         <div className="dominant-cluster reveal">
           <Image className="dominant" src="/assets/images/site/prod-assembly-b.jpg" alt="Factory assembly operation" width={1400} height={900} />
           <div className="support">
-            <Image src="/assets/images/site/prod-welding.jpg" alt="Welding quality operation" width={900} height={600} />
-            <Image src="/assets/images/site/team-office-floor.jpg" alt="Enfrio office and technical coordination" width={900} height={600} />
-            <Image src="/assets/images/site/prod-assembly-d.jpg" alt="Production team work" width={900} height={600} />
+            <Image src="/assets/images/site/welder-action.jpg" alt="Welder finishing a radiator core in front of the Enfrio logo" width={1500} height={1000} />
+            <Image src="/assets/images/site/assembly-worker.jpg" alt="Operator preparing components at the assembly station" width={1500} height={1000} />
+            <Image src="/assets/images/site/handwork-detail.jpg" alt="Hand-finishing detail on a cooling unit" width={1500} height={1000} />
           </div>
         </div>
       </section>
