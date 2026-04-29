@@ -6,7 +6,7 @@ export type ContactFormState = {
   fieldErrors?: Partial<Record<"name" | "email" | "company" | "message" | "consent", string>>;
 };
 
-const TARGET_INBOX = "info@enfrio.eu";
+const TARGET_INBOX = process.env.CONTACT_TO ?? "info@enfrio.eu";
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -26,9 +26,8 @@ export async function submitContactForm(
   const consent = formData.get("consent") === "on" || formData.get("consent") === "true";
   const honeypot = String(formData.get("company_url") ?? "").trim();
 
-  // Honeypot triggered = pretend success, drop silently
   if (honeypot) {
-    return { status: "success", message: "Thank you. We'll be in touch shortly." };
+    return { status: "success", message: "Thank you. We will be in touch shortly." };
   }
 
   const fieldErrors: ContactFormState["fieldErrors"] = {};
@@ -47,58 +46,43 @@ export async function submitContactForm(
     };
   }
 
-  const subject = `Enfrio website inquiry — ${company}`;
-  const lines = [
-    `Name: ${name}`,
-    `Company: ${company}`,
-    `Email: ${email}`,
-    phone ? `Phone: ${phone}` : null,
-    projectScope ? `Project scope: ${projectScope}` : null,
-    timeline ? `Timeline: ${timeline}` : null,
-    "",
-    "Message:",
+  // FormSubmit (https://formsubmit.co) — zero-setup forwarding service.
+  // First send to a given inbox triggers a one-time confirmation email
+  // that the inbox owner must approve. After that every submission is
+  // forwarded to the inbox.
+  const endpoint = `https://formsubmit.co/ajax/${encodeURIComponent(TARGET_INBOX)}`;
+
+  const payload = {
+    _subject: `Enfrio website inquiry — ${company}`,
+    _replyto: email,
+    _template: "table",
+    _captcha: "false",
+    name,
+    company,
+    email,
+    phone: phone || "—",
+    projectScope: projectScope || "—",
+    timeline: timeline || "—",
     message,
-  ].filter(Boolean);
-  const text = lines.join("\n");
-
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.CONTACT_FROM ?? "Enfrio Website <onboarding@resend.dev>";
-  const to = process.env.CONTACT_TO ?? TARGET_INBOX;
-
-  if (!apiKey) {
-    // No provider configured yet. Log server-side so the operator notices, but
-    // still return a graceful message so the visitor knows what to do.
-    console.warn("[contact] RESEND_API_KEY not set; skipping email delivery", { subject });
-    return {
-      status: "success",
-      message:
-        "Thanks. Your message was received, but email delivery is still being configured. In the meantime please email us directly at info@enfrio.eu and we will get back to you within one business day.",
-    };
-  }
+  };
 
   try {
-    const response = await fetch("https://api.resend.com/emails", {
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
-      body: JSON.stringify({
-        from,
-        to: [to],
-        reply_to: email,
-        subject,
-        text,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       const detail = await response.text().catch(() => "<no body>");
-      console.error("[contact] Resend error", response.status, detail);
+      console.error("[contact] FormSubmit error", response.status, detail);
       return {
         status: "error",
         message:
-          "We couldn't deliver your message right now. Please try again or email info@enfrio.eu directly.",
+          "We couldn't deliver your message right now. Please retry shortly or email info@enfrio.eu directly.",
       };
     }
 

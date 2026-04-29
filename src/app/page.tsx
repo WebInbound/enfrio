@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
+import AnimatedNumber from "@/components/AnimatedNumber";
 
 export const metadata: Metadata = {
   title: "Enfrio | Cooling Engineered to Perform",
@@ -47,8 +48,8 @@ export default function HomePage() {
             </p>
           </article>
           <article className="stat reveal">
-            <h3>2</h3>
-            <p>Core sectors: Power Generation and Datacenter.</p>
+            <h3><AnimatedNumber value={12000} suffix=" kW" /></h3>
+            <p>Heat rejection per M Tower bank — modular, scalable, datacenter-ready.</p>
           </article>
           <article className="stat reveal">
             <h3>24/7</h3>
@@ -92,6 +93,33 @@ export default function HomePage() {
             <h3>Custom Integration</h3>
             <p>Packaging logic for container constraints, remote environments and OEM installation envelopes.</p>
           </article>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="mtower-spotlight reveal">
+          <div className="mtower-spotlight-content">
+            <p className="kicker">FLAGSHIP PRODUCT</p>
+            <h2>M Tower: cooling that scales as your power grows.</h2>
+            <p>
+              Modular heat-rejection units of <strong><AnimatedNumber value={1500} suffix=" kW" /></strong> each. Start with one,
+              add more as the plant scales. From a 1.5&nbsp;MW genset to a <strong>12&nbsp;MW</strong> datacenter hall — same proven core,
+              same hydraulic interface, same control logic.
+            </p>
+            <ul className="checks">
+              <li>1 → 8 unit configurations, vertical or horizontal</li>
+              <li>Inverter-ready variable cooling on every fan stage</li>
+              <li>ATEX-ready and sea-water options available</li>
+              <li>Container-fit logic for fast field deployment</li>
+            </ul>
+            <div className="btn-row">
+              <Link className="btn solid" href="/tower-m">Explore M Tower</Link>
+              <Link className="btn ghost" href="/tower-m#mtower-sizer">Size your installation</Link>
+            </div>
+          </div>
+          <figure className="mtower-spotlight-media">
+            <Image src="/assets/images/site/mtower-real.jpg" alt="Enfrio M Tower modular cooling unit" width={1200} height={900} />
+          </figure>
         </div>
       </section>
 

@@ -18,6 +18,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: "home", label: "Home", href: "/" },
   { key: "solutions", label: "Solutions", href: "/solutions" },
   { key: "technology", label: "Technology", href: "/technology" },
+  { key: "tower-m", label: "M Tower", href: "/tower-m" },
   { key: "industries", label: "Industries", href: "/industries" },
   { key: "projects", label: "Projects", href: "/projects" },
   { key: "company", label: "Company", href: "/company" },
