@@ -5,7 +5,10 @@ export const metadata: Metadata = {
   title: "Enfrio",
   description: "Engineering and manufacturing solutions for thermal performance.",
   icons: {
-    icon: "/icon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png" },
+    ],
     apple: "/apple-icon.png",
   },
 };
