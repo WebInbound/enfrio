@@ -26,17 +26,19 @@ export default function IndustriesPage() {
           <p>Enfrio supports markets where thermal reliability, packaging constraints and operational uptime are commercially critical.</p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image className="fit-contain focus-left" src="/assets/images/site/product-complete-a.jpg" alt="Cooling unit installed on engine" width={1200} height={900} />
+          <Image className="focus-right" src="/assets/images/site/power-gen-hall.jpg" alt="Power generation hall with a bank of gensets cooled by Enfrio radiators" width={1400} height={1400} />
         </figure>
       </section>
 
       <section className="section">
         <div className="grid-2">
-          <article className="card reveal">
+          <article className="card reveal media">
+            <Image src="/assets/images/site/power-gen-hall.jpg" alt="Genset hall with Enfrio cooling installed" width={1400} height={900} />
             <h3>Power Generation</h3>
             <p>High-capacity thermal systems for gensets and stationary assets in mission-critical environments.</p>
           </article>
-          <article className="card reveal">
+          <article className="card reveal media">
+            <Image src="/assets/images/site/enfrio-system-infographic.jpg" alt="Enfrio container-fit modular cooling system" width={1100} height={1500} />
             <h3>Datacenter</h3>
             <p>Mission-critical thermal management for high-density compute environments with demanding uptime and efficiency targets.</p>
           </article>

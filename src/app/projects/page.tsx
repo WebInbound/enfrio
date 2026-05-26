@@ -21,7 +21,7 @@ export default function ProjectsPage() {
           </p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image className="focus-left" src="/assets/images/site/fair-mee-main.jpg" alt="Enfrio expo presence" width={1200} height={900} />
+          <Image className="focus-left" src="/assets/images/site/enfrio-trade-show.jpg" alt="Enfrio booth at an international trade show" width={1200} height={900} />
         </figure>
       </section>
 
@@ -95,7 +95,7 @@ export default function ProjectsPage() {
             <figure className="wow-media">
               <Image className="active focus-left" data-id="expo" src="/assets/images/site/fair-dubai-2.jpg" alt="Expo presence" width={1400} height={900} />
               <Image data-id="installed" className="fit-contain" src="/assets/images/site/installed-baudouin-canopy.jpg" alt="Enfrio cooling package installed in finished canopy" width={1400} height={900} />
-              <Image data-id="delivery" className="focus-right" src="/assets/images/site/rad-warehouse.jpg" alt="Logistics and delivery" width={1400} height={900} />
+              <Image data-id="delivery" className="focus-right" src="/assets/images/site/warehouse-delivery.jpg" alt="Forklifts moving Enfrio cooling units in the warehouse" width={1400} height={1050} />
             </figure>
             <div className="wow-copy">
               <article className="wow-item active" data-id="expo">

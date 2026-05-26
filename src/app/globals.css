@@ -2226,3 +2226,475 @@ li {
 .animated-number {
   font-variant-numeric: tabular-nums;
 }
+
+/* Hide the old sizer (replaced by .cfg) when both are referenced */
+.sizer { display: none; }
+
+/* ===========================================
+   M TOWER CONFIGURATOR (premium UI)
+   =========================================== */
+
+.cfg {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+  font-family: 'Urbanist', sans-serif;
+}
+
+.cfg-input,
+.cfg-output {
+  padding: 28px;
+  border-radius: 22px;
+  background: linear-gradient(160deg, rgba(13, 22, 33, 0.78) 0%, rgba(5, 11, 20, 0.92) 100%);
+  border: 1px solid rgba(173, 217, 52, 0.22);
+  color: #e3ebf5;
+  position: relative;
+  overflow: hidden;
+}
+
+.cfg-output {
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(173, 217, 52, 0.16) 0%, transparent 55%),
+    linear-gradient(160deg, rgba(13, 22, 33, 0.85) 0%, rgba(5, 11, 20, 0.95) 100%);
+}
+
+.cfg-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: 0.74rem;
+  color: #b6c1cf;
+}
+
+/* Power slider */
+.cfg-power {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 26px;
+}
+
+.cfg-power-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cfg-power-value {
+  font-family: 'Rajdhani', sans-serif;
+  color: #f4f8ff;
+  font-variant-numeric: tabular-nums;
+}
+
+.cfg-power-value strong {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--brand);
+  letter-spacing: -0.5px;
+}
+
+.cfg-power-value span {
+  font-size: 1rem;
+  color: #b6c1cf;
+  margin-left: 4px;
+}
+
+.cfg-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--brand) 0%,
+    var(--brand) var(--fill, 0%),
+    rgba(255, 255, 255, 0.08) var(--fill, 0%),
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  outline: none;
+  cursor: pointer;
+}
+
+.cfg-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f4f8ff;
+  border: 3px solid var(--brand);
+  box-shadow: 0 4px 12px rgba(173, 217, 52, 0.45);
+  cursor: pointer;
+  transition: transform 0.18s ease;
+}
+
+.cfg-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.cfg-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f4f8ff;
+  border: 3px solid var(--brand);
+  box-shadow: 0 4px 12px rgba(173, 217, 52, 0.45);
+  cursor: pointer;
+}
+
+.cfg-power-marks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: #889;
+  letter-spacing: 0.5px;
+}
+
+.cfg-power-number {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(173, 217, 52, 0.28);
+  background: rgba(7, 13, 22, 0.7);
+  color: #f4f8ff;
+  font: inherit;
+  font-size: 1rem;
+  width: 140px;
+  align-self: flex-start;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.cfg-power-number:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(173, 217, 52, 0.18);
+}
+
+/* Segmented controls */
+.cfg-segmented {
+  border: 0;
+  padding: 0;
+  margin: 0 0 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cfg-segmented legend {
+  padding: 0;
+}
+
+.cfg-segmented-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 6px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(173, 217, 52, 0.12);
+}
+
+.cfg-segmented-row.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cfg-seg {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #cad3df;
+  padding: 9px 12px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  white-space: nowrap;
+}
+
+.cfg-seg:hover {
+  background: rgba(173, 217, 52, 0.08);
+  color: #f4f8ff;
+}
+
+.cfg-seg.active {
+  background: rgba(173, 217, 52, 0.18);
+  color: #f4f8ff;
+  border-color: var(--brand);
+  font-weight: 600;
+}
+
+.cfg-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.cfg-row .cfg-segmented {
+  margin: 0;
+}
+
+/* Toggle */
+.cfg-toggle {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(173, 217, 52, 0.18);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.cfg-toggle:hover {
+  background: rgba(173, 217, 52, 0.08);
+  border-color: rgba(173, 217, 52, 0.4);
+}
+
+.cfg-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cfg-toggle-slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: background 0.2s ease, border-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.cfg-toggle-slider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f4f8ff;
+  transition: left 0.2s cubic-bezier(0.2, 0.7, 0.1, 1), background 0.2s ease;
+}
+
+.cfg-toggle input:checked + .cfg-toggle-slider {
+  background: rgba(173, 217, 52, 0.4);
+  border-color: var(--brand);
+}
+
+.cfg-toggle input:checked + .cfg-toggle-slider::after {
+  left: 22px;
+  background: var(--brand);
+}
+
+.cfg-toggle-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.9rem;
+  color: #cad3df;
+}
+
+.cfg-toggle-label strong {
+  color: #f4f8ff;
+  font-weight: 600;
+}
+
+.cfg-toggle-label em {
+  font-style: normal;
+  font-size: 0.78rem;
+  color: #8898a8;
+}
+
+/* Output panel */
+.cfg-headline {
+  margin-bottom: 18px;
+}
+
+.cfg-headline .kicker {
+  color: var(--brand);
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.cfg-headline-main {
+  font-family: 'Rajdhani', sans-serif;
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: #f4f8ff;
+}
+
+.cfg-headline-main strong {
+  font-size: clamp(3rem, 6vw, 4.5rem);
+  font-weight: 700;
+  color: var(--brand);
+  letter-spacing: -2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cfg-headline-main span {
+  font-size: 1.2rem;
+  color: #cad3df;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.cfg-headline-sub {
+  margin: 6px 0 0;
+  color: #b6c1cf;
+  font-size: 0.95rem;
+}
+
+/* Visual modules */
+.cfg-modules {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 18px;
+  border-radius: 14px;
+  background: rgba(7, 13, 22, 0.6);
+  margin: 18px 0;
+  position: relative;
+}
+
+.cfg-mod {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(173, 217, 52, 0.12);
+  transition: all 0.4s cubic-bezier(0.2, 0.7, 0.1, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 6px;
+}
+
+.cfg-mod-inner {
+  position: absolute;
+  inset: 14%;
+  border-radius: 4px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 3px, transparent 3px 6px);
+  transition: background 0.4s ease, box-shadow 0.4s ease;
+}
+
+.cfg-mod-cap {
+  position: relative;
+  z-index: 1;
+  font-size: 0.62rem;
+  color: rgba(244, 248, 255, 0.7);
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cfg-mod.lit {
+  border-color: rgba(173, 217, 52, 0.7);
+  background: rgba(173, 217, 52, 0.08);
+  box-shadow: 0 0 18px rgba(173, 217, 52, 0.2);
+}
+
+.cfg-mod.lit .cfg-mod-inner {
+  background:
+    linear-gradient(180deg, rgba(173, 217, 52, 0.55) 0%, rgba(127, 159, 34, 0.65) 100%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 3px, transparent 3px 6px);
+  box-shadow: inset 0 0 18px rgba(173, 217, 52, 0.4);
+}
+
+.cfg-mod.lit .cfg-mod-cap {
+  opacity: 1;
+}
+
+.cfg-mod-overflow {
+  grid-column: span 4;
+  text-align: center;
+  padding: 6px 0;
+  color: var(--brand);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+}
+
+/* Metrics */
+.cfg-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.cfg-metric {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(173, 217, 52, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cfg-metric-label {
+  font-size: 0.7rem;
+  color: #8898a8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.cfg-metric-value {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #f4f8ff;
+  font-variant-numeric: tabular-nums;
+}
+
+.cfg-metric-value small {
+  font-size: 0.7em;
+  font-weight: 500;
+  color: var(--brand);
+  margin-left: 4px;
+}
+
+.cfg-note {
+  font-size: 0.78rem;
+  color: #8898a8;
+  line-height: 1.5;
+  margin: 0 0 18px;
+}
+
+.cfg-cta .btn.solid {
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+  padding: 14px;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 1000px) {
+  .cfg {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cfg-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .cfg-input, .cfg-output { padding: 22px; }
+  .cfg-metrics { grid-template-columns: minmax(0, 1fr); }
+}

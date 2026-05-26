@@ -118,7 +118,7 @@ export default function HomePage() {
             </div>
           </div>
           <figure className="mtower-spotlight-media">
-            <Image src="/assets/images/site/mtower-real.jpg" alt="Enfrio M Tower modular cooling unit" width={1200} height={900} />
+            <Image src="/assets/images/site/power-gen-hall.jpg" alt="Genset hall with Enfrio cooling installed across a long bank of engines" width={1400} height={1400} />
           </figure>
         </div>
       </section>
