@@ -1834,10 +1834,16 @@ li {
   letter-spacing: -1px;
   margin: 12px 0 18px;
   font-weight: 700;
+  color: #f4f8ff;
+  text-shadow: 0 2px 24px rgba(5, 11, 20, 0.55);
 }
 
 .mtower-hero-content h1 .accent {
   color: var(--brand);
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+  background-clip: initial;
+  background: none;
 }
 
 .mtower-hero-content .lead {
@@ -1849,11 +1855,13 @@ li {
 }
 
 .mtower-hero-content .btn.ghost {
-  border-color: rgba(244, 248, 255, 0.4);
+  background: transparent;
+  border-color: rgba(244, 248, 255, 0.5);
   color: #f4f8ff;
 }
 
 .mtower-hero-content .btn.ghost:hover {
+  background: rgba(173, 217, 52, 0.12);
   border-color: var(--brand);
   color: var(--brand);
 }
@@ -2178,11 +2186,13 @@ li {
 }
 
 .mtower-spotlight-content .btn.ghost {
-  border-color: rgba(244, 248, 255, 0.4);
+  background: transparent;
+  border-color: rgba(244, 248, 255, 0.5);
   color: #f4f8ff;
 }
 
 .mtower-spotlight-content .btn.ghost:hover {
+  background: rgba(173, 217, 52, 0.12);
   border-color: var(--brand);
   color: var(--brand);
 }

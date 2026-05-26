@@ -188,6 +188,37 @@ export default function SiteShell({ active, children }: SiteShellProps) {
       cleanups.push(stop);
     });
 
+    // Process steps ↔ process visuals (used on /technology)
+    const processSteps = Array.from(
+      document.querySelectorAll<HTMLElement>(".process-step[data-image]")
+    );
+    const processVisuals = Array.from(
+      document.querySelectorAll<HTMLImageElement>(".process-visual img[data-id]")
+    );
+    if (processSteps.length && processVisuals.length) {
+      const activate = (id: string | null) => {
+        if (!id) return;
+        processSteps.forEach((s) =>
+          s.classList.toggle("active", s.getAttribute("data-image") === id)
+        );
+        processVisuals.forEach((img) =>
+          img.classList.toggle("active", img.getAttribute("data-id") === id)
+        );
+      };
+      processSteps.forEach((step) => {
+        const id = step.getAttribute("data-image");
+        const onActivate = () => activate(id);
+        step.addEventListener("click", onActivate);
+        step.addEventListener("mouseenter", onActivate);
+        step.addEventListener("focus", onActivate);
+        cleanups.push(() => {
+          step.removeEventListener("click", onActivate);
+          step.removeEventListener("mouseenter", onActivate);
+          step.removeEventListener("focus", onActivate);
+        });
+      });
+    }
+
     const images = Array.from(
       document.querySelectorAll<HTMLImageElement>(
         ".page-hero-media img, .photo-card img, .editorial-rail img, .media img, .dominant-cluster img, .wow-media img, .madrid-auto img"
