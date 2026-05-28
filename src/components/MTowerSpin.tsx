@@ -23,8 +23,11 @@ type Props = {
   className?: string;
 };
 
+// Bump when the mp4 file is re-uploaded — busts client + CDN cache.
+const VIDEO_VER = "2";
+
 export default function MTowerSpin({
-  src = "/assets/video/mtower-360.mp4",
+  src = `/assets/video/mtower-360.mp4?v=${VIDEO_VER}`,
   poster = "/assets/images/site/mtower-real.jpg",
   mode = "scroll",
   scrollSpan = 1.6,

@@ -2,8 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const VIDEO_LOOP = "/assets/video/mtower-3d.mp4";
-const VIDEO_360 = "/assets/video/mtower-360.mp4";
+// Bump VIDEO_VER when the underlying mp4 file changes — forces clients
+// to bypass any stale browser/CDN cache of the previous binary.
+const VIDEO_VER = "2";
+const VIDEO_LOOP = `/assets/video/mtower-3d.mp4?v=${VIDEO_VER}`;
+const VIDEO_360 = `/assets/video/mtower-360.mp4?v=${VIDEO_VER}`;
 const POSTER = "/assets/images/site/mtower-real.jpg";
 
 /**
