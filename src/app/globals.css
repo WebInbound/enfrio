@@ -1758,6 +1758,44 @@ li {
   overflow: hidden;
 }
 
+.contact-form .form-prefill {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: linear-gradient(110deg, rgba(173, 217, 52, 0.18) 0%, rgba(173, 217, 52, 0.05) 100%);
+  border: 1px solid rgba(127, 159, 34, 0.45);
+  color: #2c4408;
+  margin-bottom: 4px;
+  animation: prefillBump 0.45s ease both;
+}
+
+.contact-form .form-prefill span {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #101510;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.contact-form .form-prefill p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+@keyframes prefillBump {
+  0% { opacity: 0; transform: translateY(-6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 .contact-side {
   display: flex;
   flex-direction: column;
@@ -2593,7 +2631,217 @@ li {
   font-size: 0.95rem;
 }
 
-/* Visual modules */
+/* Photoreal build stage: replicated M Tower modules side-by-side */
+.cfg-stage {
+  position: relative;
+  margin: 18px 0;
+  padding: 22px 18px 28px;
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(173, 217, 52, 0.16) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(7, 13, 22, 0.65) 0%, rgba(13, 22, 33, 0.85) 100%);
+  border: 1px solid rgba(173, 217, 52, 0.18);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.cfg-stage::before {
+  /* Subtle factory grid floor */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(173, 217, 52, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(173, 217, 52, 0.04) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(ellipse at 50% 60%, black 0%, transparent 85%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cfg-stage-ground {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 16px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.6) 0%, transparent 70%);
+  filter: blur(8px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cfg-stage-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0;
+  min-height: 240px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding: 8px 4px 6px;
+}
+
+.cfg-stage-row::-webkit-scrollbar { height: 6px; }
+.cfg-stage-row::-webkit-scrollbar-track { background: transparent; }
+.cfg-stage-row::-webkit-scrollbar-thumb { background: rgba(173, 217, 52, 0.35); border-radius: 999px; }
+
+.cfg-mod-card {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(64px, 8vw, 96px);
+  aspect-ratio: 1 / 2;
+  border-radius: 6px;
+  overflow: visible;
+  margin: 0;
+  transform-origin: 50% 100%;
+  animation: cfgModSnapIn 0.55s cubic-bezier(0.2, 0.85, 0.25, 1.1) both;
+  transition: transform 0.25s ease, filter 0.25s ease;
+  cursor: default;
+}
+
+.cfg-mod-card:hover {
+  transform: translateY(-4px) scale(1.04);
+  filter: drop-shadow(0 8px 18px rgba(173, 217, 52, 0.35));
+  z-index: 2;
+}
+
+.cfg-mod-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  background: #0a121c;
+}
+
+.cfg-mod-card.spare img {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.5), 0 0 22px rgba(173, 217, 52, 0.55);
+}
+
+.cfg-mod-tag {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(7, 13, 22, 0.9);
+  border: 1px solid rgba(173, 217, 52, 0.45);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--brand);
+  white-space: nowrap;
+  z-index: 3;
+}
+
+.cfg-mod-tag em {
+  font-style: normal;
+  background: var(--brand);
+  color: #101510;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  letter-spacing: 0.4px;
+}
+
+.cfg-mod-cap {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #b6c1cf;
+  white-space: nowrap;
+}
+
+/* Hydraulic interface "snap" connector between adjacent modules */
+.cfg-mod-link {
+  position: absolute;
+  right: -7px;
+  top: 22%;
+  bottom: 22%;
+  width: 14px;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, transparent 0 18%, rgba(173, 217, 52, 0.85) 18% 22%, transparent 22% 46%, rgba(173, 217, 52, 0.85) 46% 50%, transparent 50% 74%, rgba(173, 217, 52, 0.85) 74% 78%, transparent 78% 100%);
+  filter: drop-shadow(0 0 6px rgba(173, 217, 52, 0.6));
+  pointer-events: none;
+  animation: cfgPulse 1.8s ease-in-out infinite;
+}
+
+.cfg-mod-overflow {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand);
+  padding: 0 14px;
+  letter-spacing: 0.5px;
+}
+
+.cfg-mod-overflow span {
+  font-size: 0.7rem;
+  color: #8898a8;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+.cfg-stage-pipe {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 12% 0;
+  opacity: 0.55;
+}
+
+.cfg-stage-pipe span {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 8px rgba(173, 217, 52, 0.7);
+}
+
+@keyframes cfgModSnapIn {
+  0% { opacity: 0; transform: translateY(-32px) scale(0.7); }
+  60% { opacity: 1; transform: translateY(8px) scale(1.03); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes cfgPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cfg-mod-card { animation: none; }
+  .cfg-mod-link { animation: none; }
+}
+
+/* Legacy fallback container — keep block but hide if both exist */
 .cfg-modules {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

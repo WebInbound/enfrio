@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 const UNIT_KW = 1500;
 const MAX_VISIBLE_UNITS = 12;
+const MODULE_IMG = "/assets/images/site/mtower-module.jpg";
 
 const APPLICATIONS = [
   { value: "diesel", label: "Diesel genset", factor: 0.85 },
@@ -11,7 +13,6 @@ const APPLICATIONS = [
   { value: "datacenter", label: "Datacenter IT load", factor: 1.0 },
   { value: "custom", label: "Custom (1:1)", factor: 1.0 },
 ] as const;
-
 type ApplicationValue = (typeof APPLICATIONS)[number]["value"];
 
 const AMBIENT_TEMPS = [
@@ -25,7 +26,6 @@ const ALTITUDES = [
   { value: "med", label: "1000–2000 m", derate: 0.96 },
   { value: "high", label: "> 2000 m", derate: 0.92 },
 ] as const;
-
 type AltitudeValue = (typeof ALTITUDES)[number]["value"];
 
 function configFor(units: number): string {
@@ -63,27 +63,45 @@ export default function MTowerSizer() {
   }, [power, application, circuit, ambient, altitude, redundancy]);
 
   const ctaHref = useMemo(() => {
+    const summary =
+      `M Tower configuration request\n` +
+      `\n` +
+      `Engine power: ${power.toLocaleString("en-US")} kW\n` +
+      `Application: ${APPLICATIONS.find((a) => a.value === application)?.label ?? application}\n` +
+      `Circuit: ${circuit === "double" ? "Double (HT + LT)" : "Single (HT)"}\n` +
+      `Ambient: ${ambient} °C\n` +
+      `Altitude: ${ALTITUDES.find((a) => a.value === altitude)?.label ?? altitude}\n` +
+      `Redundancy: ${redundancy ? "N+1 (spare module)" : "N"}\n` +
+      `\n` +
+      `Sized build: ${result.units} × M Tower modules\n` +
+      `Effective capacity: ${result.capacity.toLocaleString("en-US")} kW\n` +
+      `Estimated heat rejection: ${result.heat.toLocaleString("en-US")} kW\n` +
+      `Per-module derated: ${result.effectiveUnitKw.toLocaleString("en-US")} kW\n` +
+      `Headroom: +${Math.max(0, result.headroomPct)}%\n`;
+
     const params = new URLSearchParams({
-      subject: "M Tower Sizing Inquiry",
-      body:
-        `Engine power: ${power} kW\n` +
-        `Application: ${application}\n` +
-        `Circuit: ${circuit}\n` +
-        `Ambient: ${ambient} °C\n` +
-        `Altitude: ${altitude}\n` +
-        `Redundancy: ${redundancy ? "N+1" : "N"}\n` +
-        `Estimated heat rejection: ${result.heat} kW\n` +
-        `Suggested modules: ${result.units}\n` +
-        `Effective capacity: ${result.capacity} kW\n`,
+      scope: "m-tower",
+      power: String(power),
+      application,
+      circuit,
+      ambient: String(ambient),
+      altitude,
+      redundancy: redundancy ? "1" : "0",
+      units: String(result.units),
+      heat: String(result.heat),
+      capacity: String(result.capacity),
+      message: summary,
     });
-    return `/contact?${params.toString()}`;
+    return `/contact?${params.toString()}#contact-form`;
   }, [power, application, circuit, ambient, altitude, redundancy, result]);
 
   const visibleUnits = Math.min(result.units, MAX_VISIBLE_UNITS);
   const overflow = result.units - visibleUnits;
+  const spareIndex = redundancy ? result.units - 1 : -1;
 
   return (
     <div className="cfg">
+      {/* === INPUT PANEL === */}
       <div className="cfg-input">
         <div className="cfg-power">
           <div className="cfg-power-head">
@@ -212,6 +230,7 @@ export default function MTowerSizer() {
         </label>
       </div>
 
+      {/* === OUTPUT PANEL: photoreal build === */}
       <div className="cfg-output" aria-live="polite">
         <div className="cfg-headline">
           <p className="kicker">YOUR M TOWER BUILD</p>
@@ -224,25 +243,46 @@ export default function MTowerSizer() {
           </p>
         </div>
 
-        <div
-          className="cfg-modules"
-          role="img"
-          aria-label={`Visualization of ${result.units} M Tower modules`}
-        >
-          {Array.from({ length: Math.max(8, visibleUnits) }).map((_, i) => {
-            const lit = i < visibleUnits;
-            return (
-              <div
-                key={i}
-                className={`cfg-mod ${lit ? "lit" : ""}`}
-                style={{ transitionDelay: `${i * 40}ms` }}
-              >
-                <div className="cfg-mod-inner" />
-                <span className="cfg-mod-cap">{lit ? `${UNIT_KW.toLocaleString("en-US")} kW` : ""}</span>
+        <div className="cfg-stage" role="img" aria-label={`Visualisation of ${result.units} M Tower modules side by side`}>
+          <div className="cfg-stage-ground" aria-hidden="true" />
+          <div className="cfg-stage-row">
+            {Array.from({ length: visibleUnits }).map((_, i) => {
+              const isSpare = i === spareIndex && redundancy;
+              return (
+                <div
+                  key={`${result.units}-${i}`}
+                  className={`cfg-mod-card ${isSpare ? "spare" : ""}`}
+                  style={{ animationDelay: `${i * 90}ms` }}
+                >
+                  <div className="cfg-mod-tag">
+                    <span>M{i + 1}</span>
+                    {isSpare ? <em>N+1</em> : null}
+                  </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={MODULE_IMG}
+                    alt=""
+                    draggable={false}
+                    loading="lazy"
+                  />
+                  <div className="cfg-mod-cap">{UNIT_KW.toLocaleString("en-US")} kW</div>
+                  {i < visibleUnits - 1 ? (
+                    <span className="cfg-mod-link" aria-hidden="true" />
+                  ) : null}
+                </div>
+              );
+            })}
+            {overflow > 0 ? (
+              <div className="cfg-mod-overflow" aria-hidden="true">
+                +{overflow}
+                <span>more</span>
               </div>
-            );
-          })}
-          {overflow > 0 ? <div className="cfg-mod-overflow">+{overflow}</div> : null}
+            ) : null}
+          </div>
+          <div className="cfg-stage-pipe" aria-hidden="true">
+            <span />
+            <span />
+          </div>
         </div>
 
         <div className="cfg-metrics">
@@ -280,9 +320,9 @@ export default function MTowerSizer() {
         </p>
 
         <div className="cfg-cta">
-          <a className="btn solid" href={ctaHref}>
-            Send this configuration to Enfrio engineering
-          </a>
+          <Link className="btn solid" href={ctaHref}>
+            Send this configuration to Enfrio engineering →
+          </Link>
         </div>
       </div>
     </div>

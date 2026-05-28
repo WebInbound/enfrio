@@ -1,10 +1,19 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { useSearchParams } from "next/navigation";
 import { submitContactForm, type ContactFormState } from "@/app/contact/actions";
 
 const initialState: ContactFormState = { status: "idle", message: "" };
+
+const SCOPE_OPTIONS = [
+  "power-generation",
+  "datacenter",
+  "m-tower",
+  "custom",
+  "other",
+] as const;
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -19,8 +28,41 @@ export default function ContactForm() {
   const [state, formAction] = useActionState(submitContactForm, initialState);
   const errors = state.fieldErrors ?? {};
 
+  const params = useSearchParams();
+
+  // Pre-fill from URL when the sizer (or any external link) hands us a config
+  const [scope, setScope] = useState("");
+  const [message, setMessage] = useState("");
+  const [prefilled, setPrefilled] = useState(false);
+
+  useEffect(() => {
+    if (!params) return;
+    const scopeParam = params.get("scope") ?? "";
+    const messageParam = params.get("message") ?? "";
+    let didPrefill = false;
+    if (SCOPE_OPTIONS.includes(scopeParam as (typeof SCOPE_OPTIONS)[number])) {
+      setScope(scopeParam);
+      didPrefill = true;
+    }
+    if (messageParam) {
+      setMessage(messageParam);
+      didPrefill = true;
+    }
+    setPrefilled(didPrefill);
+  }, [params]);
+
   return (
-    <form action={formAction} className="contact-form" noValidate>
+    <form action={formAction} className="contact-form" noValidate id="contact-form">
+      {prefilled ? (
+        <div className="form-prefill" role="status">
+          <span>✓</span>
+          <p>
+            Your M Tower configuration has been added below. Review the message,
+            add a name, company and email, and send.
+          </p>
+        </div>
+      ) : null}
+
       {/* Honeypot: bots fill it, humans don't see it */}
       <div className="hp-field" aria-hidden="true">
         <label>
@@ -51,7 +93,11 @@ export default function ContactForm() {
         </label>
         <label className="form-field">
           <span>Project scope</span>
-          <select name="projectScope" defaultValue="">
+          <select
+            name="projectScope"
+            value={scope}
+            onChange={(e) => setScope(e.target.value)}
+          >
             <option value="" disabled>Select...</option>
             <option value="power-generation">Power Generation cooling</option>
             <option value="datacenter">Datacenter cooling</option>
@@ -76,10 +122,12 @@ export default function ContactForm() {
         <span>Tell us about your project *</span>
         <textarea
           name="message"
-          rows={6}
+          rows={message ? 12 : 6}
           required
           aria-invalid={Boolean(errors.message)}
           placeholder="Engine power class, heat rejection target, installation context, anything we should know..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
         />
         {errors.message ? <em className="form-error">{errors.message}</em> : null}
       </label>

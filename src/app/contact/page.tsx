@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Image from "next/image";
 import SiteShell from "@/components/SiteShell";
 import ContactForm from "@/components/ContactForm";
@@ -28,7 +29,9 @@ export default function ContactPage() {
             <p className="kicker">PROJECT INQUIRY</p>
             <h2>Tell us about your platform.</h2>
             <p>Fill in the form and an Enfrio engineer will reply within one business day. For procurement documentation requests please mention it in the message field.</p>
-            <ContactForm />
+            <Suspense fallback={<p className="micro-note">Loading form...</p>}>
+              <ContactForm />
+            </Suspense>
           </div>
           <aside className="contact-side reveal">
             <article className="contact-side-card">
