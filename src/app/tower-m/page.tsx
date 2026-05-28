@@ -126,17 +126,49 @@ export default function TowerMPage() {
         <div className="section-head reveal">
           <p className="kicker">DEPLOYMENT CONTEXTS</p>
           <h2>From a single genset to a full datacenter hall.</h2>
+          <p>Two real-world scenarios where modular heat rejection wins on capex, uptime and time-to-deploy.</p>
         </div>
-        <div className="grid-2">
-          <article className="panel reveal media">
-            <Image className="fit-contain" src="/assets/images/site/enfrio-system-infographic.jpg" alt="Enfrio system overview infographic showing container-fit modular configurations" width={1100} height={1500} />
-            <h3>Power Generation</h3>
-            <p>Backup and primary gensets in mission-critical sites. Single-unit pods for sub-2 MW plants, dual or quad banks for utility-scale installations.</p>
+        <div className="deploy-grid">
+          <article className="deploy-card reveal">
+            <div className="deploy-card-media">
+              <Image src="/assets/images/site/power-gen-hall.jpg" alt="Genset hall with Enfrio cooling on a bank of engines" width={1400} height={900} />
+              <div className="deploy-card-shade" />
+              <span className="deploy-card-tag">POWER GENERATION</span>
+            </div>
+            <div className="deploy-card-body">
+              <h3>Backup &amp; primary gensets</h3>
+              <p>
+                Mission-critical sites where the cooling plant has to track the
+                generator&apos;s load profile. M Tower scales bank-by-bank as the
+                site grows.
+              </p>
+              <ul className="deploy-stats">
+                <li><strong>1 – 8</strong><span>modules per genset bank</span></li>
+                <li><strong>1.5 – 12 MW</strong><span>heat rejection envelope</span></li>
+                <li><strong>N+1</strong><span>redundancy on bolt-down</span></li>
+              </ul>
+            </div>
           </article>
-          <article className="panel reveal media">
-            <Image src="/assets/images/site/mtower-real.jpg" alt="M Tower unit installed on a real power plant" width={1100} height={800} />
-            <h3>Datacenter Cooling</h3>
-            <p>High-density compute halls where load grows non-linearly. Start with the modules you need today, add capacity rack-by-rack as the workload scales.</p>
+
+          <article className="deploy-card reveal">
+            <div className="deploy-card-media">
+              <Image src="/assets/images/site/warehouse-delivery.jpg" alt="Container-ready Enfrio cooling units staged in the warehouse" width={1400} height={1050} />
+              <div className="deploy-card-shade" />
+              <span className="deploy-card-tag">DATACENTER COOLING</span>
+            </div>
+            <div className="deploy-card-body">
+              <h3>High-density compute halls</h3>
+              <p>
+                Workload grows non-linearly. Start with the modules you need
+                today, drop in more skids as you fill racks &mdash; no redesign,
+                no oversized plant burning capex on day one.
+              </p>
+              <ul className="deploy-stats">
+                <li><strong>Pay-as-you-grow</strong><span>cap-ex profile</span></li>
+                <li><strong>Container-fit</strong><span>port to slab in days</span></li>
+                <li><strong>Hot-swap</strong><span>maintenance with N+1</span></li>
+              </ul>
+            </div>
           </article>
         </div>
       </section>

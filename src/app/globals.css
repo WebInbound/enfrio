@@ -2454,20 +2454,23 @@ li {
 .cfg {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-  gap: 24px;
-  margin-top: 24px;
+  gap: 14px;
+  margin-top: 22px;
   font-family: 'Urbanist', sans-serif;
+  align-items: stretch;
 }
 
 .cfg-input,
 .cfg-output {
-  padding: 28px;
-  border-radius: 22px;
+  padding: 22px 24px 18px;
+  border-radius: 18px;
   background: linear-gradient(160deg, rgba(13, 22, 33, 0.78) 0%, rgba(5, 11, 20, 0.92) 100%);
   border: 1px solid rgba(173, 217, 52, 0.22);
   color: #e3ebf5;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .cfg-output {
@@ -2594,10 +2597,10 @@ li {
 .cfg-segmented {
   border: 0;
   padding: 0;
-  margin: 0 0 22px;
+  margin: 0 0 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .cfg-segmented legend {
@@ -2646,8 +2649,8 @@ li {
 .cfg-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  margin-bottom: 22px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .cfg-row .cfg-segmented {
@@ -2658,9 +2661,9 @@ li {
 .cfg-toggle {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  border-radius: 14px;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(173, 217, 52, 0.18);
   cursor: pointer;
@@ -2729,6 +2732,204 @@ li {
   font-style: normal;
   font-size: 0.78rem;
   color: #8898a8;
+}
+
+/* Product spec card filling the leftover space under N+1 */
+.cfg-product-card {
+  margin-top: auto;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(173, 217, 52, 0.12) 0%, transparent 65%),
+    linear-gradient(160deg, rgba(13, 22, 33, 0.5) 0%, rgba(5, 11, 20, 0.45) 100%);
+  border: 1px solid rgba(173, 217, 52, 0.18);
+}
+
+.cfg-product-card .kicker {
+  color: var(--brand);
+  margin: 0 0 10px;
+  font-size: 0.7rem;
+  letter-spacing: 1.6px;
+}
+
+.cfg-product-specs {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.cfg-product-specs li {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 6px;
+  border-radius: 8px;
+  background: rgba(7, 13, 22, 0.5);
+  border: 1px solid rgba(173, 217, 52, 0.12);
+}
+
+.cfg-product-specs strong {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--brand);
+  letter-spacing: -0.5px;
+  line-height: 1;
+  margin-bottom: 3px;
+}
+
+.cfg-product-specs span {
+  font-size: 0.66rem;
+  letter-spacing: 0.6px;
+  color: #8a96a4;
+  text-transform: uppercase;
+}
+
+.cfg-product-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0;
+}
+
+.cfg-product-tags span {
+  font-size: 0.7rem;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(173, 217, 52, 0.1);
+  border: 1px solid rgba(173, 217, 52, 0.22);
+  color: #d4deea;
+  letter-spacing: 0.3px;
+}
+
+/* === Deployment context scenario cards === */
+.deploy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 22px;
+}
+
+.deploy-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  overflow: hidden;
+  background: linear-gradient(160deg, rgba(13, 22, 33, 0.85) 0%, rgba(5, 11, 20, 0.95) 100%);
+  border: 1px solid rgba(173, 217, 52, 0.22);
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.1, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.deploy-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 44px rgba(0, 0, 0, 0.4);
+  border-color: rgba(173, 217, 52, 0.4);
+}
+
+.deploy-card-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.deploy-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
+}
+
+.deploy-card:hover .deploy-card-media img {
+  transform: scale(1.04);
+}
+
+.deploy-card-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, transparent 35%, rgba(5, 11, 20, 0.5) 75%, rgba(5, 11, 20, 0.9) 100%);
+  pointer-events: none;
+}
+
+.deploy-card-tag {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(5, 11, 20, 0.78);
+  border: 1px solid rgba(173, 217, 52, 0.45);
+  color: var(--brand);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 1.6px;
+}
+
+.deploy-card-body {
+  padding: 22px 24px 24px;
+  color: #d4deea;
+}
+
+.deploy-card-body h3 {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.55rem;
+  color: #f4f8ff;
+  margin: 0 0 10px;
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+}
+
+.deploy-card-body > p {
+  margin: 0 0 18px;
+  line-height: 1.55;
+  color: #b6c1cf;
+  font-size: 0.97rem;
+}
+
+.deploy-stats {
+  list-style: none;
+  padding: 16px 0 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  border-top: 1px solid rgba(173, 217, 52, 0.18);
+}
+
+.deploy-stats li {
+  display: flex;
+  flex-direction: column;
+}
+
+.deploy-stats strong {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--brand);
+  letter-spacing: -0.2px;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.deploy-stats span {
+  font-size: 0.72rem;
+  letter-spacing: 0.4px;
+  color: #8a96a4;
+  line-height: 1.3;
+}
+
+@media (max-width: 880px) {
+  .deploy-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .deploy-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 /* Output panel */

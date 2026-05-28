@@ -228,6 +228,21 @@ export default function MTowerSizer() {
             <em>Add one spare module for hot-swap continuity</em>
           </span>
         </label>
+
+        <div className="cfg-product-card">
+          <p className="kicker">SINGLE M TOWER MODULE</p>
+          <ul className="cfg-product-specs">
+            <li><strong>1,500 kW</strong><span>heat rejection</span></li>
+            <li><strong>~12 m²</strong><span>footprint</span></li>
+            <li><strong>HT / HT+LT</strong><span>circuits</span></li>
+          </ul>
+          <p className="cfg-product-tags">
+            <span>Container-fit</span>
+            <span>Sea-water</span>
+            <span>ATEX-ready</span>
+            <span>Inverter-ready</span>
+          </p>
+        </div>
       </div>
 
       {/* === OUTPUT PANEL: photoreal build === */}
