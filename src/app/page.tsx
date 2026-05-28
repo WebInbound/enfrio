@@ -31,7 +31,7 @@ export default function HomePage() {
           </div>
         </div>
         <figure className="page-hero-media reveal">
-          <Image className="focus-right" src="/assets/images/site/hero-main.jpg" alt="Enfrio technician welding radiator" width={1200} height={900} />
+          <Image priority className="focus-right" src="/assets/images/site/hero-main.jpg" alt="Enfrio technician welding radiator" width={1200} height={900} />
         </figure>
       </section>
 

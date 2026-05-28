@@ -18,7 +18,7 @@ export default function ContactPage() {
           <p>Share platform data, thermal targets and timeline. Enfrio can support from concept engineering to full production transfer.</p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image className="focus-right" src="/assets/images/site/quality-hexagon-b.jpg" alt="Quality check detail" width={1200} height={900} />
+          <Image priority className="focus-right" src="/assets/images/site/quality-hexagon-b.jpg" alt="Quality check detail" width={1200} height={900} />
         </figure>
       </section>
 

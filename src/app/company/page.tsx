@@ -18,7 +18,7 @@ export default function CompanyPage() {
           <p>Enfrio combines engineering leadership with production discipline to deliver cooling systems that work reliably in real operating conditions.</p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image className="focus-top" src="/assets/images/site/team-office-floor.jpg" alt="Enfrio team at production site" width={1200} height={900} />
+          <Image priority className="focus-top" src="/assets/images/site/team-office-floor.jpg" alt="Enfrio team at production site" width={1200} height={900} />
         </figure>
       </section>
 

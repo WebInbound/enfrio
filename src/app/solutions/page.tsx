@@ -22,7 +22,7 @@ export default function SolutionsPage() {
           </p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image className="focus-left" src="/assets/images/site/installed-v20-integrated.jpg" alt="Integrated Enfrio cooling package mounted on a finished engine" width={1600} height={1200} />
+          <Image priority className="focus-left" src="/assets/images/site/installed-v20-integrated.jpg" alt="Integrated Enfrio cooling package mounted on a finished engine" width={1600} height={1200} />
         </figure>
       </section>
 

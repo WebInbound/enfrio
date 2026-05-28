@@ -26,7 +26,7 @@ export default function IndustriesPage() {
           <p>Enfrio supports markets where thermal reliability, packaging constraints and operational uptime are commercially critical.</p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image className="focus-right" src="/assets/images/site/power-gen-hall.jpg" alt="Power generation hall with a bank of gensets cooled by Enfrio radiators" width={1400} height={1400} />
+          <Image priority className="focus-right" src="/assets/images/site/power-gen-hall.jpg" alt="Power generation hall with a bank of gensets cooled by Enfrio radiators" width={1400} height={1400} />
         </figure>
       </section>
 

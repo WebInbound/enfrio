@@ -26,7 +26,7 @@ export default function TechnologyPage() {
           <p>Technology at Enfrio is built around repeatability: controlled process windows, traceable checks and reliable industrial throughput.</p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image className="focus-left" src="/assets/images/site/laser-operator-jq.jpg" alt="Operator running the JQ laser cutting machine on Enfrio production line" width={1500} height={1000} />
+          <Image priority className="focus-left" src="/assets/images/site/laser-operator-jq.jpg" alt="Operator running the JQ laser cutting machine on Enfrio production line" width={1500} height={1000} />
         </figure>
       </section>
 

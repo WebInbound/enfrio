@@ -21,7 +21,7 @@ export default function ProjectsPage() {
           </p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image className="focus-left" src="/assets/images/site/enfrio-trade-show.jpg" alt="Enfrio booth at an international trade show" width={1200} height={900} />
+          <Image priority className="focus-left" src="/assets/images/site/enfrio-trade-show.jpg" alt="Enfrio booth at an international trade show" width={1200} height={900} />
         </figure>
       </section>
 
