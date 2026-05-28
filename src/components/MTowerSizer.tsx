@@ -23,9 +23,9 @@ const AMBIENT_TEMPS = [
 ];
 
 const ALTITUDES = [
-  { value: "low", label: "< 1000 m", derate: 1.0 },
-  { value: "med", label: "1000–2000 m", derate: 0.96 },
-  { value: "high", label: "> 2000 m", derate: 0.92 },
+  { value: "low", label: "< 1 km", derate: 1.0 },
+  { value: "med", label: "1 – 2 km", derate: 0.96 },
+  { value: "high", label: "> 2 km", derate: 0.92 },
 ] as const;
 type AltitudeValue = (typeof ALTITUDES)[number]["value"];
 
