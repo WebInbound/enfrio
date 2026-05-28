@@ -1063,7 +1063,14 @@ li {
 }
 
 /* === Smart image fit by real ratio classes === */
+/* Hero figure: always crop (cover) so we never get an empty bg slab */
 .page-hero-media img.ratio-portrait,
+.page-hero-media img.ratio-wide,
+.page-hero-media img.ratio-standard {
+  object-fit: cover !important;
+  background: transparent;
+}
+
 .photo-card img.ratio-portrait,
 .editorial-rail img.ratio-portrait,
 .media img.ratio-portrait,
@@ -1071,10 +1078,9 @@ li {
 .wow-media img.ratio-portrait,
 .madrid-auto img.ratio-portrait {
   object-fit: contain !important;
-  background: #c7d0d9;
+  background: #0d1621;
 }
 
-.page-hero-media img.ratio-wide,
 .photo-card img.ratio-wide,
 .editorial-rail img.ratio-wide,
 .media img.ratio-wide,
@@ -1082,7 +1088,7 @@ li {
 .wow-media img.ratio-wide,
 .madrid-auto img.ratio-wide {
   object-fit: contain !important;
-  background: #c7d0d9;
+  background: #0d1621;
 }
 
 .page-hero-media img.ratio-standard,
