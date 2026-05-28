@@ -22,7 +22,7 @@ export default function SolutionsPage() {
           </p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image className="fit-contain focus-left" src="/assets/images/site/rad-main-model.jpg" alt="Industrial radiator model" width={1200} height={900} />
+          <Image className="focus-left" src="/assets/images/site/rad-main-model.jpg" alt="Vertical cooling unit with inverters and fans built by Enfrio" width={1200} height={900} />
         </figure>
       </section>
 
