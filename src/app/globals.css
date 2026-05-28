@@ -1942,6 +1942,149 @@ li {
   color: var(--brand);
 }
 
+.mtower-hero-hint {
+  margin: 22px 0 0;
+  font-size: 0.85rem;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--brand);
+  opacity: 0.7;
+  animation: mtowerHintPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes mtowerHintPulse {
+  0%, 100% { opacity: 0.55; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(3px); }
+}
+
+/* === Explore the unit: drag-to-rotate section === */
+.mtower-explore {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 36px;
+  align-items: center;
+}
+
+.mtower-explore-text h2 {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+  line-height: 1.08;
+  margin: 12px 0 14px;
+  color: #f4f8ff;
+}
+
+.mtower-explore-text p {
+  color: #d4deea;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
+
+.mtower-explore-text .checks li {
+  color: #cad3df;
+}
+
+.mtower-explore-stage {
+  position: relative;
+  border-radius: 22px;
+  padding: 28px;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(173, 217, 52, 0.18) 0%, transparent 60%),
+    linear-gradient(160deg, rgba(13, 22, 33, 0.55) 0%, rgba(5, 11, 20, 0.85) 100%);
+  border: 1px solid rgba(173, 217, 52, 0.22);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.mtower-explore-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(173, 217, 52, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(173, 217, 52, 0.05) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(ellipse at 50% 60%, black 0%, transparent 85%);
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .mtower-explore {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* === MTowerSpin: 360° scroll + drag viewer === */
+.mtower-spin {
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #050b14;
+  touch-action: pan-y;
+}
+
+.mtower-spin video,
+.mtower-spin img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+.mtower-spin-drag {
+  cursor: grab;
+  touch-action: none;
+}
+
+.mtower-spin-drag:active {
+  cursor: grabbing;
+}
+
+.mtower-spin-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  background: rgba(7, 13, 22, 0.85);
+  border: 1px solid rgba(173, 217, 52, 0.35);
+  color: var(--brand);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  opacity: 0.85;
+  animation: mtowerHintBob 2.4s ease-in-out infinite;
+}
+
+.mtower-spin-hint span {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+@keyframes mtowerHintBob {
+  0%, 100% { transform: translate(-50%, 0); opacity: 0.7; }
+  50% { transform: translate(-50%, -3px); opacity: 1; }
+}
+
+/* When the hero falls back to the still poster we still need video
+   element to size correctly */
+.mtower-hero-360 .mtower-hero-media video,
+.mtower-hero-loop .mtower-hero-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 @keyframes mtower-rise {
   from {
     opacity: 0;
@@ -2709,7 +2852,8 @@ li {
   z-index: 2;
 }
 
-.cfg-mod-card img {
+.cfg-mod-card img,
+.cfg-mod-card video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -2719,7 +2863,8 @@ li {
   background: #0a121c;
 }
 
-.cfg-mod-card.spare img {
+.cfg-mod-card.spare img,
+.cfg-mod-card.spare video {
   outline: 2px solid var(--brand);
   outline-offset: 1px;
   box-shadow: 0 12px 22px rgba(0, 0, 0, 0.5), 0 0 22px rgba(173, 217, 52, 0.55);
