@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 const UNIT_KW = 1500;
 const MAX_VISIBLE_UNITS = 12;
-const MODULE_IMG = "/assets/images/site/mtower-module.jpg";
-const MODULE_VIDEO = "/assets/video/mtower-loop.mp4";
+const MODULE_IMG = "/assets/images/site/mtower-render.png";
 
 const APPLICATIONS = [
   { value: "diesel", label: "Diesel genset", factor: 0.85 },
@@ -99,21 +98,6 @@ export default function MTowerSizer() {
   const visibleUnits = Math.min(result.units, MAX_VISIBLE_UNITS);
   const overflow = result.units - visibleUnits;
   const spareIndex = redundancy ? result.units - 1 : -1;
-
-  // Probe once whether the loop video is deployed. If yes, modules
-  // become tiny silent video tiles instead of stills.
-  const [useVideo, setUseVideo] = useState(false);
-  useEffect(() => {
-    let cancelled = false;
-    fetch(MODULE_VIDEO, { method: "HEAD" })
-      .then((r) => {
-        if (!cancelled && r.ok) setUseVideo(true);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   return (
     <div className="cfg">
@@ -274,25 +258,13 @@ export default function MTowerSizer() {
                     <span>M{i + 1}</span>
                     {isSpare ? <em>N+1</em> : null}
                   </div>
-                  {useVideo ? (
-                    <video
-                      src={MODULE_VIDEO}
-                      poster={MODULE_IMG}
-                      muted
-                      autoPlay
-                      loop
-                      playsInline
-                      preload="metadata"
-                    />
-                  ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={MODULE_IMG}
-                      alt=""
-                      draggable={false}
-                      loading="lazy"
-                    />
-                  )}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={MODULE_IMG}
+                    alt=""
+                    draggable={false}
+                    loading="lazy"
+                  />
                   <div className="cfg-mod-cap">{UNIT_KW.toLocaleString("en-US")} kW</div>
                   {i < visibleUnits - 1 ? (
                     <span className="cfg-mod-link" aria-hidden="true" />

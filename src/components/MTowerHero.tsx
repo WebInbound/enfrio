@@ -2,86 +2,55 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// Bump VIDEO_VER when the underlying mp4 file changes — forces clients
-// to bypass any stale browser/CDN cache of the previous binary.
-const VIDEO_VER = "2";
-const VIDEO_LOOP = `/assets/video/mtower-3d.mp4?v=${VIDEO_VER}`;
-const VIDEO_360 = `/assets/video/mtower-360.mp4?v=${VIDEO_VER}`;
-const POSTER = "/assets/images/site/mtower-real.jpg";
+const FRAME_COUNT = 60;
+const FRAMES_BASE = "/assets/images/mtower-frames";
+const POSTER = "/assets/images/site/mtower-render.png";
+
+function framePath(i: number): string {
+  const idx = ((i % FRAME_COUNT) + FRAME_COUNT) % FRAME_COUNT;
+  return `${FRAMES_BASE}/${String(idx).padStart(3, "0")}.webp`;
+}
 
 /**
- * Hero with cinematic backdrop. Prefers:
- *  1. mtower-360.mp4 (rotation render, currentTime driven by scroll)
- *  2. mtower-3d.mp4 (any loopable ambient render)
- *  3. mtower-real.jpg (static poster)
- *
- * The chosen source is determined at runtime: we try the 360 file first
- * and fall back gracefully when it can't be loaded.
+ * Hero background that rotates the M Tower 1:1 with the page scroll.
+ * Uses an indexed image sequence (60 transparent WebPs) rather than
+ * scrubbing video.currentTime — rotation perfectly tracks the cursor
+ * and never plays "in between" frames.
  */
 export default function MTowerHero() {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
   const sectionRef = useRef<HTMLElement | null>(null);
-  const [source, setSource] = useState<"360" | "loop" | "poster">("poster");
+  const [frame, setFrame] = useState(0);
+  const [ready, setReady] = useState(false);
 
-  // Probe which video file is actually deployed.
+  // Pre-fetch all frames so the rotation never stalls.
   useEffect(() => {
-    let cancelled = false;
-    const probe = async (url: string) => {
-      try {
-        const res = await fetch(url, { method: "HEAD" });
-        return res.ok;
-      } catch {
-        return false;
-      }
-    };
-    (async () => {
-      if (await probe(VIDEO_360)) {
-        if (!cancelled) setSource("360");
-        return;
-      }
-      if (await probe(VIDEO_LOOP)) {
-        if (!cancelled) setSource("loop");
-        return;
-      }
-      if (!cancelled) setSource("poster");
-    })();
+    let mounted = true;
+    let loaded = 0;
+    for (let i = 0; i < FRAME_COUNT; i++) {
+      const img = new window.Image();
+      img.onload = () => {
+        loaded += 1;
+        if (loaded >= 6 && mounted) setReady(true);
+      };
+      img.src = framePath(i);
+    }
     return () => {
-      cancelled = true;
+      mounted = false;
     };
   }, []);
 
-  // Scroll-driven currentTime when using the 360 render.
+  // Scroll-driven frame index.
   useEffect(() => {
-    if (source !== "360") return;
-    const video = videoRef.current;
     const section = sectionRef.current;
-    if (!video || !section) return;
-
-    // Force the browser to actually fetch the file. Some Chromiums won't
-    // pre-fetch a muted, non-autoplaying <video> with preload="auto" until
-    // first user interaction. We tap play()→pause() right after mount; the
-    // video is muted so the autoplay policy allows it.
-    video.load();
-    const kick = () => {
-      video.play().then(() => video.pause()).catch(() => {});
-    };
-    if (video.readyState >= 1) {
-      kick();
-    } else {
-      video.addEventListener("loadedmetadata", kick, { once: true });
-    }
-
+    if (!section) return;
     let raf = 0;
     const update = () => {
       const rect = section.getBoundingClientRect();
-      const viewportH = window.innerHeight;
-      // Progress from "hero top hits viewport top" to "hero bottom leaves viewport".
-      const total = rect.height + viewportH;
-      const scrolled = Math.max(0, viewportH - rect.top);
+      const vh = window.innerHeight;
+      const total = rect.height + vh;
+      const scrolled = Math.max(0, vh - rect.top);
       const ratio = Math.min(1, Math.max(0, scrolled / total));
-      if (video.duration && Number.isFinite(video.duration)) {
-        video.currentTime = ratio * (video.duration - 0.05);
-      }
+      setFrame(Math.floor(ratio * (FRAME_COUNT - 1)));
       raf = 0;
     };
     const onScroll = () => {
@@ -96,34 +65,18 @@ export default function MTowerHero() {
       window.removeEventListener("resize", onScroll);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [source]);
+  }, []);
 
   return (
-    <section ref={sectionRef} className={`mtower-hero mtower-hero-${source}`}>
+    <section ref={sectionRef} className="mtower-hero mtower-hero-360">
       <div className="mtower-hero-media" aria-hidden="true">
-        {source === "360" ? (
-          <video
-            ref={videoRef}
-            src={VIDEO_360}
-            poster={POSTER}
-            muted
-            playsInline
-            preload="auto"
-          />
-        ) : source === "loop" ? (
-          <video
-            src={VIDEO_LOOP}
-            poster={POSTER}
-            muted
-            playsInline
-            preload="metadata"
-            autoPlay
-            loop
-          />
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={POSTER} alt="Enfrio M Tower unit" />
-        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={ready ? framePath(frame) : POSTER}
+          alt=""
+          draggable={false}
+          decoding="sync"
+        />
         <div className="mtower-hero-vignette" />
       </div>
 
@@ -143,9 +96,7 @@ export default function MTowerHero() {
           <a className="btn solid" href="#mtower-sizer">Size your installation</a>
           <a className="btn ghost" href="#mtower-explore">Explore the unit</a>
         </div>
-        {source === "360" ? (
-          <p className="mtower-hero-hint">↓ Scroll to rotate the unit</p>
-        ) : null}
+        <p className="mtower-hero-hint">↓ Scroll to rotate the unit</p>
       </div>
     </section>
   );
