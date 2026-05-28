@@ -43,3 +43,12 @@ next-env.d.ts
 # tooling state
 .claude/
 dev.log
+
+# image-gen sidecars (generated next to each image)
+public/assets/images/**/*.prompt.txt
+
+# image-gen api key (per-machine, never committed)
+tools/image-gen/.env
+
+# legacy image bundle, not used by Next.js
+public/assets/images.zip

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "image-gen manifest",
+  "type": "object",
+  "required": ["images"],
+  "properties": {
+    "outputDir": {
+      "type": "string",
+      "description": "Directory (relative to project root) where generated images are saved."
+    },
+    "globalStyle": {
+      "type": "string",
+      "description": "Prepended to every prompt for brand/style consistency."
+    },
+    "defaults": {
+      "type": "object",
+      "properties": {
+        "model": { "type": "string", "default": "gpt-image-1" },
+        "size": {
+          "type": "string",
+          "enum": ["1024x1024", "1024x1536", "1536x1024", "auto"]
+        },
+        "quality": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "auto"]
+        }
+      }
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["filename", "prompt"],
+        "properties": {
+          "filename": { "type": "string" },
+          "mode": { "type": "string", "enum": ["t2i", "i2i"], "default": "t2i" },
+          "sourcePath": {
+            "type": "string",
+            "description": "Required when mode=i2i. Path relative to project root."
+          },
+          "size": {
+            "type": "string",
+            "enum": ["1024x1024", "1024x1536", "1536x1024", "auto"]
+          },
+          "quality": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "auto"]
+          },
+          "model": { "type": "string" },
+          "format": { "type": "string", "enum": ["png", "jpeg", "webp"] },
+          "background": { "type": "string", "enum": ["transparent", "opaque", "auto"] },
+          "prompt": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,310 @@
+{
+  "$schema": "../../.claude/skills/image-gen/manifest.schema.json",
+  "outputDir": "public/assets/images/site",
+  "globalStyle": "Photoreal industrial photography, cinematic lighting, shallow depth of field. Color palette: deep navy + steel + a subtle lime green accent. Premium B2B aesthetic similar to Caterpillar / Siemens Energy editorial style. No logos, no watermarks, no readable text, no recognizable faces. Brand: Enfrio (Italian engine cooling systems for power generation and datacenter applications, aluminium cores only — never copper).",
+  "defaults": {
+    "model": "gpt-image-1",
+    "size": "1536x1024",
+    "quality": "medium"
+  },
+  "images": [
+    {
+      "filename": "hero-main.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/hero-main.jpg",
+      "size": "1536x1024",
+      "quality": "high",
+      "prompt": "Premium hero shot: a skilled technician welding an aluminium radiator core. Cinematic side-key lighting plus soft fill, subtle sparks bokeh, deep out-of-focus factory shadow background. Teal/steel grade with warm orange weld glow on the visor. Subtle lime-green rim on PPE. Remove any visible third-party logos. Cover-of-annual-report quality, 16:9."
+    },
+    {
+      "filename": "prod-line.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/prod-line.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Wide cinematic shot of an aluminium radiator production line. Sharp foreground on a finished cooling unit, softly blurred line behind. Volumetric overhead light, cool industrial palette. Operators in plain dark blue workwear, no logos. 3:2."
+    },
+    {
+      "filename": "tube-bending-operator.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/tube-bending-operator.jpg",
+      "size": "1536x1024",
+      "quality": "high",
+      "prompt": "6-axis CNC tube bending operation. Hero subject: operator's hands and a bent stainless steel tube. Rim lighting from machine interior, deep shadows around the cell, neutral industrial steel color grade. Remove all brand markings from the machine. Ultra-sharp on the tube curvature, slight motion blur on the hand. 3:2."
+    },
+    {
+      "filename": "assembly-worker.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/assembly-worker.jpg",
+      "size": "1024x1536",
+      "quality": "medium",
+      "prompt": "Vertical portrait of an operator at an aluminium cooling unit assembly bench. Clean three-point lighting, sharp focus on hands working on aluminium fins, face slightly out of focus. Cool blue-grey palette with one warm task lamp. Premium B2B editorial. 2:3 portrait."
+    },
+    {
+      "filename": "rad-engine-complete.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/rad-engine-complete.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Studio hero of a diesel genset engine with an Enfrio aluminium cooling package installed on top. Pure dark background (#0a0e15), single softbox key from upper left, accent rim along the cooling fins. Aluminium fins gleaming. Remove all non-Enfrio brand badges. 16:9."
+    },
+    {
+      "filename": "power-gen-hall.jpg",
+      "mode": "t2i",
+      "size": "1536x1024",
+      "quality": "high",
+      "prompt": "Photoreal interior of a massive power generation hall: 6-8 large industrial diesel gensets aligned in a long row, each topped with a tall modular aluminium cooling tower (finned heat exchangers, painted black steel frame, integrated inverter cabinet on the side). Polished concrete floor reflecting overhead industrial lighting. Cinematic low-angle perspective, vanishing point down the row. Deep teal-navy ambient with cool LED key lights, lime-green status LEDs on each cooling unit. No people, no logos. 3:2."
+    },
+    {
+      "filename": "welder-action.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/welder-action.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Operator welding a radiator core. Remove ALL background logos and branding. Replace background with clean out-of-focus factory blur. Dramatic orange weld arc glow on the worker's visor, cool blue ambient elsewhere. Sharp on hands. 3:2."
+    },
+    {
+      "filename": "handwork-detail.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/handwork-detail.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Extreme close-up macro of hands finishing an aluminium cooling unit. Sharp focus on a single fin and a calloused thumb, everything else creamy bokeh. Cool neutral grade with a hint of warm skin tone. Editorial 'craftsmanship' shot. 3:2."
+    },
+    {
+      "filename": "team-office-floor.jpg",
+      "mode": "t2i",
+      "size": "1536x1024",
+      "quality": "high",
+      "prompt": "Wide editorial of an industrial office mezzanine overlooking a production floor through floor-to-ceiling glass. Foreground: blurred silhouettes of 2-3 engineers reviewing CAD on a large screen (no recognizable faces). Mid-ground: minimalist white desks. Background: a sharply lit aluminium radiator assembly line visible through the glass. Cool industrial palette with a single lime green accent on a wall graphic. 4:3."
+    },
+    {
+      "filename": "prod-assembly-b.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/prod-assembly-b.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Wide factory floor assembly shot: workers integrating an aluminium cooling unit onto a sub-frame. Cinematic teal/orange grade. Foreground cooling unit sharp, line softly blurred. Remove all third-party logos. 3:2."
+    },
+    {
+      "filename": "installed-v20-integrated.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/installed-v20-integrated.jpg",
+      "size": "1536x1024",
+      "quality": "high",
+      "prompt": "Studio relight of a V20 industrial engine with an integrated Enfrio cooling system mounted on top. Black seamless background, single dramatic key light from above-left, subtle lime-green rim accent. Hero product render quality. Remove ALL third-party engine manufacturer logos. Ultra-sharp on aluminium cooling fins. 16:9."
+    },
+    {
+      "filename": "installed-baudouin-canopy.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/installed-baudouin-canopy.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Premium shot of a genset inside an open canopy enclosure with the Enfrio aluminium cooling unit prominently visible at the top. Three-point lighting, deep navy interior background, cooling unit with cool rim light. Remove ALL OEM logos from engine and canopy. 3:2."
+    },
+    {
+      "filename": "product-complete-b.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/product-complete-b.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Hero studio shot of a complete Enfrio cooling module on a clean dark grey backdrop. Cinematic light from upper left, soft fill, sharp rim on aluminium fins. Flagship product render feel. No logos. 4:3."
+    },
+    {
+      "filename": "laser-operator-jq.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/laser-operator-jq.jpg",
+      "size": "1536x1024",
+      "quality": "high",
+      "prompt": "Cinematic shot of an operator running a fiber laser tube cutting cell. The orange/red glow of the laser cut is the dominant light source on the operator's face and PPE. Deep navy ambient elsewhere. Hands sharp on the control panel. Remove all brand markings from the machine. 'Factory of the Future' editorial style. 16:9."
+    },
+    {
+      "filename": "mach-laser-d.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/mach-laser-d.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Macro detail of a laser cutting head mid-operation: bright cut spark, molten metal, focused beam. Tack-sharp on the cut, industrial ambient blur behind. Cool steel palette with red-orange cut accent. No logos. 3:2."
+    },
+    {
+      "filename": "quality-hexagon-a.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/quality-hexagon-a.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Editorial photo of a CMM probe inspecting a precision aluminium component on a granite reference table. Clean laboratory lighting, neutral white-grey palette, single lime-green accent LED on the probe. Remove all brand names. Documentary quality-control still. 3:2."
+    },
+    {
+      "filename": "enfrio-system-infographic.jpg",
+      "mode": "t2i",
+      "size": "1024x1536",
+      "quality": "high",
+      "prompt": "Vertical photoreal scene of a modern datacenter exterior service yard: a row of 4 modular aluminium cooling towers (tall finned heat exchangers, painted black steel frame, integrated inverter cabinets) standing next to a row of server hall outdoor units. Late blue-hour sky, warm interior light glowing through datacenter windows, lime-green LED status indicators on each cooling unit. No people, no logos. 3:4 portrait."
+    },
+    {
+      "filename": "waste-madrid-01.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/waste-madrid-01.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Enfrio cooling system integrated on a municipal waste collection truck (Madrid context). Cinematic neutral grade, sharp detail on the radiator and CAC core-box opening. Remove any non-Enfrio logos. Industrial reportage feel. 3:2."
+    },
+    {
+      "filename": "waste-madrid-02.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/waste-madrid-02.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Truck integration detail of the Madrid waste collection platform. Enfrio aluminium cooling package mounted in a constrained vehicle bay. Cinematic neutral grade, sharp on cooling architecture. Remove non-Enfrio logos. 3:2."
+    },
+    {
+      "filename": "waste-madrid-03.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/waste-madrid-03.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Vehicle-level integration of an Enfrio cooling product on a municipal waste truck in operation context. Sharp on the radiator/CAC, urban background softly blurred. Industrial reportage. No non-Enfrio logos. 3:2."
+    },
+    {
+      "filename": "waste-madrid-04.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/waste-madrid-04.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Cooling system mounted on a waste collection vehicle, three-quarter view showing the custom core-box opening. Cinematic neutral grade, no non-Enfrio logos. 3:2."
+    },
+    {
+      "filename": "waste-madrid-05.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/waste-madrid-05.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Field-ready Enfrio cooling architecture on the Madrid waste platform. Outdoor light, sharp on technical detail, no non-Enfrio logos. 3:2."
+    },
+    {
+      "filename": "enfrio-trade-show.jpg",
+      "mode": "t2i",
+      "size": "1536x1024",
+      "quality": "high",
+      "prompt": "Wide editorial of a premium B2B trade show booth: matte dark navy walls with subtle lime green graphic accents, a large modular aluminium cooling tower on display as centerpiece, soft track lighting picking out its fins. Two blurred silhouettes of visitors at the side (no recognizable faces). Polished black floor. International trade show atmosphere (Hannover Messe / Power-Gen Europe vibe). No readable text or logos. 3:2."
+    },
+    {
+      "filename": "rad-40ng.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/rad-40ng.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Studio product shot of a 40HC container-fit cooling package. Pure white-to-light-grey gradient backdrop, soft top key, sharp ground shadow. Highlight the container-shaped envelope and the aluminium core. Remove all logos. Catalog hero feel. 4:3."
+    },
+    {
+      "filename": "rad-remote-mtu.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/rad-remote-mtu.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Outdoor editorial of a large remote-installation radiator package on a concrete pad at an industrial site. Late afternoon golden-hour light, deep blue sky, subtle lens flare. Make the unit look monumental. Remove third-party logos. 3:2."
+    },
+    {
+      "filename": "fair-dubai-1.jpg",
+      "mode": "t2i",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Editorial wide angle of a premium industrial trade show floor in the Middle East: warm golden ambient light, suspended geometric ceiling graphics, blurred crowd mid-ground, sharp foreground on a sleek dark-navy booth with a modular aluminium cooling unit on a podium. Cinematic depth, no readable text or logos. 3:2."
+    },
+    {
+      "filename": "fair-dubai-2.jpg",
+      "mode": "t2i",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Editorial three-quarter view of an industrial trade show booth in Dubai energy context: matte dark booth walls, lime-green spot accents, a finished cooling product centerpiece, blurred visitors (no faces visible). Warm-cool color contrast. No readable text or logos. 3:2."
+    },
+    {
+      "filename": "fair-mee-2.jpg",
+      "mode": "t2i",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Editorial photo of a Middle East Energy event booth: a sleek dark-navy stand with a modular aluminium cooling tower as hero exhibit, soft directional lighting, ambient venue glow. Two blurred professionals talking at the side. No readable text or logos. 3:2."
+    },
+    {
+      "filename": "warehouse-delivery.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/warehouse-delivery.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Cinematic wide of an industrial warehouse interior: a forklift moving a palletized Enfrio cooling unit toward an open dock door at sunrise. Long shadows, volumetric sunbeam through the door. Foreground: another cooling unit sharp. Mid-ground: forklift with slight motion blur. Cool teal grade with warm sun accent. Remove all third-party logos. 4:3."
+    },
+    {
+      "filename": "rad-warehouse-stock.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/rad-warehouse-stock.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Wide editorial of a warehouse rack filled with finished aluminium cooling units, neatly aligned in rows. Symmetrical perspective down the aisle, controlled overhead LED lighting, cool industrial palette, lime-green safety line on the floor. Premium logistics feel. No logos. 3:2."
+    },
+    {
+      "filename": "rad-double.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/rad-double.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Studio product shot of a dual-circuit (HT+LT) Enfrio aluminium radiator on a dark seamless backdrop. Single softbox key, soft fill, sharp specular on fins. Catalog 'engineering excellence' shot. No logos. 4:3."
+    },
+    {
+      "filename": "rad-truck-load.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/rad-truck-load.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Dynamic editorial of an Enfrio cooling unit being loaded onto a flatbed truck via overhead crane. Late afternoon light, long shadows, subtle motion blur on the crane chain, sharp on the unit. Reportage feel. Remove all logos from the truck cab. 3:2."
+    },
+    {
+      "filename": "mtower-render.png",
+      "mode": "t2i",
+      "size": "1024x1536",
+      "quality": "high",
+      "background": "transparent",
+      "format": "png",
+      "prompt": "Studio 3D-render aesthetic of a single M Tower modular cooling unit: tall rectangular industrial cooling tower, white/black painted steel frame, top section is the aluminium finned heat exchanger with louvered fins, mid-section is exposed dimpled stainless tubing, bottom section is the integrated inverter cabinet with a subtle lime-green LED status indicator. Three-quarter front view. Pure transparent background (alpha channel). Soft studio lighting, slight rim light from the right. Premium industrial product render. NO front protection mesh grid. NO logos, no text. Vertical 9:16 / 2:3."
+    },
+    {
+      "filename": "quality-hexagon-b.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/quality-hexagon-b.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Macro editorial of a CMM measuring probe touching down on a precision-machined aluminium component. Tack-sharp on the probe tip, creamy bokeh behind. Cool neutral palette with a single lime-green accent LED. Premium 'quality' feel. No logos. 4:3."
+    },
+    {
+      "filename": "mach-bending-a.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/mach-bending-a.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Tight editorial detail of a CNC bending machine cell at Enfrio. Restore sharpness, cool industrial palette with single warm task accent. Sharp focus on the bent tube, soft bokeh elsewhere. Remove brand markings. 3:2."
+    },
+    {
+      "filename": "mach-bending-d.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/mach-bending-d.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Operator-controlled bending precision: hands guiding a stainless tube into a CNC bending platform. Cool industrial palette, sharp on the tube curvature, soft bokeh in the cell. Remove brand markings. 3:2."
+    },
+    {
+      "filename": "mach-laser-a.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/mach-laser-a.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Laser process cell at Enfrio: sharp detail on the cutting head and the focused beam on stainless tubing. Cool steel ambient with red-orange cut accent. Remove brand markings. 3:2."
+    },
+    {
+      "filename": "prod-weld-station.jpg",
+      "mode": "i2i",
+      "sourcePath": "public/assets/images/site/prod-weld-station.jpg",
+      "size": "1536x1024",
+      "quality": "medium",
+      "prompt": "Welding workstation with controlled workmanship: clean fabrication bench, weld torch with orange arc glow, operator's gloved hand in sharp focus. Cool blue ambient elsewhere. Editorial industrial shot. No logos. 3:2."
+    }
+  ]
+}
