@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 const UNIT_KW = 1500;
-const MAX_VISIBLE_UNITS = 12;
 const MODULE_IMG = "/assets/images/site/mtower-render.png";
 
 const APPLICATIONS = [
@@ -95,9 +94,8 @@ export default function MTowerSizer() {
     return `/contact?${params.toString()}#contact-form`;
   }, [power, application, circuit, ambient, altitude, redundancy, result]);
 
-  const visibleUnits = Math.min(result.units, MAX_VISIBLE_UNITS);
-  const overflow = result.units - visibleUnits;
-  const spareIndex = redundancy ? result.units - 1 : -1;
+  const totalUnits = result.units;
+  const spareIndex = redundancy ? totalUnits - 1 : -1;
 
   return (
     <div className="cfg">
@@ -258,47 +256,72 @@ export default function MTowerSizer() {
           </p>
         </div>
 
-        <div className="cfg-stage" role="img" aria-label={`Visualisation of ${result.units} M Tower modules side by side`}>
-          <div className="cfg-stage-ground" aria-hidden="true" />
-          <div className="cfg-stage-row">
-            {Array.from({ length: visibleUnits }).map((_, i) => {
-              const isSpare = i === spareIndex && redundancy;
-              return (
-                <div
-                  key={`${result.units}-${i}`}
-                  className={`cfg-mod-card ${isSpare ? "spare" : ""}`}
-                  style={{ animationDelay: `${i * 90}ms` }}
-                >
-                  <div className="cfg-mod-tag">
-                    <span>M{i + 1}</span>
-                    {isSpare ? <em>N+1</em> : null}
+        {(() => {
+          // Lay the modules out as 1 row (<=6 units) or 2 rows (>6 units)
+          // so the per-card size stays readable even on big banks.
+          const rowsCount = totalUnits <= 6 ? 1 : 2;
+          const perRow = Math.ceil(totalUnits / rowsCount);
+          const showCap = totalUnits <= 4;
+          const showTag = totalUnits <= 8;
+          const rows: number[][] = [];
+          for (let r = 0; r < rowsCount; r++) {
+            const start = r * perRow;
+            const end = Math.min(start + perRow, totalUnits);
+            const arr: number[] = [];
+            for (let k = start; k < end; k++) arr.push(k);
+            rows.push(arr);
+          }
+          return (
+            <div className="cfg-stage" role="img" aria-label={`Visualisation of ${totalUnits} M Tower modules`}>
+              <div className="cfg-stage-ground" aria-hidden="true" />
+              <div className="cfg-stage-grid" data-rows={rowsCount}>
+                {rows.map((rowIdxs, rIdx) => (
+                  <div
+                    key={rIdx}
+                    className="cfg-stage-row"
+                    data-count={rowIdxs.length}
+                    style={{ ["--count" as string]: rowIdxs.length } as React.CSSProperties}
+                  >
+                    {rowIdxs.map((i) => {
+                      const isSpare = i === spareIndex && redundancy;
+                      return (
+                        <div
+                          key={`${totalUnits}-${i}`}
+                          className={`cfg-mod-card ${isSpare ? "spare" : ""}`}
+                          style={{ animationDelay: `${Math.min(i * 70, 700)}ms` }}
+                        >
+                          {showTag ? (
+                            <div className="cfg-mod-tag">
+                              <span>M{i + 1}</span>
+                              {isSpare ? <em>N+1</em> : null}
+                            </div>
+                          ) : null}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={MODULE_IMG}
+                            alt=""
+                            draggable={false}
+                            loading="lazy"
+                          />
+                          {showCap ? (
+                            <div className="cfg-mod-cap">{UNIT_KW.toLocaleString("en-US")} kW</div>
+                          ) : null}
+                          {i < rowIdxs[rowIdxs.length - 1] ? (
+                            <span className="cfg-mod-link" aria-hidden="true" />
+                          ) : null}
+                        </div>
+                      );
+                    })}
                   </div>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={MODULE_IMG}
-                    alt=""
-                    draggable={false}
-                    loading="lazy"
-                  />
-                  <div className="cfg-mod-cap">{UNIT_KW.toLocaleString("en-US")} kW</div>
-                  {i < visibleUnits - 1 ? (
-                    <span className="cfg-mod-link" aria-hidden="true" />
-                  ) : null}
-                </div>
-              );
-            })}
-            {overflow > 0 ? (
-              <div className="cfg-mod-overflow" aria-hidden="true">
-                +{overflow}
-                <span>more</span>
+                ))}
               </div>
-            ) : null}
-          </div>
-          <div className="cfg-stage-pipe" aria-hidden="true">
-            <span />
-            <span />
-          </div>
-        </div>
+              <div className="cfg-stage-pipe" aria-hidden="true">
+                <span />
+                <span />
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="cfg-metrics">
           <article className="cfg-metric">

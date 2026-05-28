@@ -2976,8 +2976,8 @@ li {
 /* Photoreal build stage: replicated M Tower modules side-by-side */
 .cfg-stage {
   position: relative;
-  margin: 18px 0;
-  padding: 22px 18px 28px;
+  margin: 14px 0;
+  padding: 14px 10px 20px;
   border-radius: 16px;
   background:
     radial-gradient(ellipse at 50% 100%, rgba(173, 217, 52, 0.16) 0%, transparent 60%),
@@ -3014,27 +3014,52 @@ li {
   z-index: 0;
 }
 
-.cfg-stage-row {
+.cfg-stage-grid {
   position: relative;
   z-index: 1;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 0;
-  min-height: 240px;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  padding: 8px 4px 6px;
+  flex-direction: column;
+  gap: 22px;
+  padding: 22px 2px 16px;
 }
 
-.cfg-stage-row::-webkit-scrollbar { height: 6px; }
-.cfg-stage-row::-webkit-scrollbar-track { background: transparent; }
-.cfg-stage-row::-webkit-scrollbar-thumb { background: rgba(173, 217, 52, 0.35); border-radius: 999px; }
+.cfg-stage-row {
+  --count: 4;
+  --gap: 6px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--gap);
+  min-height: 140px;
+}
+
+/* When the bank is split into 2 rows, the rendering still needs a bit
+   of vertical breathing room for the tag/cap labels on row 1 */
+.cfg-stage-grid[data-rows="2"] .cfg-stage-row {
+  min-height: 130px;
+}
+
+.cfg-stage-grid[data-rows="2"] .cfg-mod-card {
+  aspect-ratio: 1 / 1.7;
+}
+
+/* Few modules → cards stay big and centred */
+.cfg-stage-row[data-count="1"],
+.cfg-stage-row[data-count="2"],
+.cfg-stage-row[data-count="3"] {
+  max-width: 380px;
+  margin: 0 auto;
+}
 
 .cfg-mod-card {
   position: relative;
-  flex: 0 0 auto;
-  width: clamp(64px, 8vw, 96px);
+  /* Each card gets an equal slice of the row; clamped so 1-2 modules
+     stay readable without becoming huge, and large banks (12+) stay
+     identifiable instead of vanishing into thin pillars. */
+  flex: 1 1 0;
+  min-width: 28px;
+  max-width: 120px;
   aspect-ratio: 1 / 2;
   border-radius: 6px;
   overflow: visible;
@@ -3043,6 +3068,17 @@ li {
   animation: cfgModSnapIn 0.55s cubic-bezier(0.2, 0.85, 0.25, 1.1) both;
   transition: transform 0.25s ease, filter 0.25s ease;
   cursor: default;
+}
+
+/* When the bank gets wide (10+), shrink the gap a bit more */
+.cfg-stage-row[data-count="11"],
+.cfg-stage-row[data-count="12"],
+.cfg-stage-row[data-count="13"],
+.cfg-stage-row[data-count="14"],
+.cfg-stage-row[data-count="15"] { --gap: 4px; }
+
+.cfg-stage-row:not([data-count="1"]):not([data-count="2"]):not([data-count="3"]):not([data-count="4"]):not([data-count="5"]):not([data-count="6"]):not([data-count="7"]):not([data-count="8"]):not([data-count="9"]):not([data-count="10"]):not([data-count="11"]):not([data-count="12"]):not([data-count="13"]):not([data-count="14"]):not([data-count="15"]) {
+  --gap: 3px;
 }
 
 .cfg-mod-card:hover {
@@ -3074,18 +3110,18 @@ li {
 
 .cfg-mod-tag {
   position: absolute;
-  top: -10px;
+  top: -16px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 9px;
+  gap: 5px;
+  padding: 2px 7px;
   border-radius: 999px;
-  background: rgba(7, 13, 22, 0.9);
+  background: rgba(7, 13, 22, 0.92);
   border: 1px solid rgba(173, 217, 52, 0.45);
   font-family: 'Rajdhani', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.5px;
   color: var(--brand);
@@ -3105,13 +3141,13 @@ li {
 
 .cfg-mod-cap {
   position: absolute;
-  bottom: -22px;
+  bottom: -18px;
   left: 50%;
   transform: translateX(-50%);
   font-family: 'Rajdhani', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   color: #b6c1cf;
   white-space: nowrap;
 }
@@ -3131,28 +3167,6 @@ li {
   animation: cfgPulse 1.8s ease-in-out infinite;
 }
 
-.cfg-mod-overflow {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--brand);
-  padding: 0 14px;
-  letter-spacing: 0.5px;
-}
-
-.cfg-mod-overflow span {
-  font-size: 0.7rem;
-  color: #8898a8;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-top: 2px;
-}
 
 .cfg-stage-pipe {
   position: relative;
