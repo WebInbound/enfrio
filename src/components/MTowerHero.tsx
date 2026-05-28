@@ -57,6 +57,20 @@ export default function MTowerHero() {
     const section = sectionRef.current;
     if (!video || !section) return;
 
+    // Force the browser to actually fetch the file. Some Chromiums won't
+    // pre-fetch a muted, non-autoplaying <video> with preload="auto" until
+    // first user interaction. We tap play()→pause() right after mount; the
+    // video is muted so the autoplay policy allows it.
+    video.load();
+    const kick = () => {
+      video.play().then(() => video.pause()).catch(() => {});
+    };
+    if (video.readyState >= 1) {
+      kick();
+    } else {
+      video.addEventListener("loadedmetadata", kick, { once: true });
+    }
+
     let raf = 0;
     const update = () => {
       const rect = section.getBoundingClientRect();

@@ -39,7 +39,7 @@ export default function MTowerSpin({
   const [hasVideo, setHasVideo] = useState(true);
   const [duration, setDuration] = useState(0);
 
-  // Detect if the file is reachable. We do a HEAD via the video element error.
+  // Detect if the file is reachable + force browser to actually fetch it.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -47,6 +47,20 @@ export default function MTowerSpin({
     const onLoaded = () => setDuration(v.duration || 0);
     v.addEventListener("error", onError);
     v.addEventListener("loadedmetadata", onLoaded);
+
+    // Kick the network: some browsers won't prefetch a muted, non-autoplay
+    // <video> until user interaction. Play() then pause() right away; the
+    // element is muted so the autoplay policy allows it.
+    v.load();
+    const kick = () => {
+      v.play().then(() => v.pause()).catch(() => {});
+    };
+    if (v.readyState >= 1) {
+      kick();
+    } else {
+      v.addEventListener("loadedmetadata", kick, { once: true });
+    }
+
     return () => {
       v.removeEventListener("error", onError);
       v.removeEventListener("loadedmetadata", onLoaded);
@@ -164,7 +178,7 @@ export default function MTowerSpin({
           poster={poster}
           muted
           playsInline
-          preload="metadata"
+          preload="auto"
           autoPlay={mode === "auto"}
           loop={mode === "auto"}
         />
