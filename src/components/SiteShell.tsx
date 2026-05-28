@@ -87,9 +87,18 @@ export default function SiteShell({ active, children }: SiteShellProps) {
       }
     );
 
+    const viewportH = window.innerHeight || document.documentElement.clientHeight;
     revealItems.forEach((item, index) => {
       item.style.transitionDelay = `${Math.min(index * 22, 260)}ms`;
       observer.observe(item);
+      // Safety net: if the item is already in the viewport on mount,
+      // mark it visible immediately. The IntersectionObserver does fire
+      // on initial observe, but hot client-side navigations sometimes
+      // miss it. We don't want a blank hero waiting for a scroll.
+      const rect = item.getBoundingClientRect();
+      if (rect.top < viewportH - 40 && rect.bottom > 0) {
+        item.classList.add("is-visible");
+      }
     });
 
     cleanups.push(() => observer.disconnect());
