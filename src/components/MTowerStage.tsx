@@ -21,13 +21,27 @@ const INITIAL_FRAME = 12;
 const SCROLL_ROTATION_FRAMES = 90;
 
 /**
- * Pixels of vertical translateY the visual picks up across the full scroll
- * arc. Sticky pins the top edge; this transform adds a "descending" parallax
- * on top so the unit visibly travels down the column rather than feeling
- * static. Desktop-only — mobile uses a different layout where the unit
- * sits inline between the two text blocks.
+ * Sticky offset (matches the CSS `top: 100px` on .mtower-stage-visual).
+ * Used at runtime to compute how much headroom is left below the visual
+ * for the parallax descent to use.
  */
-const PARALLAX_RANGE_PX = 220;
+const STICKY_TOP_PX = 100;
+
+/**
+ * Bottom margin we want to keep below the visual so it never touches the
+ * viewport edge at full descent.
+ */
+const PARALLAX_BOTTOM_MARGIN_PX = 24;
+
+/**
+ * The full scroll ratio (0..1) covers the entire enter-to-exit arc, but
+ * the M Tower is only visibly pinned during the middle ~70% of that arc.
+ * Remap the ratio so the descent actually runs from 0 to max DURING the
+ * sticky-active window — outside that window the translate stays at the
+ * boundary value.
+ */
+const PARALLAX_RATIO_START = 0.18;
+const PARALLAX_RATIO_END = 0.82;
 
 function framePath(i: number): string {
   const idx = ((i % FRAME_COUNT) + FRAME_COUNT) % FRAME_COUNT;
@@ -115,10 +129,28 @@ export default function MTowerStage() {
       const ratio = Math.min(1, Math.max(0, scrolled / total));
 
       // Parallax always applies — it's purely transform-based and doesn't
-      // care whether the user is dragging the rotation.
+      // care whether the user is dragging the rotation. The visible
+      // descent is the gap between the sticky top edge and the bottom of
+      // the viewport, minus the visual's own height. Computed from the
+      // rendered visual so we never overflow the viewport on tall hero
+      // images or short laptop screens.
+      const visualEl = section.querySelector<HTMLElement>(".mtower-stage-visual");
+      const visualHeight = visualEl?.offsetHeight ?? vh * 0.55;
+      const maxPx = Math.max(
+        0,
+        vh - STICKY_TOP_PX - visualHeight - PARALLAX_BOTTOM_MARGIN_PX,
+      );
+      const localRatio = Math.min(
+        1,
+        Math.max(
+          0,
+          (ratio - PARALLAX_RATIO_START) /
+            (PARALLAX_RATIO_END - PARALLAX_RATIO_START),
+        ),
+      );
       section.style.setProperty(
         "--mtower-y",
-        `${Math.round(ratio * PARALLAX_RANGE_PX)}px`,
+        `${Math.round(localRatio * maxPx)}px`,
       );
 
       if (isDraggingRef.current) return;
