@@ -2,23 +2,32 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const FRAME_COUNT = 60;
+const FRAME_COUNT = 120;
 const FRAMES_BASE = "/assets/images/mtower-frames";
 const POSTER = "/assets/images/site/mtower-render.png";
 
 /**
- * Starting frame at the top of the scroll. Index 6 of 60 ≈ 36° from front,
- * the "marketing 3/4" view where the front face, the side frame and the
- * inverter cabinet are all readable at once.
+ * Starting frame at the top of the scroll. With 120 frames over 360°,
+ * index 12 ≈ 36° — the "marketing 3/4" view where the front face, the
+ * side frame and the inverter cabinet are all readable at once.
  */
-const INITIAL_FRAME = 6;
+const INITIAL_FRAME = 12;
 
 /**
- * How many frames the unit rotates across the whole scroll arc of the stage.
- * 45 ≈ 270°, so the unit makes most of a revolution but doesn't loop back
- * to the starting view (which would feel like "nothing happened").
+ * Frames the unit rotates across the full scroll arc of the stage.
+ * 90 of 120 = 270°, so the unit makes most of a revolution but doesn't
+ * loop back to the starting view (which would feel like "nothing happened").
  */
-const SCROLL_ROTATION_FRAMES = 45;
+const SCROLL_ROTATION_FRAMES = 90;
+
+/**
+ * Pixels of vertical translateY the visual picks up across the full scroll
+ * arc. Sticky pins the top edge; this transform adds a "descending" parallax
+ * on top so the unit visibly travels down the column rather than feeling
+ * static. Desktop-only — mobile uses a different layout where the unit
+ * sits inline between the two text blocks.
+ */
+const PARALLAX_RANGE_PX = 220;
 
 function framePath(i: number): string {
   const idx = ((i % FRAME_COUNT) + FRAME_COUNT) % FRAME_COUNT;
@@ -30,40 +39,45 @@ function mod(n: number, m: number): number {
 }
 
 /**
- * MTowerStage — combined hero + "Explore the unit" stage with one canonical
+ * MTowerStage — combined hero + "Explore the unit" scene with one canonical
  * M Tower visual.
  *
- * Layout: a tall two-column container. Left column stacks the hero copy and
- * the explore copy, each block taking roughly one viewport. Right column
- * holds a `position: sticky` 3D render that stays pinned while the user
- * scrolls through both blocks.
+ * Layout uses CSS grid-template-areas so the same React tree renders two
+ * very different layouts:
+ *
+ *   Desktop (≥ 901px):
+ *     [ hero    ][ visual ]
+ *     [ explore ][ visual ]
+ *   Visual is sticky-pinned and parallax-translated as the user scrolls
+ *   through both content blocks on the left.
+ *
+ *   Mobile (< 901px):
+ *     [ hero    ]
+ *     [ visual  ]
+ *     [ explore ]
+ *   Visual sits inline between the two text blocks at a fixed height. No
+ *   sticky behaviour — the user scrolls past it naturally.
  *
  * Rotation: hybrid scroll + drag.
- *  - Scroll advances the frame by a delta against the previous scroll
- *    position. This means the unit picks up wherever drag left off — drag
- *    isn't reset when the page moves.
- *  - Drag overrides scroll for the duration of the gesture. Vertical scroll
- *    still passes through because the wrapper sets `touch-action: pan-y`.
- *
- * Drag bug previously caused by the browser's native image-drag behaviour.
- * Fixed by:
- *  - `draggable={false}` on the img,
- *  - `pointer-events: none` on the img + capture on the wrapper,
- *  - `user-select: none` and `-webkit-user-drag: none` in CSS.
+ *  - Scroll advances by delta against the previous scroll value, so
+ *    drag-induced offsets persist when scrolling resumes.
+ *  - Drag overrides scroll during the pointer gesture.
+ *  - Native image-drag is killed at every layer (draggable={false},
+ *    pointer-events: none on the img, user-select / -webkit-user-drag,
+ *    touch-action: pan-y so vertical scroll still passes through).
  */
 export default function MTowerStage() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [frame, setFrame] = useState(INITIAL_FRAME);
   const [ready, setReady] = useState(false);
 
-  // Drag state via refs (no re-renders on every move).
   const scrollContribRef = useRef(0);
   const isDraggingRef = useRef(false);
   const dragStartXRef = useRef(0);
   const dragStartFrameRef = useRef(INITIAL_FRAME);
   const visualWidthRef = useRef(1);
 
-  // Pre-fetch all 60 frames so rotation never stalls.
+  // Pre-fetch all frames.
   useEffect(() => {
     let mounted = true;
     let loaded = 0;
@@ -72,12 +86,11 @@ export default function MTowerStage() {
       const img = new window.Image();
       img.onload = () => {
         loaded += 1;
-        if (loaded >= 6 && mounted) setReady(true);
+        if (loaded >= 8 && mounted) setReady(true);
       };
       img.src = framePath(i);
       imgs.push(img);
     }
-    // Slow-CDN safety net: drop the poster after 3s no matter what.
     const fallback = window.setTimeout(() => {
       if (mounted) setReady(true);
     }, 3000);
@@ -88,20 +101,28 @@ export default function MTowerStage() {
     };
   }, []);
 
-  // Scroll-driven rotation. Adds/subtracts the delta against the previous
-  // scroll contribution so that drag-induced offsets persist across scroll.
+  // Scroll-driven rotation + parallax translateY.
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
     let raf = 0;
     const update = () => {
       raf = 0;
-      if (isDraggingRef.current) return;
       const rect = section.getBoundingClientRect();
       const vh = window.innerHeight;
       const total = rect.height + vh;
       const scrolled = Math.max(0, vh - rect.top);
       const ratio = Math.min(1, Math.max(0, scrolled / total));
+
+      // Parallax always applies — it's purely transform-based and doesn't
+      // care whether the user is dragging the rotation.
+      section.style.setProperty(
+        "--mtower-y",
+        `${Math.round(ratio * PARALLAX_RANGE_PX)}px`,
+      );
+
+      if (isDraggingRef.current) return;
+
       const newScrollContrib = ratio * SCROLL_ROTATION_FRAMES;
       const delta = newScrollContrib - scrollContribRef.current;
       scrollContribRef.current = newScrollContrib;
@@ -168,53 +189,29 @@ export default function MTowerStage() {
       <div className="mtower-stage-bg" aria-hidden="true" />
 
       <div className="mtower-stage-grid">
-        <div className="mtower-stage-content">
-          <div className="mtower-stage-block mtower-stage-hero">
-            <p className="kicker">FLAGSHIP PLATFORM</p>
-            <h1>
-              M Tower.
-              <br />
-              <span className="accent">Cooling that scales</span> with your power.
-            </h1>
-            <p className="lead">
-              Modular heat-rejection units of 1500&nbsp;kW each. Start with one,
-              add more as your plant grows. From standalone gensets to
-              12&nbsp;MW datacenter halls — same proven core.
-            </p>
-            <div className="btn-row">
-              <a className="btn solid" href="#mtower-sizer">
-                Size your installation
-              </a>
-              <a className="btn ghost" href="#mtower-stage-explore">
-                Explore the unit
-              </a>
-            </div>
-            <p className="mtower-stage-scroll-hint" aria-hidden="true">
-              ↓ scroll
-            </p>
+        <div className="mtower-stage-block mtower-stage-hero">
+          <p className="kicker">FLAGSHIP PLATFORM</p>
+          <h1>
+            M Tower.
+            <br />
+            <span className="accent">Cooling that scales</span> with your power.
+          </h1>
+          <p className="lead">
+            Modular heat-rejection units of 1500&nbsp;kW each. Start with one,
+            add more as your plant grows. From standalone gensets to
+            12&nbsp;MW datacenter halls — same proven core.
+          </p>
+          <div className="btn-row">
+            <a className="btn solid" href="#mtower-sizer">
+              Size your installation
+            </a>
+            <a className="btn ghost" href="#mtower-stage-explore">
+              Explore the unit
+            </a>
           </div>
-
-          <div
-            className="mtower-stage-block mtower-stage-explore"
-            id="mtower-stage-explore"
-          >
-            <p className="kicker">EXPLORE THE UNIT</p>
-            <h2>Spin it around. Inspect every angle.</h2>
-            <p>
-              The M Tower turns with the page as you scroll — or grab it with
-              your cursor (or your finger) and drag to inspect every face. The
-              stainless tube bundles, the louvered aluminium fins, the inverter
-              cabinet on the side, the vibration-isolated frame: every detail
-              is engineered for the duty cycle of mission-critical heat
-              rejection.
-            </p>
-            <ul className="checks">
-              <li>High-alloy aluminium cores, dimpled tubes, louvered fins</li>
-              <li>Vibration-isolated black-painted steel frame</li>
-              <li>Inverter cabinet integrated on the side</li>
-              <li>Container-fit envelope: ship, lift, bolt down</li>
-            </ul>
-          </div>
+          <p className="mtower-stage-scroll-hint" aria-hidden="true">
+            ↓ scroll to spin
+          </p>
         </div>
 
         <div className="mtower-stage-visual-track">
@@ -238,6 +235,28 @@ export default function MTowerStage() {
               <span>↓ scroll</span>
             </div>
           </div>
+        </div>
+
+        <div
+          className="mtower-stage-block mtower-stage-explore"
+          id="mtower-stage-explore"
+        >
+          <p className="kicker">EXPLORE THE UNIT</p>
+          <h2>Spin it around. Inspect every angle.</h2>
+          <p>
+            The M Tower turns with the page as you scroll — or grab it with
+            your cursor (or your finger) and drag to inspect every face. The
+            stainless tube bundles, the louvered aluminium fins, the inverter
+            cabinet on the side, the vibration-isolated frame: every detail
+            is engineered for the duty cycle of mission-critical heat
+            rejection.
+          </p>
+          <ul className="checks">
+            <li>High-alloy aluminium cores, dimpled tubes, louvered fins</li>
+            <li>Vibration-isolated black-painted steel frame</li>
+            <li>Inverter cabinet integrated on the side</li>
+            <li>Container-fit envelope: ship, lift, bolt down</li>
+          </ul>
         </div>
       </div>
     </section>

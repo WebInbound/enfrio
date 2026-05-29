@@ -33,7 +33,7 @@ export default function IndustriesPage() {
       <section className="section">
         <div className="grid-2">
           <article className="card reveal media">
-            <Image src="/assets/images/site/power-gen-hall.jpg" alt="Genset hall with Enfrio cooling installed" width={1400} height={900} />
+            <Image src="/assets/images/site/installed-baudouin-canopy.jpg" alt="Genset enclosure with Enfrio cooling unit installed" width={1400} height={900} />
             <h3>Power Generation</h3>
             <p>High-capacity thermal systems for gensets and stationary assets in mission-critical environments.</p>
           </article>

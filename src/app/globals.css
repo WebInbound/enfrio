@@ -3341,11 +3341,7 @@ li {
 }
 
 /* ============================================================
-   M TOWER STAGE — combined hero + explore sticky-scroll scene.
-   Replaces the old .mtower-hero / .mtower-explore split with a
-   single canonical 3D render that stays pinned on the right
-   while the user scrolls through hero copy and explore copy
-   on the left.
+   M TOWER STAGE — combined hero + explore scene.
    ============================================================ */
 
 .mtower-stage {
@@ -3374,23 +3370,26 @@ li {
   z-index: 0;
 }
 
+/* Desktop layout: two columns, visual spans both rows on the right.
+   Mobile layout overrides this to a single column with the visual
+   between the hero and explore blocks. */
 .mtower-stage-grid {
   position: relative;
   z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-  gap: clamp(20px, 4vw, 64px);
+  grid-template-areas:
+    "hero    visual"
+    "explore visual";
+  column-gap: clamp(20px, 4vw, 64px);
   width: min(1180px, 92vw);
   margin-inline: auto;
   padding: 0 clamp(8px, 2vw, 24px);
 }
 
-/* Left column — stacked content blocks. Each block is sized to fill a
-   viewport so the right-side sticky render visibly rotates between them. */
-.mtower-stage-content {
-  display: flex;
-  flex-direction: column;
-}
+.mtower-stage-hero { grid-area: hero; }
+.mtower-stage-explore { grid-area: explore; }
+.mtower-stage-visual-track { grid-area: visual; }
 
 .mtower-stage-block {
   display: flex;
@@ -3441,8 +3440,6 @@ li {
 }
 
 .mtower-stage-explore .checks li::before {
-  /* Inherit the existing .checks tick from the global rule but recolour
-     for dark-block context. */
   color: var(--brand);
 }
 
@@ -3490,13 +3487,15 @@ li {
   display: grid;
   place-items: center;
   cursor: grab;
-  /* Native image-drag is the source of the "browser tries to drag the
-     picture" bug. Kill it at every layer. */
   user-select: none;
   -webkit-user-select: none;
   -webkit-user-drag: none;
-  /* Let vertical scroll pass through, capture horizontal drag ourselves. */
   touch-action: pan-y;
+  /* Parallax: --mtower-y is set by the React scroll handler. The transform
+     adds a descending offset on top of sticky's fixed top: 100px, so the
+     unit visibly travels down the column as the user scrolls. */
+  transform: translateY(var(--mtower-y, 0px));
+  will-change: transform;
 }
 
 .mtower-stage-visual:active {
@@ -3509,8 +3508,6 @@ li {
   width: auto;
   height: auto;
   object-fit: contain;
-  /* Pointer events on the wrapper, not the img, so the browser never
-     fires its image-drag-and-drop logic. */
   pointer-events: none;
   user-select: none;
   -webkit-user-drag: none;
@@ -3537,37 +3534,39 @@ li {
   backdrop-filter: blur(8px);
 }
 
+/* ----- Mobile: hero / visual / explore stacked in one column ----- */
 @media (max-width: 900px) {
   .mtower-stage-grid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
+    grid-template-areas:
+      "hero"
+      "visual"
+      "explore";
+    row-gap: 24px;
   }
   .mtower-stage-block {
-    min-height: 70vh;
-    padding: clamp(30px, 6vh, 60px) 0;
+    min-height: 0;
+    padding: clamp(40px, 6vh, 64px) 0;
   }
-  .mtower-stage-visual-track {
-    /* On narrow screens the sticky stage is awkward — give the visual a
-       fixed height inline with the hero block so it sits naturally
-       above the content. */
-    order: -1;
-    grid-row: 1;
+  .mtower-stage-hero {
+    padding-bottom: 0;
   }
-  .mtower-stage-content {
-    order: 1;
+  .mtower-stage-explore {
+    padding-top: 0;
   }
   .mtower-stage-visual {
     position: relative;
     top: 0;
-    height: clamp(360px, 60vh, 540px);
+    height: clamp(360px, 55vh, 540px);
+    transform: none;
   }
 }
 
 @media (max-width: 520px) {
-  .mtower-stage-block {
-    min-height: 60vh;
-  }
   .mtower-stage-hero h1 {
     font-size: clamp(2rem, 8vw, 2.8rem);
+  }
+  .mtower-stage-visual {
+    height: clamp(320px, 50vh, 460px);
   }
 }
