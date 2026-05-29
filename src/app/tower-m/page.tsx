@@ -3,8 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
 import MTowerSizer from "@/components/MTowerSizer";
-import MTowerHero from "@/components/MTowerHero";
-import MTowerSpin from "@/components/MTowerSpin";
+import MTowerStage from "@/components/MTowerStage";
 
 export const metadata: Metadata = {
   title: "M Tower | Modular cooling that scales with your power | Enfrio",
@@ -15,31 +14,7 @@ export const metadata: Metadata = {
 export default function TowerMPage() {
   return (
     <SiteShell active="tower-m">
-      <MTowerHero />
-
-      <section className="section dark-block" id="mtower-explore">
-        <div className="mtower-explore">
-          <div className="mtower-explore-text reveal">
-            <p className="kicker">EXPLORE THE UNIT</p>
-            <h2>Spin it around. Inspect every angle.</h2>
-            <p>
-              Drag the M Tower with your cursor (or your finger) to rotate the
-              3D render. Stainless tubes, louvered fins, the inverter cabinet,
-              the vibration-isolated frame &mdash; every detail is engineered for
-              the duty cycle of mission-critical heat rejection.
-            </p>
-            <ul className="checks">
-              <li>High-alloy aluminium cores, dimpled tubes, louvered fins</li>
-              <li>Vibration-isolated black-painted steel frame</li>
-              <li>Inverter cabinet integrated on the side</li>
-              <li>Container-fit envelope: ship, lift, bolt down</li>
-            </ul>
-          </div>
-          <div className="mtower-explore-stage reveal">
-            <MTowerSpin mode="drag" />
-          </div>
-        </div>
-      </section>
+      <MTowerStage />
 
       <section className="section dark-block">
         <div className="section-head reveal">

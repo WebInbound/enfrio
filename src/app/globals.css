@@ -3339,3 +3339,235 @@ li {
     align-items: stretch;
   }
 }
+
+/* ============================================================
+   M TOWER STAGE — combined hero + explore sticky-scroll scene.
+   Replaces the old .mtower-hero / .mtower-explore split with a
+   single canonical 3D render that stays pinned on the right
+   while the user scrolls through hero copy and explore copy
+   on the left.
+   ============================================================ */
+
+.mtower-stage {
+  position: relative;
+  margin-top: 44px;
+  border: 1px solid rgba(173, 217, 52, 0.18);
+  border-radius: 28px;
+  overflow: hidden;
+  background: radial-gradient(
+      90% 60% at 100% 0%,
+      rgba(173, 217, 52, 0.08) 0%,
+      rgba(13, 22, 33, 0) 60%
+    ),
+    linear-gradient(170deg, #050a16, #0e1a30);
+  color: #f4f8ff;
+  isolation: isolate;
+}
+
+.mtower-stage-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 40% at 30% 100%, rgba(80, 130, 240, 0.16), transparent 70%),
+    radial-gradient(50% 35% at 80% 50%, rgba(173, 217, 52, 0.07), transparent 70%);
+  z-index: 0;
+}
+
+.mtower-stage-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: clamp(20px, 4vw, 64px);
+  width: min(1180px, 92vw);
+  margin-inline: auto;
+  padding: 0 clamp(8px, 2vw, 24px);
+}
+
+/* Left column — stacked content blocks. Each block is sized to fill a
+   viewport so the right-side sticky render visibly rotates between them. */
+.mtower-stage-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.mtower-stage-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  min-height: 100vh;
+  padding: clamp(40px, 8vh, 90px) 0;
+}
+
+.mtower-stage-block .kicker {
+  color: var(--brand);
+  letter-spacing: 0.18em;
+}
+
+.mtower-stage-hero h1 {
+  font-family: "Rajdhani", sans-serif;
+  font-size: clamp(2.4rem, 6vw, 5rem);
+  line-height: 0.98;
+  color: #f4f8ff;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+}
+
+.mtower-stage-hero h1 .accent {
+  color: var(--brand);
+}
+
+.mtower-stage-explore h2 {
+  font-family: "Rajdhani", sans-serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.05;
+  color: #f4f8ff;
+  max-width: 18ch;
+}
+
+.mtower-stage-block .lead,
+.mtower-stage-block > p {
+  font-size: clamp(1rem, 1.4vw, 1.18rem);
+  color: #cdd7e5;
+  max-width: 58ch;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.mtower-stage-explore .checks {
+  margin-top: 6px;
+  color: #cdd7e5;
+}
+
+.mtower-stage-explore .checks li::before {
+  /* Inherit the existing .checks tick from the global rule but recolour
+     for dark-block context. */
+  color: var(--brand);
+}
+
+.mtower-stage-hero .btn.solid {
+  background: var(--brand);
+  color: #0c1422;
+  border-color: var(--brand);
+}
+
+.mtower-stage-hero .btn.ghost {
+  background: transparent;
+  border-color: rgba(244, 248, 255, 0.42);
+  color: #f4f8ff;
+}
+
+.mtower-stage-hero .btn.ghost:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.mtower-stage-scroll-hint {
+  margin-top: 18px;
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(173, 217, 52, 0.72);
+  animation: mtower-stage-scroll-bounce 2.4s ease-in-out infinite;
+}
+
+@keyframes mtower-stage-scroll-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50% { transform: translateY(6px); opacity: 1; }
+}
+
+/* Right column — the sticky 3D render. */
+.mtower-stage-visual-track {
+  position: relative;
+}
+
+.mtower-stage-visual {
+  position: sticky;
+  top: 100px;
+  height: calc(100vh - 140px);
+  max-height: 760px;
+  display: grid;
+  place-items: center;
+  cursor: grab;
+  /* Native image-drag is the source of the "browser tries to drag the
+     picture" bug. Kill it at every layer. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  /* Let vertical scroll pass through, capture horizontal drag ourselves. */
+  touch-action: pan-y;
+}
+
+.mtower-stage-visual:active {
+  cursor: grabbing;
+}
+
+.mtower-stage-visual img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  /* Pointer events on the wrapper, not the img, so the browser never
+     fires its image-drag-and-drop logic. */
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.45));
+}
+
+.mtower-stage-hint {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(8, 14, 24, 0.55);
+  border: 1px solid rgba(173, 217, 52, 0.3);
+  color: var(--brand);
+  font-size: 0.74rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+
+@media (max-width: 900px) {
+  .mtower-stage-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .mtower-stage-block {
+    min-height: 70vh;
+    padding: clamp(30px, 6vh, 60px) 0;
+  }
+  .mtower-stage-visual-track {
+    /* On narrow screens the sticky stage is awkward — give the visual a
+       fixed height inline with the hero block so it sits naturally
+       above the content. */
+    order: -1;
+    grid-row: 1;
+  }
+  .mtower-stage-content {
+    order: 1;
+  }
+  .mtower-stage-visual {
+    position: relative;
+    top: 0;
+    height: clamp(360px, 60vh, 540px);
+  }
+}
+
+@media (max-width: 520px) {
+  .mtower-stage-block {
+    min-height: 60vh;
+  }
+  .mtower-stage-hero h1 {
+    font-size: clamp(2rem, 8vw, 2.8rem);
+  }
+}
