@@ -48,7 +48,11 @@ Ogni file più sotto rimanda a uno di questi tre template. Copia il template, so
 ### Template A — Scena con M-Tower
 Da usare quando nella foto deve apparire uno o più moduli M-Tower.
 
-**ATTACH**: `public/assets/images/site/mtower-render.png` (sempre, come unico reference del prodotto).
+**ATTACH (entrambi i file, sempre)**:
+1. `public/assets/images/site/mtower-render.png` — il render canonico, vista 3/4 frontale. Definisce la silhouette principale.
+2. `public/assets/images/site/mtower-reference-360.png` — foglio multi-angolo con 8 viste a 45° d'intervallo. Definisce la geometria 3D completa (cosa c'è davanti, di lato, dietro, sopra ogni componente).
+
+> ⚠️ Devi allegarli **tutti e due** ogni volta. Il primo dà l'aspetto; il secondo dà la struttura 3D. Senza il secondo ChatGPT non sa com'è fatto il modulo "dietro" e tende a inventare.
 
 **Prompt**:
 ```
@@ -56,7 +60,27 @@ Da usare quando nella foto deve apparire uno o più moduli M-Tower.
 [NO_INVENTION]
 [FAILURE_MODE]
 
-The attached reference image IS the only canonical M-Tower module. Every cooling tower in your output must be a 1:1 copy of this reference — same silhouette, same three vertical sections, same finned top, same exposed tube mid-section, same inverter cabinet bottom, same proportions. Do NOT invent any other "M-Tower-like" object. If you cannot reproduce the reference faithfully, leave the scene WITHOUT an M-Tower (per FAILURE_MODE).
+The two attached images together define the only canonical M-Tower module in the world:
+- Reference #1 (mtower-render.png) shows the 3/4 front view and is the main silhouette reference.
+- Reference #2 (mtower-reference-360.png) is an 8-angle contact sheet showing the same module rotated around its vertical axis (front, 45°, side, 135°, back, 225°, opposite side, 315°). Use it to understand the full 3D structure: what each face looks like, where the front protection mesh is, where the structural frame is exposed at the back, where the cabinet door sits, where the internal fans are visible from the rear, the proportions and footprint of the unit.
+
+Every cooling tower in your output must be a 1:1 STRUCTURAL copy of these references. Locked structural elements (do NOT alter):
+- Tall rectangular vertical envelope and its proportions
+- Front protection mesh grid (the dotted screen visible on three faces)
+- Structural steel frame with welded gussets at the corners
+- Side inverter cabinet on the right side with its door + accessory panel
+- Internal fan modules visible from the rear (the dark blue circles)
+- Rubber vibration-isolation pads at the base
+- Number, position and shape of every component visible in the references
+
+What you ARE encouraged and expected to improve (the renders are CAD-quality, you should push them to photoreal):
+- Material realism (matte powder-coated black steel, anodised aluminium mesh, brushed metal cabinet)
+- Lighting realism (proper key/fill/rim, soft shadows, accurate reflections on the mesh and cabinet)
+- Surface finish (real anti-reflection on the steel, micro-detail on welds and bolts)
+- Atmospheric integration with the scene
+- Visible Enfrio-spec lime-green status LED on the cabinet (small, one per unit)
+
+Do NOT invent any other "M-Tower-like" object. If you cannot reproduce the reference structure faithfully, leave the scene WITHOUT an M-Tower (per FAILURE_MODE).
 
 ROLE — <ruolo della foto sul sito>
 SCENE — <descrizione dell'ambiente, NO descrizioni del prodotto>
@@ -147,7 +171,7 @@ Output: <1536×1024 JPG / ecc.>
 - **COMPOSITION**: 16:9 / 1536×1024, three-quarter view.
 
 ### `power-gen-hall.jpg` — Template A ⭐ flagship
-- **Attach**: `public/assets/images/site/mtower-render.png` (solo)
+- **Attach**: `public/assets/images/site/mtower-render.png` + `public/assets/images/site/mtower-reference-360.png`
 - **ROLE**: flagship Power Generation — usata su homepage spotlight, /industries hero+card, /tower-m deploy card. DEVE mostrare l'M-Tower reale (NO invenzioni).
 - **SCENE**: interior of a massive power-generation hall. 6 large industrial diesel gensets aligned in a row down the hall; each genset has 1 M-Tower module (the reference) installed directly above/behind it (1 genset = 1 M-Tower, the modular philosophy). Polished concrete floor reflecting overhead industrial lighting. NO PEOPLE.
 - **LIGHT**: deep teal-navy ambient + cool ceiling LEDs, one warm accent on the closest unit. Lime-green status LED visible on each M-Tower inverter cabinet (a row of small lime dots receding).
@@ -251,7 +275,7 @@ Cool overhead office LEDs, one accent lime stripe on a single wall element. 16:9
 ## INDUSTRIES
 
 ### `enfrio-system-infographic.jpg` — Template A ⭐
-- **Attach**: `public/assets/images/site/mtower-render.png`
+- **Attach**: `public/assets/images/site/mtower-render.png` + `public/assets/images/site/mtower-reference-360.png`
 - **ROLE**: /industries "Datacenter" card (verticale). DEVE mostrare l'M-Tower reale in contesto datacenter.
 - **SCENE**: modern datacenter exterior service yard at blue hour. A row of 4 M-Tower modules (the reference, identical copies) aligned along a concrete pad, parallel to a row of server-hall outdoor units. NO PEOPLE.
 - **LIGHT**: late blue-hour sky behind, warm interior glow leaking from datacenter windows, cool LED uplighting on each M-Tower silhouette. One lime-green status LED per inverter cabinet.
@@ -276,7 +300,7 @@ Brief specifici:
 ## PROJECTS
 
 ### `enfrio-trade-show.jpg` — Template A ⭐
-- **Attach**: `public/assets/images/site/mtower-render.png`
+- **Attach**: `public/assets/images/site/mtower-render.png` + `public/assets/images/site/mtower-reference-360.png`
 - **ROLE**: /projects hero. DEVE mostrare l'M-Tower reale come hero del booth.
 - **SCENE**: premium B2B trade-show booth. Matte dark-navy walls with subtle lime-green graphic line accents. A single M-Tower module (the reference, copied 1:1) on a low podium as booth centrepiece, soft track lighting picking out the finned top and exposed tubes. 2 silhouetted visitors at the side in conversation, slightly out of focus, no faces.
 - **LIGHT**: track spots on the M-Tower, cool venue ambient, warm rim on visitors.
@@ -295,7 +319,7 @@ Brief specifici:
 - **COMPOSITION**: 3:2 / 1536×1024, three-quarter view, slight low angle.
 
 ### `fair-dubai-1.jpg` — Template A
-- **Attach**: `public/assets/images/site/mtower-render.png`
+- **Attach**: `public/assets/images/site/mtower-render.png` + `public/assets/images/site/mtower-reference-360.png`
 - **ROLE**: /projects carousel — Middle East trade fair, M-Tower visible.
 - **SCENE**: editorial wide of an industrial trade-show floor in the Middle East. Warm golden ambient light, suspended geometric ceiling graphics, blurred professionals in mid-ground (no faces), foreground sharp on a sleek dark-navy booth with the reference M-Tower module on a low podium (it's OK if only the top half is visible from the angle).
 - **LIGHT**: warm venue ambient + accent spots on the M-Tower.
@@ -313,14 +337,14 @@ Editorial three-quarter view of a generic industrial trade-show booth at a Middl
 ```
 
 ### `fair-mee-2.jpg` — Template A
-- **Attach**: `public/assets/images/site/mtower-render.png`
+- **Attach**: `public/assets/images/site/mtower-render.png` + `public/assets/images/site/mtower-reference-360.png`
 - **ROLE**: /projects carousel — Middle East Energy event presence with M-Tower as exhibit.
 - **SCENE**: editorial of a sleek dark-navy booth with the reference M-Tower as the hero exhibit; soft directional lighting picks out finned top + exposed tubes; ambient venue glow behind; 2 blurred professionals in conversation at side (no faces).
 - **LIGHT**: track spots on the M-Tower, ambient cool fill.
 - **COMPOSITION**: 3:2 / 1536×1024.
 
 ### `warehouse-delivery.jpg` — Template A
-- **Attach**: `public/assets/images/site/mtower-render.png` + `public/assets/images/site/warehouse-delivery.jpg`
+- **Attach**: `public/assets/images/site/mtower-render.png` + `public/assets/images/site/mtower-reference-360.png` + `public/assets/images/site/warehouse-delivery.jpg`
 - **ROLE**: /projects "Execution Closure" + /tower-m "Datacenter Cooling" deploy card.
 - **SCENE**: cinematic wide of an industrial warehouse interior at sunrise; a forklift moving a palletised reference M-Tower module toward an open dock door. Foreground: a second reference M-Tower on a pallet, sharp. Mid-ground: forklift in subtle motion blur. Volumetric sunbeam through the open door.
 - **LIGHT**: cool teal grade with warm sun accent.
@@ -354,11 +378,15 @@ Editorial three-quarter view of a generic industrial trade-show booth at a Middl
 
 ---
 
-# Logo brand
+# Asset canonici (NON rigenerare)
 
-⚠️ **Non rigenerare** `public/assets/images/logo-enfrio.png` con AI. È il logo ufficiale del brand.
+⚠️ Non toccare mai con AI questi 3 file. Sono i riferimenti del brand/prodotto.
 
-⚠️ **Non rigenerare** `public/assets/images/site/mtower-render.png` con AI. È il file canonico del prodotto, va lasciato in pace.
+| File | Cos'è | Sostituibile come |
+|---|---|---|
+| `public/assets/images/logo-enfrio.png` | Logo ufficiale Enfrio | Solo nuovo asset fornito da Enfrio |
+| `public/assets/images/site/mtower-render.png` | Render canonico del modulo M-Tower (vista 3/4 frontale, dal video CAD) | Export CAD pulito da Enfrio (es. senza griglia frontale, se si vuole un look più "marketing") |
+| `public/assets/images/site/mtower-reference-360.png` | Foglio multi-angolo (8 viste a 45°) ricavato dai 60 frame del video 360°. Usato come reference strutturale per ChatGPT in tutte le scene Template A | Generato automaticamente da `mtower-frames/*.webp` con uno script Python (vedi `tools/`) |
 
 ---
 
