@@ -2571,6 +2571,14 @@ li {
   margin-bottom: 14px;
 }
 
+/* AMBIENT TEMPERATURE and ALTITUDE rows live inside .cfg-row and always
+   have exactly 3 short-label buttons each ("30 °C", "< 1 km", ...). They
+   should NOT wrap with the default minmax(110px,…) rule meant for the
+   wider APPLICATION row — force them back to 3 even columns. */
+.cfg-row .cfg-segmented-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .cfg-row .cfg-segmented {
   margin: 0;
 }
@@ -2654,6 +2662,8 @@ li {
 
 /* Product spec card filling the leftover space under N+1 */
 .cfg-product-card {
+  /* On desktop the card is pushed to the bottom of the input column with
+     margin-top: auto, filling the empty space below the N+1 toggle. */
   margin-top: auto;
   padding: 14px 16px;
   border-radius: 14px;
@@ -2661,6 +2671,15 @@ li {
     radial-gradient(ellipse at 0% 0%, rgba(173, 217, 52, 0.12) 0%, transparent 65%),
     linear-gradient(160deg, rgba(13, 22, 33, 0.5) 0%, rgba(5, 11, 20, 0.45) 100%);
   border: 1px solid rgba(173, 217, 52, 0.18);
+}
+
+/* On mobile the input column collapses so `margin-top: auto` resolves to
+   0 and the card ends up flush against the N+1 toggle. Restore visible
+   breathing room with an explicit gap. */
+@media (max-width: 700px) {
+  .cfg-product-card {
+    margin-top: 18px;
+  }
 }
 
 .cfg-product-card .kicker {
