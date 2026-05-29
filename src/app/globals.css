@@ -2515,7 +2515,10 @@ li {
 
 .cfg-segmented-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  /* minmax(110px, 1fr) lets the grid wrap to two rows when the cells
+     would otherwise compress below 110px — fixes the 4-button
+     APPLICATION row spilling text onto itself on narrow viewports. */
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 6px;
   padding: 4px;
   border-radius: 12px;
@@ -2531,13 +2534,22 @@ li {
   background: transparent;
   border: 1px solid transparent;
   color: #cad3df;
-  padding: 9px 12px;
+  /* Slightly tighter padding and a centred text so wrapped labels
+     ("Datacenter IT load", "Custom (1:1)") sit nicely when the row
+     reflows to two lines on narrow viewports. */
+  padding: 10px 8px;
   border-radius: 9px;
   font: inherit;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
+  text-align: center;
+  line-height: 1.2;
   cursor: pointer;
   transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
-  white-space: nowrap;
+  /* Was `nowrap` — that's what caused the overlap in the APPLICATION row
+     when 4 buttons couldn't fit horizontally. Let the label wrap when it
+     genuinely doesn't fit. */
+  white-space: normal;
+  word-break: keep-all;
 }
 
 .cfg-seg:hover {
