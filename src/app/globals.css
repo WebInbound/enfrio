@@ -3421,3 +3421,70 @@ li {
   .cfg-input, .cfg-output { padding: 22px; }
   .cfg-metrics { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ------------------------------------------------------------------ */
+/* Small-screen polish — viewports below ~640px were never covered.   */
+/* Each rule below targets a layout that becomes tight or breaks      */
+/* outright on a phone. Kept in one block at the bottom so cascade    */
+/* always wins.                                                       */
+/* ------------------------------------------------------------------ */
+@media (max-width: 640px) {
+  /* Contact: side panels were 1fr/1fr from 900px — at phone size the
+     form padding crushes inputs. Loosen padding, drop sidebar gap. */
+  .contact-layout {
+    gap: 20px;
+  }
+  .contact-form-wrap {
+    padding: 20px;
+    border-radius: 14px;
+  }
+  .contact-form {
+    gap: 14px;
+  }
+  .form-grid {
+    gap: 12px;
+  }
+
+  /* Footer: copyright + powered-by stack to a single column. */
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  /* Sizer output card: big numbers fit poorly. */
+  .sizer-big {
+    font-size: 1.9rem;
+  }
+  .sizer-result-card {
+    padding: 18px;
+  }
+
+  /* Deploy cards: stat blocks split into 1 col instead of 3. */
+  .deploy-stats {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  /* M Tower spotlight: image + content stack better with tighter gap. */
+  .mtower-spotlight {
+    gap: 18px;
+  }
+}
+
+@media (max-width: 420px) {
+  /* Extra-narrow screens (older phones): pull headlines down a touch
+     so the hero is still readable without horizontal scroll. */
+  body h1 {
+    font-size: clamp(1.6rem, 8vw, 2.4rem);
+    line-height: 1.15;
+  }
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .btn-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

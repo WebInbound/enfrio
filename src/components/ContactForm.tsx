@@ -51,6 +51,21 @@ export default function ContactForm() {
     setPrefilled(didPrefill);
   }, [params]);
 
+  // Once the server action returns success, drop the local prefill flag
+  // and reset the form's controlled fields. The native <form> resets on
+  // success too (action submission), but the controlled selects/textarea
+  // need an explicit nudge — otherwise the success banner sits next to a
+  // still-filled-in form, which reads like the submit silently failed.
+  useEffect(() => {
+    if (state.status === "success") {
+      setScope("");
+      setMessage("");
+      setPrefilled(false);
+      const form = document.getElementById("contact-form") as HTMLFormElement | null;
+      form?.reset();
+    }
+  }, [state.status]);
+
   return (
     <form action={formAction} className="contact-form" noValidate id="contact-form">
       {prefilled ? (
@@ -122,7 +137,7 @@ export default function ContactForm() {
         <span>Tell us about your project *</span>
         <textarea
           name="message"
-          rows={message ? 12 : 6}
+          rows={8}
           required
           aria-invalid={Boolean(errors.message)}
           placeholder="Engine power class, heat rejection target, installation context, anything we should know..."

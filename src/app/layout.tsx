@@ -1,9 +1,69 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const SITE_URL = process.env.SITE_URL ?? "https://www.enfrio.it";
+const OG_IMAGE = "/assets/images/site/hero-main.jpg";
+
 export const metadata: Metadata = {
-  title: "Enfrio",
-  description: "Engineering and manufacturing solutions for thermal performance.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Enfrio | Cooling Engineered to Perform",
+    // Pass-through template: per-page titles already include "Enfrio" so
+    // we don't want to double-suffix it. Pages without their own title
+    // fall back to `default`.
+    template: "%s",
+  },
+  description:
+    "Enfrio designs and manufactures aluminium engine cooling systems for power generation and datacenter applications — 5P delivery model from concept to serial production.",
+  keywords: [
+    "engine cooling",
+    "power generation cooling",
+    "datacenter cooling",
+    "M Tower",
+    "modular heat rejection",
+    "aluminium radiators",
+    "Enfrio",
+  ],
+  authors: [{ name: "Enfrio Srl" }],
+  creator: "Enfrio Srl",
+  publisher: "Enfrio Srl",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "Enfrio",
+    title: "Enfrio | Cooling Engineered to Perform",
+    description:
+      "Aluminium engine cooling systems for power generation and datacenter — modular, scalable, mission-critical.",
+    url: SITE_URL,
+    images: [
+      {
+        url: OG_IMAGE,
+        width: 1200,
+        height: 900,
+        alt: "Enfrio — engineering aluminium cooling systems",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Enfrio | Cooling Engineered to Perform",
+    description:
+      "Aluminium engine cooling systems for power generation and datacenter — modular, scalable, mission-critical.",
+    images: [OG_IMAGE],
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -20,7 +80,36 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {/* JSON-LD organisation schema — helps search engines understand
+            who Enfrio is and surfaces sitelinks / knowledge panels. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Enfrio Srl",
+              url: SITE_URL,
+              logo: `${SITE_URL}/assets/images/logo-enfrio.png`,
+              description:
+                "Italian manufacturer of aluminium engine cooling systems for power generation and datacenter applications.",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "Via Cascina Nuova 27",
+                postalCode: "13875",
+                addressLocality: "Ponderano",
+                addressRegion: "BI",
+                addressCountry: "IT",
+              },
+              vatID: "IT02553940020",
+              email: "info@enfrio.eu",
+              sameAs: [],
+            }),
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

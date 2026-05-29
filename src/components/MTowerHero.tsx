@@ -26,6 +26,7 @@ export default function MTowerHero() {
   useEffect(() => {
     let mounted = true;
     let loaded = 0;
+    const imgs: HTMLImageElement[] = [];
     for (let i = 0; i < FRAME_COUNT; i++) {
       const img = new window.Image();
       img.onload = () => {
@@ -33,9 +34,20 @@ export default function MTowerHero() {
         if (loaded >= 6 && mounted) setReady(true);
       };
       img.src = framePath(i);
+      imgs.push(img);
     }
+    // Safety net: on slow CDN or flaky network, the onload threshold may
+    // never fire. After 3s, drop the poster regardless so the hero is
+    // never permanently stuck on the static fallback.
+    const fallback = window.setTimeout(() => {
+      if (mounted) setReady(true);
+    }, 3000);
     return () => {
       mounted = false;
+      window.clearTimeout(fallback);
+      // Hint the browser to release the in-flight requests so abandoned
+      // navigations don't keep decoding 60 frames in the background.
+      for (const img of imgs) img.src = "";
     };
   }, []);
 

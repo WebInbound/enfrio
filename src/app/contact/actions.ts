@@ -9,7 +9,9 @@ export type ContactFormState = {
 const TARGET_INBOX = process.env.CONTACT_TO ?? "info@enfrio.eu";
 
 function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  // Require at least a 2-letter TLD so we don't accept "a@b.c". Still
+  // intentionally permissive — formsubmit.co does the real validation.
+  return /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email);
 }
 
 export async function submitContactForm(
