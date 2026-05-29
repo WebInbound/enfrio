@@ -1,10 +1,17 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+/* WebGL canvas with the 120-frame texture billboard. Dynamically imported
+   so three.js (~200 KB) only loads client-side and never blocks SSR. The
+   skeleton stays close to the production layout so there's no flash. */
+const MTowerCanvas = dynamic(() => import("./MTowerCanvas"), {
+  ssr: false,
+  loading: () => <div className="mtower-stage-canvas-skeleton" />,
+});
+
 const FRAME_COUNT = 120;
-const FRAMES_BASE = "/assets/images/mtower-frames";
-const POSTER = "/assets/images/site/mtower-render.png";
 
 /**
  * Starting frame at the top of the scroll. With 120 frames over 360°,
@@ -43,11 +50,6 @@ const PARALLAX_BOTTOM_MARGIN_PX = 24;
 const PARALLAX_RATIO_START = 0.18;
 const PARALLAX_RATIO_END = 0.82;
 
-function framePath(i: number): string {
-  const idx = ((i % FRAME_COUNT) + FRAME_COUNT) % FRAME_COUNT;
-  return `${FRAMES_BASE}/${String(idx).padStart(3, "0")}.webp`;
-}
-
 function mod(n: number, m: number): number {
   return ((n % m) + m) % m;
 }
@@ -83,7 +85,6 @@ function mod(n: number, m: number): number {
 export default function MTowerStage() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [frame, setFrame] = useState(INITIAL_FRAME);
-  const [ready, setReady] = useState(false);
 
   const scrollContribRef = useRef(0);
   const isDraggingRef = useRef(false);
@@ -91,31 +92,9 @@ export default function MTowerStage() {
   const dragStartFrameRef = useRef(INITIAL_FRAME);
   const visualWidthRef = useRef(1);
 
-  // Pre-fetch all frames.
-  useEffect(() => {
-    let mounted = true;
-    let loaded = 0;
-    const imgs: HTMLImageElement[] = [];
-    for (let i = 0; i < FRAME_COUNT; i++) {
-      const img = new window.Image();
-      img.onload = () => {
-        loaded += 1;
-        if (loaded >= 8 && mounted) setReady(true);
-      };
-      img.src = framePath(i);
-      imgs.push(img);
-    }
-    const fallback = window.setTimeout(() => {
-      if (mounted) setReady(true);
-    }, 3000);
-    return () => {
-      mounted = false;
-      window.clearTimeout(fallback);
-      for (const img of imgs) img.src = "";
-    };
-  }, []);
-
-  // Scroll-driven rotation + parallax translateY.
+  // Scroll-driven rotation + parallax translateY. (Frame texture preloading
+  // is owned by MTowerCanvas — it pulls the 120 WebPs as HTMLImage once on
+  // mount and reuses them as the billboard's texture source.)
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
@@ -256,14 +235,10 @@ export default function MTowerStage() {
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
+            role="img"
+            aria-label="Enfrio M Tower 3D render — drag or scroll to rotate"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={ready ? framePath(frame) : POSTER}
-              alt="Enfrio M Tower 3D render — drag to rotate"
-              draggable={false}
-              decoding="sync"
-            />
+            <MTowerCanvas frame={frame} />
             <div className="mtower-stage-hint" aria-hidden="true">
               <span>↔ drag</span>
               <span>·</span>

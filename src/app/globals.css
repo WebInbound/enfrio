@@ -3503,16 +3503,31 @@ li {
   cursor: grabbing;
 }
 
-.mtower-stage-visual img {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-drag: none;
+/* The R3F canvas fills the visual wrapper. pointer-events:none on the canvas
+   itself (set inline in MTowerCanvas) lets the wrapper's drag handlers
+   capture everything. */
+.mtower-stage-visual canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
   filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.45));
+}
+
+/* Lightweight placeholder shown while the dynamic R3F bundle is still
+   loading. Matches the stage backdrop so there's no flash of light. */
+.mtower-stage-canvas-skeleton {
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(40% 30% at 50% 50%, rgba(173, 217, 52, 0.06), transparent 70%),
+    linear-gradient(180deg, rgba(13, 22, 33, 0.4), rgba(7, 15, 25, 0.6));
+  border-radius: 18px;
+  animation: mtower-skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes mtower-skeleton-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.85; }
 }
 
 .mtower-stage-hint {
