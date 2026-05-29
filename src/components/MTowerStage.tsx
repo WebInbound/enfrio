@@ -129,29 +129,32 @@ export default function MTowerStage() {
       const ratio = Math.min(1, Math.max(0, scrolled / total));
 
       // Parallax always applies — it's purely transform-based and doesn't
-      // care whether the user is dragging the rotation. The visible
-      // descent is the gap between the sticky top edge and the bottom of
-      // the viewport, minus the visual's own height. Computed from the
-      // rendered visual so we never overflow the viewport on tall hero
-      // images or short laptop screens.
+      // care whether the user is dragging the rotation. Set the transform
+      // INLINE on the visual element (not via CSS variable inheritance)
+      // so we know exactly what value is being applied, and so nothing
+      // else in the cascade can quietly override it.
       const visualEl = section.querySelector<HTMLElement>(".mtower-stage-visual");
-      const visualHeight = visualEl?.offsetHeight ?? vh * 0.55;
-      const maxPx = Math.max(
-        0,
-        vh - STICKY_TOP_PX - visualHeight - PARALLAX_BOTTOM_MARGIN_PX,
-      );
-      const localRatio = Math.min(
-        1,
-        Math.max(
+      if (visualEl && window.matchMedia("(min-width: 901px)").matches) {
+        const visualHeight = visualEl.offsetHeight || vh * 0.45;
+        const maxPx = Math.max(
           0,
-          (ratio - PARALLAX_RATIO_START) /
-            (PARALLAX_RATIO_END - PARALLAX_RATIO_START),
-        ),
-      );
-      section.style.setProperty(
-        "--mtower-y",
-        `${Math.round(localRatio * maxPx)}px`,
-      );
+          vh - STICKY_TOP_PX - visualHeight - PARALLAX_BOTTOM_MARGIN_PX,
+        );
+        const localRatio = Math.min(
+          1,
+          Math.max(
+            0,
+            (ratio - PARALLAX_RATIO_START) /
+              (PARALLAX_RATIO_END - PARALLAX_RATIO_START),
+          ),
+        );
+        const translateY = Math.round(localRatio * maxPx);
+        visualEl.style.transform = `translateY(${translateY}px)`;
+      } else if (visualEl) {
+        // Mobile: explicit reset in case the visual was on desktop before
+        // a resize.
+        visualEl.style.transform = "";
+      }
 
       if (isDraggingRef.current) return;
 

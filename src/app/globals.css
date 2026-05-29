@@ -3482,10 +3482,10 @@ li {
 .mtower-stage-visual {
   position: sticky;
   top: 100px;
-  /* Height intentionally well below viewport so there's room for the
-     parallax descent below the unit. On laptops (~800vh) this leaves
-     ~180-220px of room to travel; on tall monitors it scales up. */
-  height: clamp(380px, 56vh, 560px);
+  /* Half-viewport height so there's genuinely room below the visual for
+     the parallax descent to be felt. On laptops the unit can travel
+     ~250-300px; on big monitors ~400-500px. */
+  height: clamp(340px, 42vh, 480px);
   display: grid;
   place-items: center;
   cursor: grab;
@@ -3493,10 +3493,9 @@ li {
   -webkit-user-select: none;
   -webkit-user-drag: none;
   touch-action: pan-y;
-  /* Parallax: --mtower-y is set by the React scroll handler from the
-     actual rendered visual height — guarantees the descent never pushes
-     the unit off the viewport bottom regardless of laptop vs 4K screen. */
-  transform: translateY(var(--mtower-y, 0px));
+  /* The transform is set INLINE by the React scroll handler — we don't
+     declare a default here so nothing in the cascade can sneakily
+     reset it. will-change keeps the compositor warm. */
   will-change: transform;
 }
 
@@ -3560,7 +3559,9 @@ li {
     position: relative;
     top: 0;
     height: clamp(360px, 55vh, 540px);
-    transform: none;
+    /* Mobile: ensure no leftover inline transform from a previous resize.
+       The JS scroll handler explicitly clears the inline transform below
+       the desktop breakpoint. */
   }
 }
 
