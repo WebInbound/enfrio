@@ -602,6 +602,33 @@ li {
   margin-top: 8px;
   padding-top: 12px;
   border-top: 1px solid rgba(173, 217, 52, 0.24);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+
+.footer-bottom p {
+  margin: 0;
+}
+
+.footer-powered {
+  font-size: 0.86rem;
+  color: #8c98a8;
+  letter-spacing: 0.02em;
+}
+
+.footer-powered a {
+  color: #c6e25a;
+  font-weight: 500;
+  transition: color 0.18s ease;
+}
+
+.footer-powered a:hover,
+.footer-powered a:focus-visible {
+  color: #d8ec84;
+  text-decoration: underline;
 }
 
 .reveal {

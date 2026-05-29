@@ -340,6 +340,16 @@ export default function SiteShell({ active, children }: SiteShellProps) {
           </div>
           <div className="footer-bottom">
             <p>&copy; {new Date().getFullYear()} Enfrio Srl. All rights reserved.</p>
+            <p className="footer-powered">
+              Powered by{" "}
+              <a
+                href="https://www.kiwienterprise.it"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                KiwiNetwork
+              </a>
+            </p>
           </div>
         </div>
       </footer>
