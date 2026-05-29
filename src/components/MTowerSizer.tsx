@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const UNIT_KW = 1500;
 const MODULE_IMG = "/assets/images/site/mtower-render.png";
@@ -45,6 +45,75 @@ export default function MTowerSizer() {
   const [ambient, setAmbient] = useState(30);
   const [altitude, setAltitude] = useState<AltitudeValue>("low");
   const [redundancy, setRedundancy] = useState(false);
+
+  // Two-way URL state — let users land on /tower-m?power=... and see the
+  // simulator pre-filled, and let them share their own configuration as a
+  // link. Read once on mount; write on every change (no router push so we
+  // don't add history entries while sliding).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const p = Number(params.get("power"));
+    if (Number.isFinite(p) && p >= 100 && p <= 50000) setPower(p);
+    const a = params.get("application");
+    if (APPLICATIONS.some((opt) => opt.value === a))
+      setApplication(a as ApplicationValue);
+    const c = params.get("circuit");
+    if (c === "single" || c === "double") setCircuit(c);
+    const amb = Number(params.get("ambient"));
+    if (AMBIENT_TEMPS.some((t) => t.value === amb)) setAmbient(amb);
+    const alt = params.get("altitude");
+    if (ALTITUDES.some((opt) => opt.value === alt))
+      setAltitude(alt as AltitudeValue);
+    if (params.get("redundancy") === "1") setRedundancy(true);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    params.set("power", String(power));
+    params.set("application", application);
+    params.set("circuit", circuit);
+    params.set("ambient", String(ambient));
+    params.set("altitude", altitude);
+    params.set("redundancy", redundancy ? "1" : "0");
+    const next = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
+    // replaceState — never push, so the back button doesn't get flooded.
+    window.history.replaceState(null, "", next);
+  }, [power, application, circuit, ambient, altitude, redundancy]);
+
+  // "Share configuration" — copy the current URL (with all the sizer
+  // params) to clipboard and flash a confirmation.
+  const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "error">(
+    "idle"
+  );
+  useEffect(() => {
+    if (shareStatus === "idle") return;
+    const t = window.setTimeout(() => setShareStatus("idle"), 2200);
+    return () => window.clearTimeout(t);
+  }, [shareStatus]);
+
+  const handleShare = async () => {
+    if (typeof window === "undefined") return;
+    const url = window.location.href;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = url;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      setShareStatus("copied");
+    } catch {
+      setShareStatus("error");
+    }
+  };
 
   const result = useMemo(() => {
     const appFactor = APPLICATIONS.find((a) => a.value === application)?.factor ?? 1;
@@ -361,6 +430,18 @@ export default function MTowerSizer() {
           <Link className="btn solid" href={ctaHref}>
             Send this configuration to Enfrio engineering →
           </Link>
+          <button
+            type="button"
+            className="btn ghost cfg-share"
+            onClick={handleShare}
+            aria-live="polite"
+          >
+            {shareStatus === "copied"
+              ? "✓ Link copied"
+              : shareStatus === "error"
+                ? "Copy failed — try again"
+                : "Save & share configuration"}
+          </button>
         </div>
       </div>
     </div>

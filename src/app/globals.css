@@ -1933,7 +1933,10 @@ li {
 
 .mtower-hero {
   position: relative;
-  min-height: 78vh;
+  /* 78vh was too tall on 1366×768 laptops (the homepage content vanished
+     below the fold). Cap at 720 so it doesn't grow obscenely on 4K
+     monitors, floor at 540 so phone landscape still has room. */
+  min-height: clamp(540px, 65vh, 800px);
   display: flex;
   align-items: flex-end;
   padding: clamp(80px, 12vh, 160px) clamp(20px, 6vw, 80px) clamp(40px, 8vh, 90px);
@@ -2167,179 +2170,6 @@ li {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-/* ===========================================
-   MODULAR SCALER (1 → 8 units animation)
-   =========================================== */
-
-.modular-scaler {
-  display: grid;
-  grid-template-rows: auto auto;
-  gap: 20px;
-  padding: 28px;
-  border-radius: 18px;
-  background: linear-gradient(160deg, rgba(13, 22, 33, 0.7) 0%, rgba(7, 15, 25, 0.85) 100%);
-  border: 1px solid rgba(173, 217, 52, 0.22);
-}
-
-.modular-stage {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  gap: 32px;
-  align-items: center;
-}
-
-.modular-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-auto-rows: minmax(64px, auto);
-  gap: 10px;
-  aspect-ratio: 4 / 2;
-}
-
-.modular-block {
-  position: relative;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(173, 217, 52, 0.12);
-  transition: all 0.45s cubic-bezier(0.2, 0.7, 0.1, 1);
-  overflow: hidden;
-}
-
-.modular-block::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(140deg, rgba(173, 217, 52, 0.1), rgba(173, 217, 52, 0));
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-.modular-block-inner {
-  position: absolute;
-  inset: 12%;
-  border-radius: 4px;
-  background:
-    linear-gradient(180deg, rgba(173, 217, 52, 0.0), rgba(173, 217, 52, 0.0)),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 4px, transparent 4px 8px);
-  transition: background 0.5s ease, box-shadow 0.5s ease;
-}
-
-.modular-block.lit {
-  border-color: rgba(173, 217, 52, 0.6);
-  background: rgba(173, 217, 52, 0.08);
-  box-shadow: 0 0 20px rgba(173, 217, 52, 0.16);
-}
-
-.modular-block.lit::before {
-  opacity: 1;
-}
-
-.modular-block.lit .modular-block-inner {
-  background:
-    linear-gradient(180deg, rgba(173, 217, 52, 0.55), rgba(127, 159, 34, 0.6)),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 4px, transparent 4px 8px);
-  box-shadow: inset 0 0 24px rgba(173, 217, 52, 0.45);
-}
-
-.modular-readout {
-  color: #e3ebf5;
-}
-
-.modular-readout .kicker {
-  color: var(--brand);
-  margin-bottom: 6px;
-}
-
-.modular-units {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: clamp(2.4rem, 4vw, 3.6rem);
-  font-weight: 700;
-  margin: 0;
-  line-height: 1;
-  color: #f4f8ff;
-}
-
-.modular-units span {
-  font-size: 0.4em;
-  font-weight: 500;
-  color: #b6c1cf;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-left: 6px;
-}
-
-.modular-kw {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: clamp(1.4rem, 2vw, 1.8rem);
-  margin: 4px 0 12px;
-  color: var(--brand);
-  font-weight: 600;
-}
-
-.modular-caption {
-  font-size: 0.95rem;
-  color: #cad3df;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.modular-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 18px;
-}
-
-.modular-pill {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(173, 217, 52, 0.18);
-  color: #cad3df;
-  font: inherit;
-  cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-}
-
-.modular-pill:hover {
-  background: rgba(173, 217, 52, 0.08);
-  border-color: rgba(173, 217, 52, 0.45);
-  transform: translateY(-1px);
-}
-
-.modular-pill.active {
-  background: rgba(173, 217, 52, 0.15);
-  border-color: var(--brand);
-  color: #f4f8ff;
-}
-
-.modular-pill-units {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--brand);
-}
-
-.modular-pill-label {
-  font-size: 0.78rem;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-}
-
-@media (max-width: 800px) {
-  .modular-stage {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .modular-grid {
-    aspect-ratio: 4 / 2;
   }
 }
 
@@ -3400,12 +3230,33 @@ li {
   margin: 0 0 18px;
 }
 
-.cfg-cta .btn.solid {
+.cfg-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cfg-cta .btn.solid,
+.cfg-cta .btn.ghost {
   width: 100%;
   text-align: center;
   justify-content: center;
   padding: 14px;
   font-size: 0.95rem;
+}
+
+.cfg-share {
+  /* Inherits .btn .ghost styling. Slight font-weight + letter-spacing tweak
+     so it reads as a secondary action and the "✓ Link copied" state is
+     visually distinct without flashing colour. */
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.cfg-share:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }
 
 @media (max-width: 1000px) {

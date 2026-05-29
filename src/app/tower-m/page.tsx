@@ -4,7 +4,6 @@ import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
 import MTowerSizer from "@/components/MTowerSizer";
 import MTowerHero from "@/components/MTowerHero";
-import ModularScaler from "@/components/ModularScaler";
 import MTowerSpin from "@/components/MTowerSpin";
 
 export const metadata: Metadata = {
@@ -39,22 +38,6 @@ export default function TowerMPage() {
           <div className="mtower-explore-stage reveal">
             <MTowerSpin mode="drag" />
           </div>
-        </div>
-      </section>
-
-      <section className="section" id="mtower-modular">
-        <div className="section-head reveal">
-          <p className="kicker">MODULAR BY DESIGN</p>
-          <h2>One unit, four units, eight units. Same core, scaled.</h2>
-          <p>
-            Each M Tower module delivers 1500 kW of heat rejection. They share the same
-            footprint, the same hydraulic interfaces and the same control logic — so adding
-            capacity is engineering reuse, not a redesign.
-          </p>
-        </div>
-
-        <div className="reveal">
-          <ModularScaler />
         </div>
       </section>
 

@@ -1,5 +1,7 @@
 "use server";
 
+import { cookies } from "next/headers";
+
 export type ContactFormState = {
   status: "idle" | "success" | "error";
   message: string;
@@ -7,6 +9,14 @@ export type ContactFormState = {
 };
 
 const TARGET_INBOX = process.env.CONTACT_TO ?? "info@enfrio.eu";
+
+// Per-browser rate limit. Set after a successful send, blocks resubmits
+// from the same browser for RATE_LIMIT_SECONDS. Not a defence against
+// determined bots (a fresh cookie jar bypasses it) but it's a cheap
+// brake against the "user clicks send three times in panic" pattern and
+// against scripted reload-and-resubmit loops.
+const RATE_LIMIT_SECONDS = 30;
+const RATE_LIMIT_COOKIE = "enfrio_contact_sent";
 
 function isValidEmail(email: string): boolean {
   // Require at least a 2-letter TLD so we don't accept "a@b.c". Still
@@ -18,6 +28,18 @@ export async function submitContactForm(
   _prev: ContactFormState,
   formData: FormData,
 ): Promise<ContactFormState> {
+  const cookieJar = await cookies();
+
+  // Reject same-browser resubmits inside the rate window. We return
+  // success-shape so a bot/spammer can't probe the cookie state.
+  if (cookieJar.get(RATE_LIMIT_COOKIE)?.value === "1") {
+    return {
+      status: "success",
+      message:
+        "Thanks — your previous message is on its way. Please wait a moment before sending another one.",
+    };
+  }
+
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const company = String(formData.get("company") ?? "").trim();
@@ -87,6 +109,18 @@ export async function submitContactForm(
           "We couldn't deliver your message right now. Please retry shortly or email info@enfrio.eu directly.",
       };
     }
+
+    // Drop a short-lived cookie so the same browser can't pound the
+    // endpoint. The cookie is HttpOnly so client JS can't flush it.
+    cookieJar.set({
+      name: RATE_LIMIT_COOKIE,
+      value: "1",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: RATE_LIMIT_SECONDS,
+      path: "/",
+    });
 
     return {
       status: "success",
