@@ -614,20 +614,69 @@ li {
 }
 
 .footer-powered {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.86rem;
   color: #8c98a8;
   letter-spacing: 0.02em;
 }
 
 .footer-powered a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: #c6e25a;
   font-weight: 500;
-  transition: color 0.18s ease;
+  text-decoration: none;
+  transition: color 0.18s ease, opacity 0.18s ease;
+}
+
+.footer-powered .kiwi-mark {
+  width: 22px;
+  height: 22px;
+  display: block;
+  flex-shrink: 0;
+  opacity: 0.95;
+  /* Rotate the whole SVG around its visual centre.
+     fill-box makes transform-origin: center mean the centre of the
+     bounding box, which lines up with viewBox centre (50,50). */
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: kiwi-spin 12s linear infinite;
+  transition: opacity 0.18s ease;
+}
+
+.footer-powered a:hover .kiwi-mark,
+.footer-powered a:focus-visible .kiwi-mark {
+  opacity: 1;
+  animation-play-state: paused;
+}
+
+@keyframes kiwi-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-powered .kiwi-mark {
+    animation: none;
+  }
 }
 
 .footer-powered a:hover,
 .footer-powered a:focus-visible {
   color: #d8ec84;
+}
+
+.footer-powered a:hover img,
+.footer-powered a:focus-visible img {
+  opacity: 1;
+}
+
+.footer-powered a:hover span:last-child,
+.footer-powered a:focus-visible span:last-child {
   text-decoration: underline;
 }
 

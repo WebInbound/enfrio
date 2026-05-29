@@ -341,13 +341,59 @@ export default function SiteShell({ active, children }: SiteShellProps) {
           <div className="footer-bottom">
             <p>&copy; {new Date().getFullYear()} Enfrio Srl. All rights reserved.</p>
             <p className="footer-powered">
-              Powered by{" "}
+              <span>Powered by</span>
               <a
                 href="https://www.kiwienterprise.it"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="KiwiNetwork — site by Kiwi Enterprise"
               >
-                KiwiNetwork
+                <svg
+                  className="kiwi-mark"
+                  viewBox="0 0 100 100"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <defs>
+                    <linearGradient
+                      id="kiwiNetGrad"
+                      x1="0"
+                      y1="0"
+                      x2="100"
+                      y2="100"
+                      gradientUnits="userSpaceOnUse"
+                    >
+                      <stop offset="0%" stopColor="#c6f06a" />
+                      <stop offset="100%" stopColor="#4fa30d" />
+                    </linearGradient>
+                  </defs>
+                  <circle cx="50" cy="50" r="7" fill="url(#kiwiNetGrad)" />
+                  <g transform="translate(50 50)">
+                    {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(
+                      (deg) => (
+                        <g key={deg} transform={`rotate(${deg})`}>
+                          <line
+                            x1="10"
+                            y1="0"
+                            x2="33"
+                            y2="0"
+                            stroke="url(#kiwiNetGrad)"
+                            strokeWidth="2.4"
+                            strokeLinecap="round"
+                          />
+                          <circle
+                            cx="36"
+                            cy="0"
+                            r="2.8"
+                            fill="url(#kiwiNetGrad)"
+                          />
+                        </g>
+                      )
+                    )}
+                  </g>
+                </svg>
+                <span>KiwiNetwork</span>
               </a>
             </p>
           </div>
