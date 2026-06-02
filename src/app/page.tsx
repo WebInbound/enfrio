@@ -117,8 +117,8 @@ export default function HomePage() {
               <Link className="btn ghost" href="/tower-m#mtower-sizer">Size your installation</Link>
             </div>
           </div>
-          <figure className="mtower-spotlight-media">
-            <Image src="/assets/images/site/power-gen-hall.jpg" alt="Genset hall with Enfrio cooling installed across a long bank of engines" width={1400} height={1400} />
+          <figure className="mtower-spotlight-media mtower-spotlight-media--render">
+            <Image src="/assets/images/site/mtower-render.png" alt="Enfrio M Tower module — canonical product render" width={1040} height={1080} priority />
           </figure>
         </div>
       </section>

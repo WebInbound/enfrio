@@ -2336,6 +2336,24 @@ li {
   object-fit: cover;
 }
 
+/* Variant for when the media holds the canonical M Tower render (PNG with
+   alpha) instead of a photo. The render is vertical and transparent — give
+   it a dark gradient backdrop with a brand glow so it reads as a hero
+   product portrait, and contain (don't crop) the silhouette. */
+.mtower-spotlight-media--render {
+  background:
+    radial-gradient(60% 50% at 50% 80%, rgba(173, 217, 52, 0.18) 0%, transparent 65%),
+    linear-gradient(170deg, #0a1421 0%, #0b1929 100%);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.mtower-spotlight-media--render img {
+  object-fit: contain;
+  filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.5));
+}
+
 @media (max-width: 900px) {
   .mtower-spotlight {
     grid-template-columns: minmax(0, 1fr);

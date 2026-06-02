@@ -79,8 +79,8 @@ export default function SolutionsPage() {
           <Image className="dominant focus-left motor-up" src="/assets/images/site/installed-v20-integrated.jpg" alt="V20 engine with integrated Enfrio cooling package" width={1500} height={950} />
           <div className="support">
             <Image className="focus-left" src="/assets/images/site/installed-baudouin-canopy.jpg" alt="Cooling unit installed in a genset open canopy" width={1000} height={650} />
-            <Image className="focus-left" src="/assets/images/site/power-gen-hall.jpg" alt="Bank of M Tower modules cooling a genset hall" width={1000} height={650} />
-            <Image className="focus-right" src="/assets/images/site/warehouse-delivery.jpg" alt="Modular cooling units being staged for site delivery" width={1000} height={650} />
+            <Image className="focus-left" src="/assets/images/site/rad-40ng.jpg" alt="Genset with Enfrio container-fit cooling package" width={1000} height={650} />
+            <Image className="focus-right" src="/assets/images/site/rad-warehouse-stock.jpg" alt="Finished Enfrio cooling units staged on warehouse racks" width={1000} height={650} />
           </div>
         </div>
       </section>

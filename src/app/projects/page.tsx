@@ -21,7 +21,7 @@ export default function ProjectsPage() {
           </p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image priority className="focus-left" src="/assets/images/site/enfrio-trade-show.jpg" alt="Enfrio booth at an international trade show" width={1200} height={900} />
+          <Image priority className="focus-left" src="/assets/images/site/installed-baudouin-canopy.jpg" alt="Genset with Enfrio cooling installed inside an open canopy enclosure" width={1200} height={900} />
         </figure>
       </section>
 
@@ -95,7 +95,7 @@ export default function ProjectsPage() {
             <figure className="wow-media">
               <Image className="active focus-left" data-id="expo" src="/assets/images/site/fair-dubai-2.jpg" alt="Expo presence" width={1400} height={900} />
               <Image data-id="installed" className="fit-contain" src="/assets/images/site/installed-baudouin-canopy.jpg" alt="Enfrio cooling package installed in finished canopy" width={1400} height={900} />
-              <Image data-id="delivery" className="focus-right" src="/assets/images/site/warehouse-delivery.jpg" alt="Forklifts moving Enfrio cooling units in the warehouse" width={1400} height={1050} />
+              <Image data-id="delivery" className="focus-right" src="/assets/images/site/rad-truck-load.jpg" alt="Enfrio cooling unit being loaded onto a delivery truck" width={1400} height={1050} />
             </figure>
             <div className="wow-copy">
               <article className="wow-item active" data-id="expo">
@@ -123,33 +123,33 @@ export default function ProjectsPage() {
         <div className="editorial-rail auto-lux-wrap reveal" aria-label="Project snapshots auto gallery">
           <div className="auto-lux-track">
             <figure className="auto-lux-card">
-              <Image src="/assets/images/site/fair-mee-2.jpg" alt="MEE event booth" width={1200} height={900} />
-              <figcaption>International event presence and partner visibility.</figcaption>
+              <Image src="/assets/images/site/rad-40ng.jpg" alt="40HC container-fit cooling package" width={1200} height={900} />
+              <figcaption>Container-fit packages engineered for fast deployment.</figcaption>
             </figure>
             <figure className="auto-lux-card">
-              <Image src="/assets/images/site/fair-dubai-1.jpg" alt="East energy Dubai event" width={1200} height={900} />
-              <figcaption>Commercial engagement in strategic energy markets.</figcaption>
+              <Image src="/assets/images/site/installed-v20-integrated.jpg" alt="V20 engine with integrated Enfrio cooling package" width={1200} height={900} />
+              <figcaption>Engine + cooling integrated as a single hand-off platform.</figcaption>
             </figure>
             <figure className="auto-lux-card">
-              <Image src="/assets/images/site/rad-warehouse-stock.jpg" alt="Radiator stock in warehouse" width={1200} height={900} />
+              <Image src="/assets/images/site/rad-warehouse-stock.jpg" alt="Finished cooling units staged in the warehouse" width={1200} height={900} />
               <figcaption>Production continuity and staged delivery readiness.</figcaption>
             </figure>
             <figure className="auto-lux-card">
-              <Image src="/assets/images/site/rad-double.jpg" alt="Dual radiator configuration" width={1200} height={900} />
+              <Image src="/assets/images/site/rad-double.jpg" alt="Dual-circuit Enfrio radiator" width={1200} height={900} />
               <figcaption>Variant architecture for differentiated project needs.</figcaption>
             </figure>
             <figure className="auto-lux-card">
-              <Image src="/assets/images/site/rad-truck-load.jpg" alt="Loading radiator onto truck" width={1200} height={900} />
+              <Image src="/assets/images/site/rad-truck-load.jpg" alt="Cooling unit loaded onto a delivery truck" width={1200} height={900} />
               <figcaption>Execution closes with logistics discipline.</figcaption>
             </figure>
 
             <figure className="auto-lux-card" aria-hidden="true">
-              <Image src="/assets/images/site/fair-mee-2.jpg" alt="" width={1200} height={900} />
-              <figcaption>International event presence and partner visibility.</figcaption>
+              <Image src="/assets/images/site/rad-40ng.jpg" alt="" width={1200} height={900} />
+              <figcaption>Container-fit packages engineered for fast deployment.</figcaption>
             </figure>
             <figure className="auto-lux-card" aria-hidden="true">
-              <Image src="/assets/images/site/fair-dubai-1.jpg" alt="" width={1200} height={900} />
-              <figcaption>Commercial engagement in strategic energy markets.</figcaption>
+              <Image src="/assets/images/site/installed-v20-integrated.jpg" alt="" width={1200} height={900} />
+              <figcaption>Engine + cooling integrated as a single hand-off platform.</figcaption>
             </figure>
             <figure className="auto-lux-card" aria-hidden="true">
               <Image src="/assets/images/site/rad-warehouse-stock.jpg" alt="" width={1200} height={900} />
