@@ -3597,3 +3597,873 @@ li {
   transition: transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
   will-change: transform;
 }
+
+/* === MTOWER HERO WOW === */
+/* Sticky pin + annotation chips for Play 1 */
+/* Hero spec strip for Play 2 */
+
+/* The outer pin wrapper. It spans the hero AND the explore section so
+   the sticky canvas inside the hero's right column stays glued to the
+   viewport as the visitor scrolls through both. Position:relative so
+   the sticky descendant computes against this scroll container. */
+.mtower-pin-wrap {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Right column of the hero — hosts the sticky shell. Min-height keeps
+   the column tall enough for sticky to engage on shorter viewports. */
+.mtower-stage-visual-col {
+  position: relative;
+  min-height: clamp(420px, 72vh, 680px);
+  display: block;
+}
+
+/* The sticky shell. Lives in the hero's right column, pinned at 12vh
+   from the top of the viewport. Because it's inside .mtower-pin-wrap,
+   it stays pinned through the explore section too. */
+.mtower-stage-sticky {
+  position: sticky;
+  top: 12vh;
+  height: clamp(420px, 72vh, 680px);
+  display: grid;
+  place-items: stretch;
+}
+
+/* When the sticky shell is in play, the visual fills it (overriding
+   the linear .mtower-stage-visual height so it stretches to its
+   sticky parent). */
+.mtower-stage-sticky .mtower-stage-visual {
+  height: 100%;
+  width: 100%;
+}
+
+/* Annotation chips. Each chip is absolutely positioned over the
+   visual; CSS variables set its top/left. The active chip lights up
+   with a lime glow; inactive chips fade back. */
+.mtower-anno-chip {
+  position: absolute;
+  width: clamp(160px, 18%, 200px);
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(8, 14, 24, 0.72);
+  border: 1px solid rgba(173, 217, 52, 0.32);
+  color: #f4f8ff;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0.36;
+  transform: translateY(4px) scale(0.97);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-color 0.45s ease,
+    box-shadow 0.45s ease;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.mtower-anno-chip.is-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  border-color: var(--brand);
+  box-shadow:
+    0 0 0 1px rgba(173, 217, 52, 0.18),
+    0 12px 28px rgba(8, 14, 24, 0.4),
+    0 0 22px rgba(173, 217, 52, 0.22);
+}
+
+.mtower-anno-chip-label {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brand);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.mtower-anno-chip-spec {
+  font-size: 0.78rem;
+  color: #cdd7e5;
+  line-height: 1.25;
+}
+
+/* SVG connector lines from each chip to the unit centre. The viewBox
+   uses 0–100 in both axes so points map cleanly to the visual's
+   bounding box. Lines are thin and lime-tinted; the active line
+   brightens. */
+.mtower-anno-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  overflow: visible;
+}
+
+.mtower-anno-line {
+  stroke: rgba(173, 217, 52, 0.24);
+  stroke-width: 0.18;
+  stroke-linecap: round;
+  fill: none;
+  transition: stroke 0.45s ease, stroke-width 0.45s ease;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1 1.6;
+}
+
+.mtower-anno-line.is-active {
+  stroke: var(--brand);
+  stroke-width: 0.32;
+  filter: drop-shadow(0 0 6px rgba(173, 217, 52, 0.45));
+  stroke-dasharray: none;
+}
+
+/* Explore grid — text rail on the left, sticky-visual passthrough on
+   the right. The rail panels stack vertically and reveal in sequence
+   as the visitor scrolls past the still-pinned canvas. */
+.mtower-explore-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: clamp(20px, 4vw, 64px);
+  align-items: start;
+}
+
+.mtower-explore-rail {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(24px, 4vh, 48px);
+}
+
+.mtower-explore-rail .panel {
+  margin: 0;
+}
+
+/* The right column of the explore grid is empty — the sticky canvas
+   from the hero visually occupies this space because it's sticky
+   inside the shared .mtower-pin-wrap. We just need to reserve enough
+   height for the rail content to scroll past. */
+.mtower-explore-spacer {
+  min-height: 1px;
+}
+
+/* === Play 2: Hero spec strip === */
+.mtower-hero-specs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: clamp(14px, 2.4vw, 28px);
+  margin: 4px 0 2px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(173, 217, 52, 0.18);
+  border-bottom: 1px solid rgba(173, 217, 52, 0.12);
+}
+
+.mtower-hero-spec {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding-inline: clamp(4px, 1vw, 10px);
+}
+
+/* Lime vertical dividers between the 3 spec blocks (desktop). */
+.mtower-hero-spec + .mtower-hero-spec::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 14%;
+  bottom: 14%;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(173, 217, 52, 0.5) 50%,
+    transparent 100%
+  );
+}
+
+.mtower-hero-spec-num {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.2rem, 5.4vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  background: linear-gradient(180deg, #ffffff 0%, var(--brand) 110%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* AnimatedNumber renders inside an inline span — make sure the inner
+   span inherits the gradient text colour. */
+.mtower-hero-spec-num .animated-number {
+  background: inherit;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.mtower-hero-spec-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(205, 215, 229, 0.72);
+  font-weight: 600;
+}
+
+/* Mobile / tablet fallback: < 880px disables sticky, hides chips,
+   collapses the explore grid back to single-column, and stacks the
+   hero specs vertically. */
+@media (max-width: 880px) {
+  .mtower-stage-visual-col {
+    min-height: 0;
+  }
+  .mtower-stage-sticky {
+    position: static;
+    top: auto;
+    height: auto;
+  }
+  .mtower-anno-chip,
+  .mtower-anno-lines {
+    display: none;
+  }
+  .mtower-explore-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(20px, 4vh, 36px);
+  }
+  .mtower-explore-spacer {
+    display: none;
+  }
+
+  .mtower-hero-specs {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px 0;
+  }
+  .mtower-hero-spec {
+    padding-inline: 0;
+  }
+  .mtower-hero-spec + .mtower-hero-spec::before {
+    /* Convert vertical dividers into thin horizontal rules between
+       stacked rows. */
+    left: 0;
+    right: 0;
+    top: -6px;
+    bottom: auto;
+    width: auto;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(173, 217, 52, 0.5) 50%,
+      transparent 100%
+    );
+  }
+}
+
+/* Respect users who prefer no motion — keep the lit chip but freeze
+   the animated transitions. */
+@media (prefers-reduced-motion: reduce) {
+  .mtower-anno-chip,
+  .mtower-anno-line {
+    transition: none;
+  }
+}
+/* === /MTOWER HERO WOW === */
+
+/* === MTOWER PAGE SECTIONS WOW === */
+
+/* ---------- PLAY 7 — Engineering Detail macro crops ---------- */
+.mtower-craft-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  margin-top: 12px;
+}
+.mtower-craft .craft-crop {
+  width: 80vw;
+  max-width: 1180px;
+  aspect-ratio: 21 / 9;
+  margin: 0;
+  border: 1px solid rgba(173, 217, 52, 0.22);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  background: #0a121d;
+  box-shadow: 0 18px 44px rgba(8, 14, 24, 0.18);
+}
+.mtower-craft .craft-crop img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transform: scale(1.04);
+  filter: saturate(0.92) contrast(1.04);
+}
+.mtower-craft .craft-crop.is-visible img {
+  transform: scale(1);
+}
+.mtower-craft .craft-crop figcaption {
+  position: absolute;
+  left: 18px;
+  bottom: 16px;
+  padding: 6px 10px;
+  font-family: "Rajdhani", "Consolas", monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: #cad3df;
+  background: rgba(7, 15, 25, 0.62);
+  border: 1px solid rgba(173, 217, 52, 0.28);
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+}
+@media (max-width: 880px) {
+  .mtower-craft .craft-crop {
+    width: 90vw;
+    aspect-ratio: 16 / 10;
+  }
+  .mtower-craft .craft-crop figcaption {
+    font-size: 0.78rem;
+    left: 10px;
+    bottom: 10px;
+  }
+}
+
+/* ---------- PLAY 3 — Why modular: SVG stat cards ---------- */
+.mtower-why-mod-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(173, 217, 52, 0.22);
+}
+.mtower-why-mod-card h3 {
+  font-size: clamp(1.7rem, 2.6vw, 2.1rem);
+  color: var(--brand);
+  letter-spacing: -0.5px;
+  margin: 6px 0 0;
+}
+.mtower-why-mod-card .kicker {
+  color: var(--brand);
+  letter-spacing: 0.18em;
+}
+.mtower-why-mod-card p {
+  color: #cad3df;
+  font-size: 0.96rem;
+  line-height: 1.55;
+}
+.why-mod-diagram {
+  width: 100%;
+  height: 56px;
+  display: block;
+  margin-bottom: 4px;
+}
+.why-mod-rect {
+  fill: transparent;
+  stroke: rgba(173, 217, 52, 0.45);
+  stroke-width: 1.4;
+  transform-origin: center bottom;
+  transform: translateY(8px) scaleY(0.6);
+  opacity: 0;
+  transition:
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 0.6s ease,
+    fill 0.6s ease;
+  transition-delay: calc(var(--i, 0) * 70ms);
+}
+.mtower-why-mod-card.is-visible .why-mod-rect {
+  opacity: 1;
+  transform: translateY(0) scaleY(1);
+}
+.mtower-why-mod-card.is-visible .why-mod-rect.filled {
+  fill: rgba(173, 217, 52, 0.92);
+  stroke: rgba(173, 217, 52, 0.95);
+}
+.mtower-why-mod-card.is-visible .why-mod-rect.ghost {
+  fill: transparent;
+  stroke: rgba(173, 217, 52, 0.32);
+  stroke-dasharray: 3 3;
+}
+.mtower-why-mod-card.is-visible .why-mod-rect.spare {
+  fill: rgba(173, 217, 52, 0.65);
+  stroke: var(--brand);
+  animation: whymodPulse 2.2s ease-in-out infinite;
+  animation-delay: 1.4s;
+}
+@keyframes whymodPulse {
+  0%, 100% {
+    fill: rgba(173, 217, 52, 0.45);
+    filter: drop-shadow(0 0 0 rgba(173, 217, 52, 0));
+  }
+  50% {
+    fill: rgba(173, 217, 52, 0.95);
+    filter: drop-shadow(0 0 8px rgba(173, 217, 52, 0.7));
+  }
+}
+.why-mod-container {
+  opacity: 0;
+  transform: translateX(-24px);
+  transition: transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.7s ease;
+  transition-delay: calc(var(--i, 0) * 160ms + 120ms);
+}
+.mtower-why-mod-card.is-visible .why-mod-container {
+  opacity: 1;
+  transform: translateX(0);
+}
+.why-mod-container-shell {
+  fill: transparent;
+  stroke: rgba(173, 217, 52, 0.85);
+  stroke-width: 1.4;
+}
+.why-mod-container-line {
+  stroke: rgba(173, 217, 52, 0.45);
+  stroke-width: 0.8;
+}
+@media (prefers-reduced-motion: reduce) {
+  .why-mod-rect,
+  .why-mod-container {
+    transition: none;
+  }
+  .mtower-why-mod-card.is-visible .why-mod-rect.spare {
+    animation: none;
+  }
+}
+
+/* ---------- PLAY 5 — Modular scale band ---------- */
+.mtower-scale-grid {
+  margin-top: 18px;
+  gap: 16px;
+}
+.mtower-scale-tier {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 20px 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.4s ease,
+    border-color 0.4s ease;
+}
+.mtower-scale-tier:hover {
+  transform: scale(1.02);
+  border-color: rgba(173, 217, 52, 0.6);
+  box-shadow: 0 18px 38px rgba(8, 14, 24, 0.18);
+}
+.mtower-scale-bg {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  opacity: 0.15;
+  color: var(--ink);
+}
+.mtower-scale-bg svg {
+  width: 80%;
+  height: auto;
+  max-height: 70%;
+}
+.mtower-scale-modules {
+  position: relative;
+  z-index: 1;
+  width: auto;
+  max-width: 100%;
+  height: 64px;
+  display: block;
+  margin-bottom: 4px;
+}
+.mtower-scale-module {
+  fill: rgba(173, 217, 52, 0.18);
+  stroke: var(--brand);
+  stroke-width: 1.4;
+  transform-origin: center bottom;
+  transform: translateY(10px) scale(0.4);
+  opacity: 0;
+  transition:
+    transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 0.5s ease,
+    fill 0.4s ease;
+  transition-delay: calc(var(--i, 0) * 75ms + 80ms);
+}
+.mtower-scale-tier.is-visible .mtower-scale-module {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.mtower-scale-tier:hover .mtower-scale-module {
+  fill: rgba(173, 217, 52, 0.4);
+  filter: drop-shadow(0 0 6px rgba(173, 217, 52, 0.5));
+}
+.mtower-scale-count {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--brand-deep);
+  font-weight: 700;
+}
+.mtower-scale-mw {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-family: "Rajdhani", sans-serif;
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+.mtower-scale-label {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+@media (max-width: 1024px) {
+  .mtower-scale-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .mtower-scale-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mtower-scale-module {
+    transition: none;
+  }
+  .mtower-scale-tier:hover {
+    transform: none;
+  }
+}
+
+/* ---------- PLAY 6 — Deployment Contexts tabbed switcher ---------- */
+.deploy-switcher {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.deploy-switcher-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px;
+  background: rgba(7, 15, 25, 0.06);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.deploy-switcher-tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: "Urbanist", sans-serif;
+  font-weight: 600;
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
+  padding: 9px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+.deploy-switcher-tab:hover {
+  background: rgba(173, 217, 52, 0.16);
+}
+.deploy-switcher-tab:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.deploy-switcher-tab.is-active {
+  background: var(--deep-blue);
+  color: var(--brand);
+  box-shadow: 0 8px 20px rgba(7, 15, 25, 0.22);
+}
+.deploy-switcher-stage {
+  position: relative;
+  width: min(900px, 92vw);
+  aspect-ratio: 16 / 9;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(173, 217, 52, 0.28);
+  background:
+    radial-gradient(60% 50% at 50% 80%, rgba(173, 217, 52, 0.16) 0%, transparent 65%),
+    radial-gradient(120% 80% at 50% 0%, rgba(7, 15, 25, 0.85) 0%, rgba(7, 15, 25, 1) 70%),
+    linear-gradient(170deg, #0a1421 0%, #0b1929 100%);
+  display: grid;
+  place-items: center;
+  padding: 22px;
+}
+.deploy-switcher-silhouettes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: rgba(173, 217, 52, 0.55);
+}
+.deploy-switcher-silhouette {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+.deploy-switcher-silhouette.is-active {
+  opacity: 0.25;
+}
+.deploy-switcher-unit {
+  position: relative;
+  z-index: 1;
+  max-height: 100%;
+  max-width: 38%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.55));
+}
+.deploy-switcher-blurb {
+  max-width: 70ch;
+  text-align: center;
+  color: var(--ink-soft);
+  margin: 0;
+}
+.deploy-switcher-specs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  width: min(900px, 92vw);
+}
+.deploy-switcher-spec {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.deploy-switcher-spec-value {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+}
+.deploy-switcher-spec-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--brand-deep);
+  font-weight: 700;
+}
+@media (max-width: 880px) {
+  .deploy-switcher-specs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .deploy-switcher-unit {
+    max-width: 52%;
+  }
+  .deploy-switcher-tab {
+    font-size: 0.86rem;
+    padding: 8px 12px;
+  }
+}
+@media (max-width: 480px) {
+  .deploy-switcher-specs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .deploy-switcher-silhouette {
+    transition: none;
+  }
+}
+
+/* ---------- PLAY 8 — Outro recap ---------- */
+.mtower-outro {
+  position: relative;
+  overflow: hidden;
+}
+.mtower-outro-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 32px;
+  align-items: center;
+}
+.mtower-outro-media {
+  aspect-ratio: 4 / 5;
+  border-radius: 18px;
+  overflow: hidden;
+  margin: 0;
+  position: relative;
+}
+.mtower-outro-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.mtower-outro-content h2 {
+  margin-top: 10px;
+  margin-bottom: 18px;
+}
+.mtower-outro-strip {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 0 0 22px;
+  padding: 14px 18px;
+  border: 1px solid rgba(173, 217, 52, 0.32);
+  border-radius: 14px;
+  background:
+    linear-gradient(90deg, rgba(173, 217, 52, 0.05) 0%, rgba(173, 217, 52, 0) 100%),
+    rgba(255, 255, 255, 0.02);
+}
+.mtower-outro-strip-num {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1;
+  letter-spacing: -1px;
+  background: linear-gradient(180deg, #f4f8ff 0%, #c6f06a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.mtower-outro-strip-dot {
+  color: rgba(173, 217, 52, 0.55);
+  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  line-height: 1;
+}
+.mtower-outro-timeline {
+  margin-bottom: 22px;
+}
+.mtower-outro-timeline li {
+  align-items: center;
+}
+@media (max-width: 880px) {
+  .mtower-outro-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+  .mtower-outro-media {
+    width: 60%;
+    margin-inline: auto;
+    aspect-ratio: 4 / 5;
+  }
+  .mtower-outro-timeline li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mtower-outro-timeline .step {
+    font-size: 1.4rem;
+  }
+}
+
+/* === /MTOWER PAGE SECTIONS WOW === */
+
+/* === MTOWER SIZER HUD === */
+/* Adds a 3rd column to the existing 2-col .cfg grid without rewriting the
+   original rule — uses :has() to re-template only when the HUD is present. */
+.cfg:has(.cfg-hud) {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) minmax(220px, 0.55fr);
+}
+
+.cfg-hud {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  border-left: 1px solid rgba(163, 230, 53, 0.2);
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 4px;
+}
+
+.cfg-hud-title {
+  margin: 0 0 4px;
+  color: rgba(163, 230, 53, 0.85);
+}
+
+.cfg-hud-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 4px 8px 10px;
+  gap: 12px;
+  border-bottom: 1px dashed rgba(163, 230, 53, 0.1);
+  border-radius: 4px;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cfg-hud-row .cfg-hud-label {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.cfg-hud-row .cfg-hud-value {
+  color: #a3e635;
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cfg-hud-row.is-flashing {
+  background: rgba(163, 230, 53, 0.06);
+  border-color: rgba(163, 230, 53, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(163, 230, 53, 0.25),
+    0 0 16px -4px rgba(163, 230, 53, 0.35);
+}
+
+@media (max-width: 880px) {
+  .cfg:has(.cfg-hud) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cfg-hud {
+    border-left: none;
+    border-top: 1px solid rgba(163, 230, 53, 0.2);
+    padding-left: 0;
+    padding-top: 18px;
+    margin-top: 4px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 14px;
+    row-gap: 10px;
+  }
+  .cfg-hud-title {
+    grid-column: 1 / -1;
+  }
+  .cfg-hud-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .cfg-hud-row .cfg-hud-value {
+    font-size: 1rem;
+  }
+}
+/* === /MTOWER SIZER HUD === */
+

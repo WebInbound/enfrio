@@ -19,14 +19,21 @@ export default function AnimatedNumber({
 }: Props) {
   const ref = useRef<HTMLSpanElement | null>(null);
   const [display, setDisplay] = useState(0);
+  // Track whether this instance has ever entered the viewport. Once it has,
+  // every subsequent value-prop change re-animates from the current displayed
+  // value to the new value — so live HUDs (e.g. the sizer) tick on every edit.
+  const hasEnteredRef = useRef(false);
+  const displayRef = useRef(0);
+  useEffect(() => {
+    displayRef.current = display;
+  }, [display]);
 
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
     let raf = 0;
-    let started = false;
 
-    const animate = (start: number) => {
+    const animate = (start: number, from: number, to: number) => {
       const tick = (now: number) => {
         const elapsed = now - start;
         const t = Math.min(1, elapsed / duration);
@@ -34,18 +41,25 @@ export default function AnimatedNumber({
         // the number lands clearly at the final value instead of feeling
         // like it's still trickling at the end.
         const eased = 1 - Math.pow(1 - t, 5);
-        setDisplay(value * eased);
+        setDisplay(from + (to - from) * eased);
         if (t < 1) raf = requestAnimationFrame(tick);
       };
       raf = requestAnimationFrame(tick);
     };
 
+    // Already in view from a prior trigger? Re-animate from the current
+    // displayed value to the new target value on every value-prop change.
+    if (hasEnteredRef.current) {
+      animate(performance.now(), displayRef.current, value);
+      return () => cancelAnimationFrame(raf);
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !started) {
-            started = true;
-            animate(performance.now());
+          if (entry.isIntersecting && !hasEnteredRef.current) {
+            hasEnteredRef.current = true;
+            animate(performance.now(), 0, value);
             observer.disconnect();
           }
         });

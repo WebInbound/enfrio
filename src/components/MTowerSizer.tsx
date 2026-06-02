@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import AnimatedNumber from "./AnimatedNumber";
 
 const UNIT_KW = 1500;
 const MODULE_IMG = "/assets/images/site/mtower-render.png";
@@ -165,6 +166,95 @@ export default function MTowerSizer() {
 
   const totalUnits = result.units;
   const spareIndex = redundancy ? totalUnits - 1 : -1;
+
+  // === SCADA-style live spec HUD ===
+  // Each row recomputes from result.units. When units change, the row
+  // flashes lime for 200ms and the <AnimatedNumber> re-tweens to the new
+  // value (see AnimatedNumber: it watches its `value` prop and re-animates
+  // on every change once it has entered the viewport).
+  // TODO: Confirm coefficients with Enfrio engineering (footprint m²,
+  // water flow L/min, weight t, electrical draw kVA are placeholders).
+  const hudRows = useMemo(
+    () => [
+      {
+        key: "thermal",
+        label: "Thermal capacity",
+        value: result.units * 1500,
+        suffix: " kW",
+        format: "int" as const,
+      },
+      {
+        key: "footprint",
+        label: "Footprint",
+        value: result.units * 4.2,
+        suffix: " m²",
+        format: "float" as const,
+      },
+      {
+        key: "water",
+        label: "Water flow",
+        value: result.units * 240,
+        suffix: " L/min",
+        format: "int" as const,
+      },
+      {
+        key: "weight",
+        label: "Weight",
+        value: result.units * 1.85,
+        suffix: " t",
+        format: "float" as const,
+      },
+      {
+        key: "electrical",
+        label: "Electrical draw",
+        value: result.units * 18,
+        suffix: " kVA",
+        format: "int" as const,
+      },
+      {
+        key: "modules",
+        label: "Modules required",
+        value: result.units,
+        suffix: redundancy ? " (incl. N+1)" : "",
+        format: "int" as const,
+      },
+    ],
+    [result.units, redundancy],
+  );
+
+  // Per-row 200ms lime flash whenever the row's underlying value changes.
+  const [flashingRows, setFlashingRows] = useState<Record<string, boolean>>({});
+  const prevValuesRef = useRef<Record<string, number>>({});
+  useEffect(() => {
+    const timers: Array<ReturnType<typeof setTimeout>> = [];
+    const next: Record<string, boolean> = {};
+    let any = false;
+    for (const row of hudRows) {
+      const prev = prevValuesRef.current[row.key];
+      if (prev !== undefined && prev !== row.value) {
+        next[row.key] = true;
+        any = true;
+      }
+      prevValuesRef.current[row.key] = row.value;
+    }
+    if (any) {
+      setFlashingRows((s) => ({ ...s, ...next }));
+      Object.keys(next).forEach((k) => {
+        timers.push(
+          setTimeout(() => {
+            setFlashingRows((s) => {
+              const copy = { ...s };
+              delete copy[k];
+              return copy;
+            });
+          }, 200),
+        );
+      });
+    }
+    return () => {
+      timers.forEach((t) => clearTimeout(t));
+    };
+  }, [hudRows]);
 
   return (
     <div className="cfg">
@@ -444,6 +534,27 @@ export default function MTowerSizer() {
           </button>
         </div>
       </div>
+
+      {/* === SCADA-style live HUD === */}
+      <aside className="cfg-hud" aria-label="Live build specifications">
+        <p className="cfg-hud-title kicker">LIVE SPECS</p>
+        {hudRows.map((row) => (
+          <div
+            key={row.key}
+            className={`cfg-hud-row ${flashingRows[row.key] ? "is-flashing" : ""}`}
+          >
+            <span className="cfg-hud-label">{row.label}</span>
+            <span className="cfg-hud-value">
+              <AnimatedNumber
+                value={row.value}
+                duration={700}
+                format={row.format}
+                suffix={row.suffix}
+              />
+            </span>
+          </div>
+        ))}
+      </aside>
     </div>
   );
 }

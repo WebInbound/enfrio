@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
 import MTowerSizer from "@/components/MTowerSizer";
 import MTowerStage from "@/components/MTowerStage";
+import AnimatedNumber from "@/components/AnimatedNumber";
+import DeploySwitcher from "@/components/DeploySwitcher";
 
 export const metadata: Metadata = {
   title: "M Tower | Modular cooling that scales with your power | Enfrio",
@@ -15,27 +18,239 @@ export default function TowerMPage() {
     <SiteShell active="tower-m">
       <MTowerStage />
 
+      {/* PLAY 7 — Engineering Detail macro crops */}
+      <section className="section mtower-craft">
+        <div className="section-head reveal">
+          <p className="kicker">ENGINEERING DETAIL</p>
+          <h2>Built from the inside out.</h2>
+        </div>
+        <div className="mtower-craft-stack">
+          <figure className="craft-crop reveal">
+            <img src="/assets/images/site/rad-vertical.jpg" alt="Cu/Al finned coil close-up" />
+            <figcaption>Cu/Al finned coil. 0.12 mm fin pitch.</figcaption>
+          </figure>
+          <figure className="craft-crop reveal">
+            <img src="/assets/images/site/prod-welding.jpg" alt="Hot-dip galvanized weld detail" />
+            <figcaption>Hot-dip galvanized DIN EN ISO 1461.</figcaption>
+          </figure>
+          <figure className="craft-crop reveal">
+            <img src="/assets/images/site/mach-laser-b.jpg" alt="EC fan motor detail" />
+            <figcaption>EC fans. IE5 efficiency class.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      {/* PLAY 3 — Why modular: SVG stat cards */}
       <section className="section dark-block">
         <div className="section-head reveal">
           <p className="kicker">WHY MODULAR MATTERS</p>
           <h2>Three reasons engineers pick M Tower over fixed-size cooling.</h2>
         </div>
         <div className="grid-3">
-          <article className="card reveal">
+          <article className="stat reveal mtower-why-mod-card">
+            <svg
+              className="why-mod-diagram why-mod-diagram--capex"
+              viewBox="0 0 240 56"
+              aria-hidden="true"
+              focusable="false"
+            >
+              {Array.from({ length: 8 }).map((_, i) => {
+                const filled = i < 3;
+                return (
+                  <rect
+                    key={i}
+                    x={i * 29 + 4}
+                    y={8}
+                    width={22}
+                    height={40}
+                    rx={2}
+                    className={filled ? "why-mod-rect filled" : "why-mod-rect ghost"}
+                    style={{ ["--i" as string]: i } as CSSProperties}
+                  />
+                );
+              })}
+            </svg>
+            <h3>
+              <AnimatedNumber value={-42} suffix="% CAPEX" />
+            </h3>
             <p className="kicker">CAPEX</p>
-            <h3>Pay for capacity you actually use</h3>
-            <p>Buy what today&apos;s load needs. Add modules later when the plant grows. No oversized installation depreciating from day one.</p>
+            <p>Pay for capacity you actually use. Buy what today&apos;s load needs. Add modules later when the plant grows. No oversized installation depreciating from day one.</p>
           </article>
-          <article className="card reveal">
+
+          <article className="stat reveal mtower-why-mod-card">
+            <svg
+              className="why-mod-diagram why-mod-diagram--uptime"
+              viewBox="0 0 240 56"
+              aria-hidden="true"
+              focusable="false"
+            >
+              {Array.from({ length: 5 }).map((_, i) => {
+                const isSpare = i === 4;
+                return (
+                  <rect
+                    key={i}
+                    x={i * 47 + 8}
+                    y={8}
+                    width={36}
+                    height={40}
+                    rx={3}
+                    className={
+                      isSpare
+                        ? "why-mod-rect spare"
+                        : "why-mod-rect filled"
+                    }
+                    style={{ ["--i" as string]: i } as CSSProperties}
+                  />
+                );
+              })}
+            </svg>
+            <h3>
+              <AnimatedNumber value={100} suffix="% UPTIME" />
+            </h3>
             <p className="kicker">UPTIME</p>
-            <h3>N+1 redundancy comes for free</h3>
-            <p>Add one extra module to every bank and you have hot-swap redundancy. A failed unit doesn&apos;t take production down.</p>
+            <p>N+1 redundancy comes for free. Add one extra module to every bank and you have hot-swap redundancy. A failed unit doesn&apos;t take production down.</p>
           </article>
-          <article className="card reveal">
+
+          <article className="stat reveal mtower-why-mod-card">
+            <svg
+              className="why-mod-diagram why-mod-diagram--logistics"
+              viewBox="0 0 240 56"
+              aria-hidden="true"
+              focusable="false"
+            >
+              {Array.from({ length: 3 }).map((_, i) => (
+                <g
+                  key={i}
+                  className="why-mod-container"
+                  style={{ ["--i" as string]: i } as CSSProperties}
+                >
+                  <rect
+                    x={i * 78 + 4}
+                    y={12}
+                    width={70}
+                    height={32}
+                    rx={2}
+                    className="why-mod-container-shell"
+                  />
+                  {[0, 1, 2, 3, 4, 5].map((j) => (
+                    <line
+                      key={j}
+                      x1={i * 78 + 4 + 10 + j * 10}
+                      y1={14}
+                      x2={i * 78 + 4 + 10 + j * 10}
+                      y2={42}
+                      className="why-mod-container-line"
+                    />
+                  ))}
+                </g>
+              ))}
+            </svg>
+            <h3>
+              <AnimatedNumber value={90} suffix=" DAYS" />
+            </h3>
             <p className="kicker">LOGISTICS</p>
-            <h3>Container-fit, container-shipped</h3>
-            <p>Each module fits standard freight envelopes. From port to slab in days, not weeks. Field assembly on a single bolt pattern.</p>
+            <p>Container-fit, container-shipped. Each module fits standard freight envelopes. From port to slab in days, not weeks. Field assembly on a single bolt pattern.</p>
           </article>
+        </div>
+      </section>
+
+      {/* PLAY 5 — Modular scale band */}
+      <section className="section mtower-scale">
+        <div className="section-head reveal">
+          <p className="kicker">MODULAR SCALES WITH YOU</p>
+          <h2>From one unit to twelve megawatts.</h2>
+          <p>One bolt pattern, one spare-parts library — and a capacity envelope that follows the project from a single genset to a full hyperscale hall.</p>
+        </div>
+        <div className="grid-4 mtower-scale-grid">
+          {[
+            { n: 1, mw: 1.5, label: "Single genset", bg: "container" },
+            { n: 2, mw: 3, label: "Backup bank", bg: "substation" },
+            { n: 4, mw: 6, label: "Datacenter row", bg: "serverhall" },
+            { n: 8, mw: 12, label: "Hyperscale hall", bg: "plant" },
+          ].map((tier) => (
+            <article
+              key={tier.n}
+              className={`mtower-scale-tier reveal mtower-scale-tier--${tier.bg}`}
+            >
+              <div className="mtower-scale-bg" aria-hidden="true">
+                {tier.bg === "container" && (
+                  <svg viewBox="0 0 200 120" aria-hidden="true" focusable="false">
+                    <rect x="20" y="60" width="160" height="40" fill="none" stroke="currentColor" strokeWidth="1.4" />
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <line key={i} x1={30 + i * 20} y1={64} x2={30 + i * 20} y2={96} stroke="currentColor" strokeWidth="0.8" />
+                    ))}
+                  </svg>
+                )}
+                {tier.bg === "substation" && (
+                  <svg viewBox="0 0 200 120" aria-hidden="true" focusable="false">
+                    <line x1="10" y1="100" x2="190" y2="100" stroke="currentColor" strokeWidth="1.2" />
+                    {[40, 100, 160].map((x, i) => (
+                      <g key={i}>
+                        <line x1={x} y1="100" x2={x} y2="40" stroke="currentColor" strokeWidth="1.2" />
+                        <line x1={x - 16} y1="50" x2={x + 16} y2="50" stroke="currentColor" strokeWidth="1.2" />
+                        <line x1={x - 16} y1="65" x2={x + 16} y2="65" stroke="currentColor" strokeWidth="1.2" />
+                      </g>
+                    ))}
+                  </svg>
+                )}
+                {tier.bg === "serverhall" && (
+                  <svg viewBox="0 0 200 120" aria-hidden="true" focusable="false">
+                    {Array.from({ length: 5 }).map((_, row) =>
+                      Array.from({ length: 6 }).map((__, col) => (
+                        <rect
+                          key={`${row}-${col}`}
+                          x={20 + col * 28}
+                          y={20 + row * 18}
+                          width={22}
+                          height={12}
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="0.9"
+                        />
+                      ))
+                    )}
+                  </svg>
+                )}
+                {tier.bg === "plant" && (
+                  <svg viewBox="0 0 200 120" aria-hidden="true" focusable="false">
+                    <rect x="40" y="50" width="120" height="60" fill="none" stroke="currentColor" strokeWidth="1.2" />
+                    {[0, 1, 2, 3].map((i) => (
+                      <rect key={i} x={50 + i * 28} y={36} width={20} height={14} fill="none" stroke="currentColor" strokeWidth="1" />
+                    ))}
+                    <line x1="0" y1="110" x2="200" y2="110" stroke="currentColor" strokeWidth="1" />
+                  </svg>
+                )}
+              </div>
+
+              <svg
+                className="mtower-scale-modules"
+                viewBox={`0 0 ${tier.n * 22 + 8} 64`}
+                aria-hidden="true"
+                focusable="false"
+              >
+                {Array.from({ length: tier.n }).map((_, i) => (
+                  <rect
+                    key={i}
+                    x={i * 22 + 4}
+                    y={6}
+                    width={16}
+                    height={52}
+                    rx={2}
+                    className="mtower-scale-module"
+                    style={{ ["--i" as string]: i } as CSSProperties}
+                  />
+                ))}
+              </svg>
+
+              <p className="mtower-scale-count">
+                {tier.n} {tier.n === 1 ? "module" : "modules"}
+              </p>
+              <p className="mtower-scale-mw">
+                <AnimatedNumber value={tier.mw} suffix=" MW" format="float" />
+              </p>
+              <p className="mtower-scale-label">{tier.label}</p>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -52,103 +267,59 @@ export default function TowerMPage() {
         <MTowerSizer />
       </section>
 
+      {/* PLAY 6 — Deployment Contexts: tabbed switcher */}
       <section className="section">
         <div className="section-head reveal">
           <p className="kicker">DEPLOYMENT CONTEXTS</p>
-          <h2>From a single genset to a full datacenter hall.</h2>
-          <p>Two real-world scenarios where modular heat rejection wins on capex, uptime and time-to-deploy.</p>
+          <h2>One platform, four worlds.</h2>
+          <p>The M Tower envelope adapts to ambient, fluid and certification rules across the industries we serve. Switch contexts to compare the spec deltas.</p>
         </div>
-        <div className="deploy-grid">
-          <article className="deploy-card reveal">
-            <span className="deploy-card-tag">POWER GENERATION</span>
-            {/* Subtle watermark diagram — a row of vertical "M Tower" bars
-                paired with horizontal "genset" blocks. Communicates the
-                "one M Tower per genset, line up the bank" idea without
-                resorting to a futuristic AI hero photo. */}
-            <svg
-              className="deploy-card-mark"
-              viewBox="0 0 240 80"
-              aria-hidden="true"
-              focusable="false"
-            >
-              {[0, 1, 2, 3, 4, 5].map((i) => (
-                <g key={i} transform={`translate(${i * 40 + 6} 8)`}>
-                  <rect x="0" y="0" width="22" height="38" rx="2" />
-                  <rect x="0" y="44" width="28" height="22" rx="2" opacity="0.55" />
-                </g>
-              ))}
-            </svg>
-            <div className="deploy-card-body">
-              <h3>Backup &amp; primary gensets</h3>
-              <p>
-                Mission-critical sites where the cooling plant has to track the
-                generator&apos;s load profile. M Tower scales bank-by-bank as the
-                site grows.
-              </p>
-              <ul className="deploy-stats">
-                <li><strong>1 – 8</strong><span>modules per genset bank</span></li>
-                <li><strong>1.5 – 12 MW</strong><span>heat rejection envelope</span></li>
-                <li><strong>N+1</strong><span>redundancy on bolt-down</span></li>
-              </ul>
-            </div>
-          </article>
-
-          <article className="deploy-card reveal">
-            <span className="deploy-card-tag">DATACENTER COOLING</span>
-            {/* Subtle watermark diagram — server-rack stack next to a
-                cooling tower silhouette. Same idea: visual hint, no AI
-                photo. */}
-            <svg
-              className="deploy-card-mark"
-              viewBox="0 0 240 80"
-              aria-hidden="true"
-              focusable="false"
-            >
-              {/* Server rack rows */}
-              {[0, 1, 2, 3, 4].map((i) => (
-                <rect
-                  key={`r-${i}`}
-                  x="20"
-                  y={8 + i * 14}
-                  width="120"
-                  height="9"
-                  rx="1.5"
-                  opacity={0.42 + i * 0.08}
-                />
-              ))}
-              {/* Cooling tower next to the rack */}
-              <rect x="170" y="6" width="42" height="68" rx="3" />
-              <line x1="178" y1="22" x2="204" y2="22" strokeWidth="1.5" />
-              <line x1="178" y1="34" x2="204" y2="34" strokeWidth="1.5" />
-              <line x1="178" y1="46" x2="204" y2="46" strokeWidth="1.5" />
-              <line x1="178" y1="58" x2="204" y2="58" strokeWidth="1.5" />
-            </svg>
-            <div className="deploy-card-body">
-              <h3>High-density compute halls</h3>
-              <p>
-                Workload grows non-linearly. Start with the modules you need
-                today, drop in more skids as you fill racks &mdash; no redesign,
-                no oversized plant burning capex on day one.
-              </p>
-              <ul className="deploy-stats">
-                <li><strong>Pay-as-you-grow</strong><span>cap-ex profile</span></li>
-                <li><strong>Container-fit</strong><span>port to slab in days</span></li>
-                <li><strong>Hot-swap</strong><span>maintenance with N+1</span></li>
-              </ul>
-            </div>
-          </article>
-        </div>
+        <DeploySwitcher />
       </section>
 
-      <section className="section cta reveal">
-        <p className="kicker">M TOWER ENQUIRY</p>
-        <h2>Ready to size your installation with Enfrio engineering?</h2>
-        <p>
-          Use the simulator above for a first estimate, then send the brief to our team —
-          we will reply with a configuration, a quote envelope and a delivery roadmap.
-        </p>
-        <div className="btn-row" style={{ justifyContent: "center" }}>
-          <Link className="btn solid magnetic" href="/contact?subject=M+Tower+Inquiry">Talk to the M Tower team</Link>
+      {/* PLAY 8 — Closing outro recap */}
+      <section className="mtower-outro section dark-block">
+        <div className="mtower-outro-grid">
+          <div className="mtower-outro-media mtower-spotlight-media--render reveal">
+            <img src="/assets/images/site/mtower-render.png" alt="M Tower modular cooling unit" />
+          </div>
+          <div className="mtower-outro-content reveal">
+            <p className="kicker">READY TO SCALE WITH YOU</p>
+            <h2>From brief to bolted-down in 90 days.</h2>
+            <div className="mtower-outro-strip">
+              <span className="mtower-outro-strip-num">1500 kW</span>
+              <span className="mtower-outro-strip-dot">&middot;</span>
+              <span className="mtower-outro-strip-num">12 MW</span>
+              <span className="mtower-outro-strip-dot">&middot;</span>
+              <span className="mtower-outro-strip-num">N+1</span>
+            </div>
+            <ol className="timeline mtower-outro-timeline">
+              <li>
+                <span className="step">Brief</span>
+                <span>Engine card, ambient, redundancy target — we read the project on a single page.</span>
+              </li>
+              <li>
+                <span className="step">Engineer</span>
+                <span>Sized on real platform data, validated against the operating envelope before steel is cut.</span>
+              </li>
+              <li>
+                <span className="step">Build</span>
+                <span>Laser, bend, weld, galvanize, assemble — all in-house at Ponderano (BI), Italy.</span>
+              </li>
+              <li>
+                <span className="step">Commission</span>
+                <span>Container shipped, bolted down, hot-tested on site. Handover signed by Enfrio engineering.</span>
+              </li>
+            </ol>
+            <div className="btn-row">
+              <Link className="btn solid magnetic" href="/contact?subject=M+Tower+Inquiry">
+                Talk to the M Tower team
+              </Link>
+              {/* TODO: replace href with /assets/datasheet-mtower.pdf once the
+                  final datasheet is signed off by Engineering. */}
+              <a className="btn ghost" href="#">Download datasheet</a>
+            </div>
+          </div>
         </div>
       </section>
     </SiteShell>
