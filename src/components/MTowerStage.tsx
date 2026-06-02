@@ -15,46 +15,33 @@ const FRAME_COUNT = 120;
 
 /**
  * Starting frame on first paint. Frame 0 is the canonical front-3/4
- * marketing view — front face with the protection mesh on the left,
- * the inverter cabinet with inlet pipes on the right, structural
- * frame visible behind. This is the silhouette people associate with
- * the M Tower.
+ * marketing view — the silhouette people associate with the M Tower.
  */
 const INITIAL_FRAME = 0;
 
 /**
  * Frames the unit rotates across the hero's scroll arc.
  * The source CAD video isn't a pure vertical-axis rotation across all
- * 120 frames — past frame ~45 the camera dips below the unit and
- * starts giving "from above" / "lying down" angles that don't read as
- * a product portrait. Cap the scroll rotation at 30 frames (90°) so
- * the scroll-driven view always stays in the upright, marketing-safe
- * range. Drag is unconstrained — power users who explicitly pull the
- * unit can still see every angle.
+ * 120 frames — past frame ~45 the camera dips below the unit and gives
+ * "from above" / "lying down" angles that don't read as a product
+ * portrait. Cap the scroll rotation at 30 frames (90°) so the scroll-
+ * driven view always stays in the upright, marketing-safe range. Drag
+ * is unconstrained — power users can still see every angle.
  */
 const SCROLL_ROTATION_FRAMES = 30;
 
 /**
- * Annotation chips — each one is anchored to a frame band of the
- * 0–30 arc. As the scroll-driven frame advances, the active chip
- * lights up and a lime connector line draws toward the unit centre.
- *
- * The visual position (top/left as %) places each chip around the
- * unit silhouette so the lines feel like real callouts. Mobile
- * (< 880px) hides the chips entirely.
+ * Annotation chips, anchored to frame bands of the 0-30 arc. Chips
+ * live in the hero only and fade between bands as the visitor scrolls.
  */
 type Chip = {
   id: string;
   band: [number, number];
   label: string;
   spec: string;
-  /* Position of the chip itself, as % of the visual box. */
   top: string;
   left: string;
-  /* SVG connector endpoint, in % of the visual box (where the line
-     terminates on the unit). */
   lineTo: { x: number; y: number };
-  /* Which corner of the chip the line should leave from. */
   origin: "right" | "left" | "bottom-right" | "bottom-left";
 };
 
@@ -106,7 +93,6 @@ function mod(n: number, m: number): number {
 }
 
 function activeChipIndex(frame: number): number {
-  // Clamp to the scroll arc; drag past 30 keeps the last chip active.
   const f = Math.min(SCROLL_ROTATION_FRAMES, Math.max(0, frame));
   for (let i = 0; i < CHIPS.length; i++) {
     const [lo, hi] = CHIPS[i].band;
@@ -118,37 +104,32 @@ function activeChipIndex(frame: number): number {
 /**
  * MTowerStage — the M Tower flagship hero.
  *
- * Layout (sticky pin through Hero + Explore):
- *   ┌─────────────────────────────────────────────────────────┐
- *   │  .mtower-pin-wrap  (tall — hero + explore stacked)      │
- *   │  ┌────────────────────────────────────────────────────┐ │
- *   │  │  HERO  (text col + sticky visual col)              │ │
- *   │  │   ┌──────────────┐   ┌─────────────────────────┐   │ │
- *   │  │   │ Text + specs │   │ STICKY canvas + chips   │   │ │
- *   │  │   │ + CTA        │   │ (stays put across the   │   │ │
- *   │  │   │              │   │  hero + explore scroll) │   │ │
- *   │  │   └──────────────┘   └─────────────────────────┘   │ │
- *   │  ├────────────────────────────────────────────────────┤ │
- *   │  │  EXPLORE  (right-rail panels appear in sequence    │ │
- *   │  │  beside the still-sticky canvas)                   │ │
- *   │  └────────────────────────────────────────────────────┘ │
- *   └─────────────────────────────────────────────────────────┘
+ * Layout (linear, NO sticky):
+ *   ┌────────────────────────────────────────────────────┐
+ *   │  HERO  (~90vh — text col + canvas col side by side)│
+ *   │   ┌──────────────┐   ┌─────────────────────────┐   │
+ *   │   │ Text + specs │   │  Canvas + annotation    │   │
+ *   │   │ + CTA        │   │  chips (frame-banded)   │   │
+ *   │   └──────────────┘   └─────────────────────────┘   │
+ *   ├────────────────────────────────────────────────────┤
+ *   │  EXPLORE  (separate section, no shared canvas)     │
+ *   │  Mechanical + Integration panels                   │
+ *   └────────────────────────────────────────────────────┘
  *
- * The canvas lives once at the top of the pin-wrap in a sticky shell.
- * Scroll progress across the entire pin-wrap height is mapped to the
- * 0–30 frame arc, and the active annotation chip lights up by band.
- *
- * Mobile (< 880px) disables sticky and hides chips — content reverts
- * to the linear stack (text → canvas → explore copy → panels).
+ * NOTE on architecture: we previously experimented with a sticky-pinned
+ * canvas spanning hero + explore. That broke twice (zoom drift, void
+ * below pinned canvas, unit clipping outside the visual box) because
+ * sticky's containing block constraints fight the layout. Linear is
+ * the production-grade choice. Annotation chips still light up by
+ * frame band as the unit rotates inside the hero.
  *
  * Rotation:
- *   - Scroll across the pin-wrap advances the frame by delta against
- *     the previous scroll position. Drag-induced offsets persist when
- *     scroll resumes.
- *   - Drag overrides scroll for the duration of the pointer gesture.
+ *   - Scroll across the hero advances the frame by delta against the
+ *     previous scroll position. Drag-induced offsets persist.
+ *   - Drag overrides scroll while the pointer is down.
  */
 export default function MTowerStage() {
-  const pinWrapRef = useRef<HTMLElement | null>(null);
+  const heroRef = useRef<HTMLElement | null>(null);
   const [frame, setFrame] = useState(INITIAL_FRAME);
 
   const scrollContribRef = useRef(0);
@@ -157,15 +138,15 @@ export default function MTowerStage() {
   const dragStartFrameRef = useRef(INITIAL_FRAME);
   const visualWidthRef = useRef(1);
 
-  // Scroll-driven rotation across the WHOLE pin-wrap (hero + explore).
+  // Scroll-driven rotation across the hero only.
   useEffect(() => {
-    const wrap = pinWrapRef.current;
-    if (!wrap) return;
+    const hero = heroRef.current;
+    if (!hero) return;
     let raf = 0;
     const update = () => {
       raf = 0;
       if (isDraggingRef.current) return;
-      const rect = wrap.getBoundingClientRect();
+      const rect = hero.getBoundingClientRect();
       const vh = window.innerHeight;
       const total = rect.height + vh;
       const scrolled = Math.max(0, vh - rect.top);
@@ -233,80 +214,9 @@ export default function MTowerStage() {
 
   const activeIdx = activeChipIndex(frame);
 
-  /* The sticky visual block — shared by the hero and the explore
-     section. Rendered once at the top of the pin-wrap. */
-  const stickyVisual = (
-    <div className="mtower-stage-sticky">
-      <div
-        className="mtower-stage-visual"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        role="img"
-        aria-label="Enfrio M Tower 3D render — drag or scroll to rotate"
-      >
-        <MTowerCanvas frame={frame} />
-
-        {/* Annotation chips + lime SVG connectors (desktop only). */}
-        <svg
-          className="mtower-anno-lines"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          {CHIPS.map((chip, i) => {
-            // Anchor each line at the inside corner of the chip's
-            // bounding region, drawn toward the unit centre point.
-            const anchor = chipAnchor(chip);
-            const active = i === activeIdx;
-            return (
-              <line
-                key={chip.id}
-                className={
-                  "mtower-anno-line" + (active ? " is-active" : "")
-                }
-                x1={anchor.x}
-                y1={anchor.y}
-                x2={chip.lineTo.x}
-                y2={chip.lineTo.y}
-              />
-            );
-          })}
-        </svg>
-
-        {CHIPS.map((chip, i) => {
-          const active = i === activeIdx;
-          return (
-            <div
-              key={chip.id}
-              className={
-                "mtower-anno-chip" +
-                (active ? " is-active" : "") +
-                " mtower-anno-chip--" +
-                chip.origin
-              }
-              style={{ top: chip.top, left: chip.left }}
-              aria-hidden={!active}
-            >
-              <span className="mtower-anno-chip-label">{chip.label}</span>
-              <span className="mtower-anno-chip-spec">{chip.spec}</span>
-            </div>
-          );
-        })}
-
-        <div className="mtower-stage-hint" aria-hidden="true">
-          <span>↔ drag</span>
-          <span>·</span>
-          <span>↓ scroll</span>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
-    <section ref={pinWrapRef} className="mtower-pin-wrap">
-      <section className="mtower-stage" id="mtower-stage-hero">
+    <>
+      <section ref={heroRef} className="mtower-stage" id="mtower-stage-hero">
         <div className="mtower-stage-bg" aria-hidden="true" />
 
         <div className="mtower-stage-row">
@@ -355,58 +265,104 @@ export default function MTowerStage() {
             </p>
           </div>
 
-          {/* Right column on desktop: holds the sticky visual. The
-              sticky shell lives here so the canvas is positioned
-              against this column on the hero, then continues to be
-              sticky as the user scrolls into the explore section
-              underneath (the outer .mtower-pin-wrap is the scroll
-              container that keeps it pinned). */}
-          <div className="mtower-stage-visual-col">{stickyVisual}</div>
+          <div
+            className="mtower-stage-visual"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+            role="img"
+            aria-label="Enfrio M Tower 3D render — drag or scroll to rotate"
+          >
+            <MTowerCanvas frame={frame} />
+
+            {/* Annotation chips + lime SVG connectors (desktop only). */}
+            <svg
+              className="mtower-anno-lines"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              {CHIPS.map((chip, i) => {
+                const anchor = chipAnchor(chip);
+                const active = i === activeIdx;
+                return (
+                  <line
+                    key={chip.id}
+                    className={
+                      "mtower-anno-line" + (active ? " is-active" : "")
+                    }
+                    x1={anchor.x}
+                    y1={anchor.y}
+                    x2={chip.lineTo.x}
+                    y2={chip.lineTo.y}
+                  />
+                );
+              })}
+            </svg>
+
+            {CHIPS.map((chip, i) => {
+              const active = i === activeIdx;
+              return (
+                <div
+                  key={chip.id}
+                  className={
+                    "mtower-anno-chip" +
+                    (active ? " is-active" : "") +
+                    " mtower-anno-chip--" +
+                    chip.origin
+                  }
+                  style={{ top: chip.top, left: chip.left }}
+                  aria-hidden={!active}
+                >
+                  <span className="mtower-anno-chip-label">{chip.label}</span>
+                  <span className="mtower-anno-chip-spec">{chip.spec}</span>
+                </div>
+              );
+            })}
+
+            <div className="mtower-stage-hint" aria-hidden="true">
+              <span>↔ drag</span>
+              <span>·</span>
+              <span>↓ scroll</span>
+            </div>
+          </div>
         </div>
       </section>
 
       <section className="section dark-block" id="mtower-explore">
-        <div className="mtower-explore-grid">
-          <div className="mtower-explore-rail">
-            <div className="section-head reveal">
-              <p className="kicker">EXPLORE THE UNIT</p>
-              <h2>Engineered to the millimetre, built to ship.</h2>
-              <p>
-                The stainless tube bundles, the louvered aluminium fins, the
-                inverter cabinet on the side, the vibration-isolated frame —
-                every detail is engineered for the duty cycle of mission-critical
-                heat rejection. Spin the render to inspect every face.
-              </p>
-            </div>
-            <article className="panel reveal">
-              <h3>Mechanical</h3>
-              <ul className="checks">
-                <li>High-alloy aluminium cores with dimpled tubes</li>
-                <li>Louvered fins for maximum heat transfer surface</li>
-                <li>Vibration-isolated black-painted steel frame</li>
-                <li>Welded gussets at every structural corner</li>
-              </ul>
-            </article>
-            <article className="panel reveal">
-              <h3>Integration</h3>
-              <ul className="checks">
-                <li>Inverter cabinet integrated on the side</li>
-                <li>Container-fit envelope: ship, lift, bolt down</li>
-                <li>Hydraulic interface shared across every module</li>
-                <li>Rubber vibration-isolation pads at the base</li>
-              </ul>
-            </article>
-          </div>
-
-          {/* Empty placeholder column — the sticky visual lives in the
-              hero's right column and visually continues pinned across
-              this section because .mtower-pin-wrap is the scroll
-              container. On mobile this entire grid collapses to one
-              column and the canvas falls back to its hero slot. */}
-          <div className="mtower-explore-spacer" aria-hidden="true" />
+        <div className="section-head reveal">
+          <p className="kicker">EXPLORE THE UNIT</p>
+          <h2>Engineered to the millimetre, built to ship.</h2>
+          <p>
+            The stainless tube bundles, the louvered aluminium fins, the
+            inverter cabinet on the side, the vibration-isolated frame —
+            every detail is engineered for the duty cycle of mission-critical
+            heat rejection. Spin the render above to inspect every face.
+          </p>
+        </div>
+        <div className="grid-2">
+          <article className="panel reveal">
+            <h3>Mechanical</h3>
+            <ul className="checks">
+              <li>High-alloy aluminium cores with dimpled tubes</li>
+              <li>Louvered fins for maximum heat transfer surface</li>
+              <li>Vibration-isolated black-painted steel frame</li>
+              <li>Welded gussets at every structural corner</li>
+            </ul>
+          </article>
+          <article className="panel reveal">
+            <h3>Integration</h3>
+            <ul className="checks">
+              <li>Inverter cabinet integrated on the side</li>
+              <li>Container-fit envelope: ship, lift, bolt down</li>
+              <li>Hydraulic interface shared across every module</li>
+              <li>Rubber vibration-isolation pads at the base</li>
+            </ul>
+          </article>
         </div>
       </section>
-    </section>
+    </>
   );
 }
 
@@ -415,8 +371,6 @@ export default function MTowerStage() {
    in % units; the line should exit from the appropriate edge so it
    looks like it's drawn FROM the chip TO the unit. */
 function chipAnchor(chip: Chip): { x: number; y: number } {
-  // Approximate chip width/height in % of the box. Tuned to match the
-  // CSS values (chip is roughly 18% wide, 7% tall on desktop).
   const w = 18;
   const h = 7;
   const t = parseFloat(chip.top);

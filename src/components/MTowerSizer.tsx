@@ -272,25 +272,25 @@ export default function MTowerSizer() {
             type="range"
             className="cfg-slider"
             min={100}
-            max={20000}
+            max={50000}
             step={50}
             value={power}
             onChange={(e) => setPower(Number(e.target.value))}
             aria-label="Engine power in kilowatts"
-            style={{ ["--fill" as string]: `${((power - 100) / (20000 - 100)) * 100}%` }}
+            style={{ ["--fill" as string]: `${((power - 100) / (50000 - 100)) * 100}%` }}
           />
           <div className="cfg-power-marks" aria-hidden="true">
             <span>100 kW</span>
-            <span>5 MW</span>
             <span>10 MW</span>
-            <span>15 MW</span>
-            <span>20 MW</span>
+            <span>25 MW</span>
+            <span>40 MW</span>
+            <span>50 MW</span>
           </div>
           <input
             type="number"
             className="cfg-power-number"
             min={100}
-            max={50000}
+            max={100000}
             step={50}
             value={power}
             onChange={(e) => setPower(Math.max(100, Number(e.target.value) || 0))}
@@ -416,9 +416,14 @@ export default function MTowerSizer() {
         </div>
 
         {(() => {
-          // Lay the modules out as 1 row (<=6 units) or 2 rows (>6 units)
-          // so the per-card size stays readable even on big banks.
-          const rowsCount = totalUnits <= 6 ? 1 : 2;
+          // Lay the modules out as 1 / 2 / 3 / 4 rows depending on count so
+          // the per-card size stays readable. Caps at 4 rows so even a 60+
+          // module mega-bank still fits the stage without infinite vertical
+          // growth.
+          const rowsCount =
+            totalUnits <= 6 ? 1 :
+            totalUnits <= 16 ? 2 :
+            totalUnits <= 30 ? 3 : 4;
           const perRow = Math.ceil(totalUnits / rowsCount);
           const showCap = totalUnits <= 4;
           const showTag = totalUnits <= 8;

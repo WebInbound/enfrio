@@ -3005,6 +3005,30 @@ li {
   aspect-ratio: 1 / 1.7;
 }
 
+/* 3 rows → 17-30 modules. Compress vertically and slim cards. */
+.cfg-stage-grid[data-rows="3"] {
+  gap: 14px;
+}
+.cfg-stage-grid[data-rows="3"] .cfg-stage-row {
+  min-height: 96px;
+}
+.cfg-stage-grid[data-rows="3"] .cfg-mod-card {
+  aspect-ratio: 1 / 2;
+  max-width: 60px;
+}
+
+/* 4 rows → 31-60 modules. Cards become identification tokens, not posters. */
+.cfg-stage-grid[data-rows="4"] {
+  gap: 10px;
+}
+.cfg-stage-grid[data-rows="4"] .cfg-stage-row {
+  min-height: 76px;
+}
+.cfg-stage-grid[data-rows="4"] .cfg-mod-card {
+  aspect-ratio: 1 / 2.2;
+  max-width: 42px;
+}
+
 /* Few modules → cards stay big and centred */
 .cfg-stage-row[data-count="1"],
 .cfg-stage-row[data-count="2"],
@@ -3602,41 +3626,9 @@ li {
 /* Sticky pin + annotation chips for Play 1 */
 /* Hero spec strip for Play 2 */
 
-/* The outer pin wrapper. It spans the hero AND the explore section so
-   the sticky canvas inside the hero's right column stays glued to the
-   viewport as the visitor scrolls through both. Position:relative so
-   the sticky descendant computes against this scroll container. */
-.mtower-pin-wrap {
-  position: relative;
-  isolation: isolate;
-}
-
-/* Right column of the hero — hosts the sticky shell. Min-height keeps
-   the column tall enough for sticky to engage on shorter viewports. */
-.mtower-stage-visual-col {
-  position: relative;
-  min-height: clamp(420px, 72vh, 680px);
-  display: block;
-}
-
-/* The sticky shell. Lives in the hero's right column, pinned at 12vh
-   from the top of the viewport. Because it's inside .mtower-pin-wrap,
-   it stays pinned through the explore section too. */
-.mtower-stage-sticky {
-  position: sticky;
-  top: 12vh;
-  height: clamp(420px, 72vh, 680px);
-  display: grid;
-  place-items: stretch;
-}
-
-/* When the sticky shell is in play, the visual fills it (overriding
-   the linear .mtower-stage-visual height so it stretches to its
-   sticky parent). */
-.mtower-stage-sticky .mtower-stage-visual {
-  height: 100%;
-  width: 100%;
-}
+/* Sticky pin removed (broke twice — zoom drift, void below, unit clipping
+   outside the visual box). The hero is back to the v3 linear layout. The
+   chip + line + spec strip CSS below still applies to the linear visual. */
 
 /* Annotation chips. Each chip is absolutely positioned over the
    visual; CSS variables set its top/left. The active chip lights up
@@ -3722,33 +3714,9 @@ li {
   stroke-dasharray: none;
 }
 
-/* Explore grid — text rail on the left, sticky-visual passthrough on
-   the right. The rail panels stack vertically and reveal in sequence
-   as the visitor scrolls past the still-pinned canvas. */
-.mtower-explore-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-  gap: clamp(20px, 4vw, 64px);
-  align-items: start;
-}
-
-.mtower-explore-rail {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(24px, 4vh, 48px);
-}
-
-.mtower-explore-rail .panel {
-  margin: 0;
-}
-
-/* The right column of the explore grid is empty — the sticky canvas
-   from the hero visually occupies this space because it's sticky
-   inside the shared .mtower-pin-wrap. We just need to reserve enough
-   height for the rail content to scroll past. */
-.mtower-explore-spacer {
-  min-height: 1px;
-}
+/* (Explore grid CSS removed along with the sticky pin — explore is back to
+   a standard .section dark-block with .grid-2 panels, styled by the
+   global section + grid + panel rules above.) */
 
 /* === Play 2: Hero spec strip === */
 .mtower-hero-specs {
@@ -3818,27 +3786,12 @@ li {
   font-weight: 600;
 }
 
-/* Mobile / tablet fallback: < 880px disables sticky, hides chips,
-   collapses the explore grid back to single-column, and stacks the
-   hero specs vertically. */
+/* Mobile / tablet fallback: < 880px hides chips and stacks the
+   hero specs vertically. (Sticky pin was removed — no sticky overrides
+   needed anymore.) */
 @media (max-width: 880px) {
-  .mtower-stage-visual-col {
-    min-height: 0;
-  }
-  .mtower-stage-sticky {
-    position: static;
-    top: auto;
-    height: auto;
-  }
   .mtower-anno-chip,
   .mtower-anno-lines {
-    display: none;
-  }
-  .mtower-explore-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: clamp(20px, 4vh, 36px);
-  }
-  .mtower-explore-spacer {
     display: none;
   }
 
@@ -4394,8 +4347,22 @@ li {
 .mtower-outro-timeline {
   margin-bottom: 22px;
 }
+/* The base .timeline rule assumes short numeric step labels ("1", "2") in
+   a 74px column. The outro uses word labels ("Engineer", "Commission") at
+   2rem — they overflow 74px and crash into the description. Widen the
+   step column and ditch the cramped 2rem so words fit cleanly. */
 .mtower-outro-timeline li {
+  grid-template-columns: minmax(120px, 0.42fr) minmax(0, 1fr);
   align-items: center;
+  column-gap: 18px;
+}
+.mtower-outro-timeline .step {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand-deep);
+  line-height: 1.1;
 }
 @media (max-width: 880px) {
   .mtower-outro-grid {
@@ -4409,9 +4376,10 @@ li {
   }
   .mtower-outro-timeline li {
     grid-template-columns: minmax(0, 1fr);
+    row-gap: 4px;
   }
   .mtower-outro-timeline .step {
-    font-size: 1.4rem;
+    font-size: 0.95rem;
   }
 }
 
