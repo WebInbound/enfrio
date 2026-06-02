@@ -106,49 +106,17 @@ function MTowerBillboard({
   );
 }
 
-/* Brand-coloured radial glow under the unit. Cheap fragment shader,
-   gives the canvas a hint of depth so it doesn't look like a flat decal. */
-function BackdropGlow() {
-  const material = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        transparent: true,
-        depthWrite: false,
-        uniforms: {
-          uColor: { value: new THREE.Color("#a3e635") },
-        },
-        vertexShader: /* glsl */ `
-          varying vec2 vUv;
-          void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }
-        `,
-        fragmentShader: /* glsl */ `
-          varying vec2 vUv;
-          uniform vec3 uColor;
-          void main() {
-            vec2 p = vUv - 0.5;
-            float r = length(p);
-            // Boosted from 0.20 to 0.36 + tighter falloff so the unit
-            // reads as sitting on brand-lit ground, not floating in a
-            // grey void. The CAD-derived render itself is grey/black/
-            // blue — the glow does the brand-tinting work.
-            float a = smoothstep(0.55, 0.0, r) * 0.36;
-            gl_FragColor = vec4(uColor, a);
-          }
-        `,
-      }),
-    [],
-  );
-  return (
-    <mesh position={[0, -0.25, -0.6]}>
-      <planeGeometry args={[4, 3]} />
-      <primitive object={material} attach="material" />
-    </mesh>
-  );
-}
-
+/* -------------------------------------------------------------------------- */
+/* BackdropGlow removed. Reasoning:                                           */
+/*  - The radial gradient plane was visible as a rectangle at higher opacity  */
+/*    (plane edges read as a yellow box around the unit).                     */
+/*  - The brand-coloured ambient is already provided by the parent section's  */
+/*    `.mtower-stage-bg` CSS layer (blue + lime radial gradients), which sits */
+/*    behind the canvas and renders edge-to-edge without artefacts.           */
+/*  - Doubling the glow in WebGL tinted the CAD-derived render away from its  */
+/*    canonical grey/black/blue colours, drifting from `mtower-render.png`.   */
+/* The canvas now shows the unit on a fully transparent stage and inherits    */
+/* its brand atmosphere from the page chrome.                                 */
 /* -------------------------------------------------------------------------- */
 /* Reads the cursor's normalised position over the host element and writes    */
 /* it into a ref the billboard reads on every R3F frame. Listens on the       */
@@ -210,7 +178,6 @@ export default function MTowerCanvas({ frame }: { frame: number }) {
       }}
     >
       <ambientLight intensity={1} />
-      <BackdropGlow />
       <CursorTracker cursorRef={cursorRef} />
       <MTowerBillboard frame={frame} cursorRef={cursorRef} />
     </Canvas>
