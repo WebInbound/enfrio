@@ -130,7 +130,11 @@ function BackdropGlow() {
           void main() {
             vec2 p = vUv - 0.5;
             float r = length(p);
-            float a = smoothstep(0.55, 0.0, r) * 0.20;
+            // Boosted from 0.20 to 0.36 + tighter falloff so the unit
+            // reads as sitting on brand-lit ground, not floating in a
+            // grey void. The CAD-derived render itself is grey/black/
+            // blue — the glow does the brand-tinting work.
+            float a = smoothstep(0.55, 0.0, r) * 0.36;
             gl_FragColor = vec4(uColor, a);
           }
         `,

@@ -13,19 +13,25 @@ const MTowerCanvas = dynamic(() => import("./MTowerCanvas"), {
 const FRAME_COUNT = 120;
 
 /**
- * Starting frame on first paint. Index 12 of 120 ≈ 36° — the "marketing
- * 3/4" view where the front face, the side frame and the inverter
- * cabinet are all readable at once.
+ * Starting frame on first paint. Frame 0 is the canonical front-3/4
+ * marketing view — front face with the protection mesh on the left,
+ * the inverter cabinet with inlet pipes on the right, structural
+ * frame visible behind. This is the silhouette people associate with
+ * the M Tower.
  */
-const INITIAL_FRAME = 12;
+const INITIAL_FRAME = 0;
 
 /**
- * Frames the unit rotates across the hero's scroll arc. 60 of 120 = 180°
- * — half a revolution so the user sees the back face appear before the
- * hero leaves the viewport. Half rotation also avoids landing back on
- * the starting view which would read as "nothing happened".
+ * Frames the unit rotates across the hero's scroll arc.
+ * The source CAD video isn't a pure vertical-axis rotation across all
+ * 120 frames — past frame ~45 the camera dips below the unit and
+ * starts giving "from above" / "lying down" angles that don't read as
+ * a product portrait. Cap the scroll rotation at 30 frames (90°) so
+ * the scroll-driven view always stays in the upright, marketing-safe
+ * range. Drag is unconstrained — power users who explicitly pull the
+ * unit can still see every angle.
  */
-const SCROLL_ROTATION_FRAMES = 60;
+const SCROLL_ROTATION_FRAMES = 30;
 
 function mod(n: number, m: number): number {
   return ((n % m) + m) % m;
