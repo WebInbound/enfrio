@@ -30,7 +30,10 @@ export default function AnimatedNumber({
       const tick = (now: number) => {
         const elapsed = now - start;
         const t = Math.min(1, elapsed / duration);
-        const eased = 1 - Math.pow(1 - t, 3);
+        // ease-out-quint — a touch more dramatic than ease-out-cubic so
+        // the number lands clearly at the final value instead of feeling
+        // like it's still trickling at the end.
+        const eased = 1 - Math.pow(1 - t, 5);
         setDisplay(value * eased);
         if (t < 1) raf = requestAnimationFrame(tick);
       };
@@ -47,7 +50,10 @@ export default function AnimatedNumber({
           }
         });
       },
-      { threshold: 0.4 },
+      // Lowered from 0.4 so the count-up starts as soon as the element
+      // is comfortably in view — fires earlier on fast scrolls and on
+      // tall content where 40% visibility lands halfway down.
+      { threshold: 0.18 },
     );
 
     observer.observe(node);

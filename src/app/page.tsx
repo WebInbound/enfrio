@@ -22,7 +22,7 @@ export default function HomePage() {
             cost targets and field reliability.
           </p>
           <div className="btn-row">
-            <Link className="btn solid" href="/contact">
+            <Link className="btn solid magnetic" href="/contact">
               Request executive call
             </Link>
             <Link className="btn ghost" href="/solutions">
@@ -113,7 +113,7 @@ export default function HomePage() {
               <li>Container-fit logic for fast field deployment</li>
             </ul>
             <div className="btn-row">
-              <Link className="btn solid" href="/tower-m">Explore M Tower</Link>
+              <Link className="btn solid magnetic" href="/tower-m">Explore M Tower</Link>
               <Link className="btn ghost" href="/tower-m#mtower-sizer">Size your installation</Link>
             </div>
           </div>
@@ -161,7 +161,7 @@ export default function HomePage() {
           We design, validate and industrialize cooling systems with clear governance and measurable delivery milestones.
         </p>
         <div className="btn-row" style={{ justifyContent: "center" }}>
-          <Link className="btn solid" href="/contact">
+          <Link className="btn solid magnetic" href="/contact">
             Open strategic conversation
           </Link>
           <Link className="btn ghost" href="/projects">

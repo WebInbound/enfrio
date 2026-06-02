@@ -18,7 +18,7 @@ const SCOPE_OPTIONS = [
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" className="btn solid" disabled={pending}>
+    <button type="submit" className="btn solid magnetic" disabled={pending}>
       {pending ? "Sending..." : "Send inquiry"}
     </button>
   );

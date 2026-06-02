@@ -1,6 +1,6 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
@@ -22,8 +22,15 @@ function framePath(i: number): string {
 /* scene by `(frame / FRAME_COUNT) * 2π`. The Canvas wrapper above and the    */
 /* `frame` prop contract stay identical.                                      */
 /* -------------------------------------------------------------------------- */
-function MTowerBillboard({ frame }: { frame: number }) {
+function MTowerBillboard({
+  frame,
+  cursorRef,
+}: {
+  frame: number;
+  cursorRef: React.MutableRefObject<{ x: number; y: number }>;
+}) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const tiltRef = useRef({ x: 0, y: 0 });
 
   // One Texture, mutable image source. Three.js re-uploads to GPU only when
   // needsUpdate fires, so per-scroll cost stays bounded.
@@ -72,11 +79,23 @@ function MTowerBillboard({ frame }: { frame: number }) {
     }
   }, [frame, texture]);
 
-  // Gentle floating bob so the unit feels alive instead of static.
-  useFrame((state) => {
-    if (!meshRef.current) return;
-    meshRef.current.position.y =
-      Math.sin(state.clock.elapsedTime * 0.55) * 0.025;
+  // Gentle floating bob + cursor-driven tilt. Both use damped lerp so
+  // the unit feels alive without ever flicking around. The horizontal
+  // rotation around Y is owned by the texture swap (frame index) — we
+  // only nudge X and Z here so the two systems never fight.
+  useFrame((state, delta) => {
+    const mesh = meshRef.current;
+    if (!mesh) return;
+    const lerp = 1 - Math.exp(-delta * 6);
+    // cursor.x in [-1, 1] -> tilt around Y axis (yaw)
+    // cursor.y in [-1, 1] -> tilt around X axis (pitch)
+    const targetYaw = cursorRef.current.x * 0.12;
+    const targetPitch = -cursorRef.current.y * 0.08;
+    tiltRef.current.x += (targetPitch - tiltRef.current.x) * lerp;
+    tiltRef.current.y += (targetYaw - tiltRef.current.y) * lerp;
+    mesh.rotation.x = tiltRef.current.x;
+    mesh.rotation.y = tiltRef.current.y;
+    mesh.position.y = Math.sin(state.clock.elapsedTime * 0.55) * 0.025;
   });
 
   return (
@@ -127,11 +146,49 @@ function BackdropGlow() {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Reads the cursor's normalised position over the host element and writes    */
+/* it into a ref the billboard reads on every R3F frame. Listens on the       */
+/* parent .mtower-stage-visual (not the canvas — which has pointer-events:    */
+/* none so the parent's drag handler keeps working).                          */
+/* -------------------------------------------------------------------------- */
+function CursorTracker({
+  cursorRef,
+}: {
+  cursorRef: React.MutableRefObject<{ x: number; y: number }>;
+}) {
+  const { gl } = useThree();
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const host = canvas.parentElement;
+    if (!host) return;
+    const onMove = (e: PointerEvent) => {
+      const rect = host.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+      cursorRef.current.x = Math.max(-1, Math.min(1, x));
+      cursorRef.current.y = Math.max(-1, Math.min(1, y));
+    };
+    const onLeave = () => {
+      cursorRef.current.x = 0;
+      cursorRef.current.y = 0;
+    };
+    host.addEventListener("pointermove", onMove);
+    host.addEventListener("pointerleave", onLeave);
+    return () => {
+      host.removeEventListener("pointermove", onMove);
+      host.removeEventListener("pointerleave", onLeave);
+    };
+  }, [gl, cursorRef]);
+  return null;
+}
+
+/* -------------------------------------------------------------------------- */
 /* Public Canvas wrapper. Consumed by MTowerStage via dynamic import.         */
 /* `frame` is the only input; scroll + drag logic remains in the parent so    */
 /* every other interaction the page already wires up keeps working.           */
 /* -------------------------------------------------------------------------- */
 export default function MTowerCanvas({ frame }: { frame: number }) {
+  const cursorRef = useRef({ x: 0, y: 0 });
   return (
     <Canvas
       camera={{ position: [0, 0, 4], fov: 28 }}
@@ -143,13 +200,15 @@ export default function MTowerCanvas({ frame }: { frame: number }) {
         display: "block",
         /* Let pointerdown/move/up pass through to the parent wrapper, which
            owns the drag-to-rotate handler. R3F's own pointer events are not
-           needed for this billboard. */
+           needed for the billboard. The cursor tilt below reads pointermove
+           from the parent element directly, so it still works with this set. */
         pointerEvents: "none",
       }}
     >
       <ambientLight intensity={1} />
       <BackdropGlow />
-      <MTowerBillboard frame={frame} />
+      <CursorTracker cursorRef={cursorRef} />
+      <MTowerBillboard frame={frame} cursorRef={cursorRef} />
     </Canvas>
   );
 }

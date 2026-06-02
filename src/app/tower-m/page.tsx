@@ -39,33 +39,6 @@ export default function TowerMPage() {
         </div>
       </section>
 
-      <section className="section">
-        <div className="section-head reveal">
-          <p className="kicker">UNIT SPEC</p>
-          <h2>What is inside one M Tower module.</h2>
-        </div>
-        <div className="grid-2">
-          <article className="panel reveal">
-            <h3>Performance envelope</h3>
-            <ul className="checks">
-              <li>1500 kW heat rejection per unit</li>
-              <li>Single (HT), Double (HT+LT) or multi-circuit configurations</li>
-              <li>Inverter-ready variable cooling on every fan stage</li>
-              <li>High-alloy cores with dimpled tubes and louvered fins</li>
-            </ul>
-          </article>
-          <article className="panel reveal">
-            <h3>Built for the field</h3>
-            <ul className="checks">
-              <li>Vertical or horizontal architecture</li>
-              <li>Sea-water corrosion resistance options</li>
-              <li>ATEX-ready packages</li>
-              <li>Container-fit logic for fast deployment</li>
-            </ul>
-          </article>
-        </div>
-      </section>
-
       <section className="section dark-block" id="mtower-sizer">
         <div className="section-head reveal">
           <p className="kicker">SIZING SIMULATOR</p>
@@ -175,7 +148,7 @@ export default function TowerMPage() {
           we will reply with a configuration, a quote envelope and a delivery roadmap.
         </p>
         <div className="btn-row" style={{ justifyContent: "center" }}>
-          <Link className="btn solid" href="/contact?subject=M+Tower+Inquiry">Talk to the M Tower team</Link>
+          <Link className="btn solid magnetic" href="/contact?subject=M+Tower+Inquiry">Talk to the M Tower team</Link>
         </div>
       </section>
     </SiteShell>

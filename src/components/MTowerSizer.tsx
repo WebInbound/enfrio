@@ -427,7 +427,7 @@ export default function MTowerSizer() {
         </p>
 
         <div className="cfg-cta">
-          <Link className="btn solid" href={ctaHref}>
+          <Link className="btn solid magnetic" href={ctaHref}>
             Send this configuration to Enfrio engineering →
           </Link>
           <button

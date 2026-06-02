@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import MagneticButtons from "@/components/MagneticButtons";
+import SmoothScroll from "@/components/SmoothScroll";
 import "./globals.css";
 
 const SITE_URL = process.env.SITE_URL ?? "https://www.enfrio.it";
@@ -108,6 +110,8 @@ export default function RootLayout({
             }),
           }}
         />
+        <SmoothScroll />
+        <MagneticButtons />
         {children}
       </body>
     </html>

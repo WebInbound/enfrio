@@ -4,8 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /* WebGL canvas with the 120-frame texture billboard. Dynamically imported
-   so three.js (~200 KB) only loads client-side and never blocks SSR. The
-   skeleton stays close to the production layout so there's no flash. */
+   so three.js (~200 KB) only loads client-side and never blocks SSR. */
 const MTowerCanvas = dynamic(() => import("./MTowerCanvas"), {
   ssr: false,
   loading: () => <div className="mtower-stage-canvas-skeleton" />,
@@ -14,76 +13,53 @@ const MTowerCanvas = dynamic(() => import("./MTowerCanvas"), {
 const FRAME_COUNT = 120;
 
 /**
- * Starting frame at the top of the scroll. With 120 frames over 360°,
- * index 12 ≈ 36° — the "marketing 3/4" view where the front face, the
- * side frame and the inverter cabinet are all readable at once.
+ * Starting frame on first paint. Index 12 of 120 ≈ 36° — the "marketing
+ * 3/4" view where the front face, the side frame and the inverter
+ * cabinet are all readable at once.
  */
 const INITIAL_FRAME = 12;
 
 /**
- * Frames the unit rotates across the full scroll arc of the stage.
- * 90 of 120 = 270°, so the unit makes most of a revolution but doesn't
- * loop back to the starting view (which would feel like "nothing happened").
+ * Frames the unit rotates across the hero's scroll arc. 60 of 120 = 180°
+ * — half a revolution so the user sees the back face appear before the
+ * hero leaves the viewport. Half rotation also avoids landing back on
+ * the starting view which would read as "nothing happened".
  */
-const SCROLL_ROTATION_FRAMES = 90;
-
-/**
- * Sticky offset (matches the CSS `top: 100px` on .mtower-stage-visual).
- * Used at runtime to compute how much headroom is left below the visual
- * for the parallax descent to use.
- */
-const STICKY_TOP_PX = 100;
-
-/**
- * Bottom margin we want to keep below the visual so it never touches the
- * viewport edge at full descent.
- */
-const PARALLAX_BOTTOM_MARGIN_PX = 24;
-
-/**
- * The full scroll ratio (0..1) covers the entire enter-to-exit arc, but
- * the M Tower is only visibly pinned during the middle ~70% of that arc.
- * Remap the ratio so the descent actually runs from 0 to max DURING the
- * sticky-active window — outside that window the translate stays at the
- * boundary value.
- */
-const PARALLAX_RATIO_START = 0.18;
-const PARALLAX_RATIO_END = 0.82;
+const SCROLL_ROTATION_FRAMES = 60;
 
 function mod(n: number, m: number): number {
   return ((n % m) + m) % m;
 }
 
 /**
- * MTowerStage — combined hero + "Explore the unit" scene with one canonical
- * M Tower visual.
+ * MTowerStage — the M Tower flagship hero.
  *
- * Layout uses CSS grid-template-areas so the same React tree renders two
- * very different layouts:
+ * Layout (linear, no sticky):
+ *   ┌──────────────────────────────────────────────┐
+ *   │  HERO (≈90vh)                                │
+ *   │  ┌──────────────┬──────────────────────────┐ │
+ *   │  │  Text + CTA  │  M Tower canvas (R3F)    │ │
+ *   │  │              │  scroll-rotates + drag   │ │
+ *   │  └──────────────┴──────────────────────────┘ │
+ *   ├──────────────────────────────────────────────┤
+ *   │  EXPLORE THE UNIT (text-only, ~auto height)  │
+ *   │  kicker / h2 / paragraph / checks            │
+ *   └──────────────────────────────────────────────┘
  *
- *   Desktop (≥ 901px):
- *     [ hero    ][ visual ]
- *     [ explore ][ visual ]
- *   Visual is sticky-pinned and parallax-translated as the user scrolls
- *   through both content blocks on the left.
+ * The previous sticky-pinned-with-parallax experiment created a tall
+ * right-column with a small visual inside, leaving a huge void below
+ * the unit. This linear version puts the canvas inside the hero only;
+ * once the user scrolls past, the canvas exits naturally and the
+ * Explore block underneath is plain editorial copy.
  *
- *   Mobile (< 901px):
- *     [ hero    ]
- *     [ visual  ]
- *     [ explore ]
- *   Visual sits inline between the two text blocks at a fixed height. No
- *   sticky behaviour — the user scrolls past it naturally.
- *
- * Rotation: hybrid scroll + drag.
- *  - Scroll advances by delta against the previous scroll value, so
- *    drag-induced offsets persist when scrolling resumes.
- *  - Drag overrides scroll during the pointer gesture.
- *  - Native image-drag is killed at every layer (draggable={false},
- *    pointer-events: none on the img, user-select / -webkit-user-drag,
- *    touch-action: pan-y so vertical scroll still passes through).
+ * Rotation:
+ *   - Scroll inside the hero advances the frame by delta against the
+ *     previous scroll position. Drag-induced offsets persist when
+ *     scroll resumes.
+ *   - Drag overrides scroll for the duration of the pointer gesture.
  */
 export default function MTowerStage() {
-  const sectionRef = useRef<HTMLElement | null>(null);
+  const heroRef = useRef<HTMLElement | null>(null);
   const [frame, setFrame] = useState(INITIAL_FRAME);
 
   const scrollContribRef = useRef(0);
@@ -92,51 +68,20 @@ export default function MTowerStage() {
   const dragStartFrameRef = useRef(INITIAL_FRAME);
   const visualWidthRef = useRef(1);
 
-  // Scroll-driven rotation + parallax translateY. (Frame texture preloading
-  // is owned by MTowerCanvas — it pulls the 120 WebPs as HTMLImage once on
-  // mount and reuses them as the billboard's texture source.)
+  // Scroll-driven rotation (delta against previous scroll position so
+  // drag offsets persist).
   useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
+    const hero = heroRef.current;
+    if (!hero) return;
     let raf = 0;
     const update = () => {
       raf = 0;
-      const rect = section.getBoundingClientRect();
+      if (isDraggingRef.current) return;
+      const rect = hero.getBoundingClientRect();
       const vh = window.innerHeight;
       const total = rect.height + vh;
       const scrolled = Math.max(0, vh - rect.top);
       const ratio = Math.min(1, Math.max(0, scrolled / total));
-
-      // Parallax always applies — it's purely transform-based and doesn't
-      // care whether the user is dragging the rotation. Set the transform
-      // INLINE on the visual element (not via CSS variable inheritance)
-      // so we know exactly what value is being applied, and so nothing
-      // else in the cascade can quietly override it.
-      const visualEl = section.querySelector<HTMLElement>(".mtower-stage-visual");
-      if (visualEl && window.matchMedia("(min-width: 901px)").matches) {
-        const visualHeight = visualEl.offsetHeight || vh * 0.45;
-        const maxPx = Math.max(
-          0,
-          vh - STICKY_TOP_PX - visualHeight - PARALLAX_BOTTOM_MARGIN_PX,
-        );
-        const localRatio = Math.min(
-          1,
-          Math.max(
-            0,
-            (ratio - PARALLAX_RATIO_START) /
-              (PARALLAX_RATIO_END - PARALLAX_RATIO_START),
-          ),
-        );
-        const translateY = Math.round(localRatio * maxPx);
-        visualEl.style.transform = `translateY(${translateY}px)`;
-      } else if (visualEl) {
-        // Mobile: explicit reset in case the visual was on desktop before
-        // a resize.
-        visualEl.style.transform = "";
-      }
-
-      if (isDraggingRef.current) return;
-
       const newScrollContrib = ratio * SCROLL_ROTATION_FRAMES;
       const delta = newScrollContrib - scrollContribRef.current;
       scrollContribRef.current = newScrollContrib;
@@ -199,36 +144,36 @@ export default function MTowerStage() {
   );
 
   return (
-    <section ref={sectionRef} className="mtower-stage" id="mtower-explore">
-      <div className="mtower-stage-bg" aria-hidden="true" />
+    <>
+      <section ref={heroRef} className="mtower-stage" id="mtower-stage-hero">
+        <div className="mtower-stage-bg" aria-hidden="true" />
 
-      <div className="mtower-stage-grid">
-        <div className="mtower-stage-block mtower-stage-hero">
-          <p className="kicker">FLAGSHIP PLATFORM</p>
-          <h1>
-            M Tower.
-            <br />
-            <span className="accent">Cooling that scales</span> with your power.
-          </h1>
-          <p className="lead">
-            Modular heat-rejection units of 1500&nbsp;kW each. Start with one,
-            add more as your plant grows. From standalone gensets to
-            12&nbsp;MW datacenter halls — same proven core.
-          </p>
-          <div className="btn-row">
-            <a className="btn solid" href="#mtower-sizer">
-              Size your installation
-            </a>
-            <a className="btn ghost" href="#mtower-stage-explore">
-              Explore the unit
-            </a>
+        <div className="mtower-stage-row">
+          <div className="mtower-stage-content">
+            <p className="kicker">FLAGSHIP PLATFORM</p>
+            <h1>
+              M Tower.
+              <br />
+              <span className="accent">Cooling that scales</span> with your power.
+            </h1>
+            <p className="lead">
+              Modular heat-rejection units of 1500&nbsp;kW each. Start with
+              one, add more as your plant grows. From standalone gensets to
+              12&nbsp;MW datacenter halls — same proven core.
+            </p>
+            <div className="btn-row">
+              <a className="btn solid magnetic" href="#mtower-sizer">
+                Size your installation
+              </a>
+              <a className="btn ghost" href="#mtower-explore">
+                Explore the unit
+              </a>
+            </div>
+            <p className="mtower-stage-scroll-hint" aria-hidden="true">
+              ↓ scroll to spin
+            </p>
           </div>
-          <p className="mtower-stage-scroll-hint" aria-hidden="true">
-            ↓ scroll to spin
-          </p>
-        </div>
 
-        <div className="mtower-stage-visual-track">
           <div
             className="mtower-stage-visual"
             onPointerDown={onPointerDown}
@@ -246,29 +191,40 @@ export default function MTowerStage() {
             </div>
           </div>
         </div>
+      </section>
 
-        <div
-          className="mtower-stage-block mtower-stage-explore"
-          id="mtower-stage-explore"
-        >
+      <section className="section dark-block" id="mtower-explore">
+        <div className="section-head reveal">
           <p className="kicker">EXPLORE THE UNIT</p>
-          <h2>Spin it around. Inspect every angle.</h2>
+          <h2>Engineered to the millimetre, built to ship.</h2>
           <p>
-            The M Tower turns with the page as you scroll — or grab it with
-            your cursor (or your finger) and drag to inspect every face. The
-            stainless tube bundles, the louvered aluminium fins, the inverter
-            cabinet on the side, the vibration-isolated frame: every detail
-            is engineered for the duty cycle of mission-critical heat
-            rejection.
+            The stainless tube bundles, the louvered aluminium fins, the
+            inverter cabinet on the side, the vibration-isolated frame —
+            every detail is engineered for the duty cycle of mission-critical
+            heat rejection. Spin the render above to inspect every face.
           </p>
-          <ul className="checks">
-            <li>High-alloy aluminium cores, dimpled tubes, louvered fins</li>
-            <li>Vibration-isolated black-painted steel frame</li>
-            <li>Inverter cabinet integrated on the side</li>
-            <li>Container-fit envelope: ship, lift, bolt down</li>
-          </ul>
         </div>
-      </div>
-    </section>
+        <div className="grid-2">
+          <article className="panel reveal">
+            <h3>Mechanical</h3>
+            <ul className="checks">
+              <li>High-alloy aluminium cores with dimpled tubes</li>
+              <li>Louvered fins for maximum heat transfer surface</li>
+              <li>Vibration-isolated black-painted steel frame</li>
+              <li>Welded gussets at every structural corner</li>
+            </ul>
+          </article>
+          <article className="panel reveal">
+            <h3>Integration</h3>
+            <ul className="checks">
+              <li>Inverter cabinet integrated on the side</li>
+              <li>Container-fit envelope: ship, lift, bolt down</li>
+              <li>Hydraulic interface shared across every module</li>
+              <li>Rubber vibration-isolation pads at the base</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </>
   );
 }
