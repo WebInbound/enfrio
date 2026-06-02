@@ -3880,61 +3880,95 @@ li {
 
 /* === MTOWER PAGE SECTIONS WOW === */
 
-/* ---------- PLAY 7 — Engineering Detail macro crops ---------- */
+/* ---------- PLAY 7 — Engineering Detail macro crops (v2: mood-grid) ---------- */
+/* 3-up editorial grid. Real factory shots, treated as monochrome mood
+   texture with a subtle lime tint so they sit inside the page's dark
+   cinematic tone instead of breaking it. Colour returns on hover. */
 .mtower-craft-stack {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 28px;
-  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+  width: min(1180px, 92vw);
+  margin-inline: auto;
 }
 .mtower-craft .craft-crop {
-  width: 80vw;
-  max-width: 1180px;
-  aspect-ratio: 21 / 9;
-  margin: 0;
-  border: 1px solid rgba(173, 217, 52, 0.22);
-  border-radius: 16px;
-  overflow: hidden;
   position: relative;
+  margin: 0;
+  aspect-ratio: 4 / 5;
+  border: 1px solid rgba(173, 217, 52, 0.18);
+  border-radius: 14px;
+  overflow: hidden;
   background: #0a121d;
-  box-shadow: 0 18px 44px rgba(8, 14, 24, 0.18);
+  isolation: isolate;
 }
 .mtower-craft .craft-crop img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1);
-  transform: scale(1.04);
-  filter: saturate(0.92) contrast(1.04);
+  filter: grayscale(1) contrast(1.05) brightness(0.78);
+  transition:
+    filter 0.65s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 1.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transform: scale(1.06);
 }
 .mtower-craft .craft-crop.is-visible img {
   transform: scale(1);
 }
+/* Lime mood tint layer — sits between the image and the caption */
+.mtower-craft .craft-crop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+      180deg,
+      rgba(10, 18, 29, 0) 40%,
+      rgba(10, 18, 29, 0.75) 100%
+    ),
+    radial-gradient(120% 80% at 50% 0%, rgba(173, 217, 52, 0.12), transparent 70%);
+  mix-blend-mode: normal;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.mtower-craft .craft-crop:hover img {
+  filter: grayscale(0) contrast(1.02) brightness(0.95);
+  transform: scale(1.02);
+}
+.mtower-craft .craft-crop:hover::before {
+  opacity: 0.7;
+}
 .mtower-craft .craft-crop figcaption {
   position: absolute;
-  left: 18px;
-  bottom: 16px;
-  padding: 6px 10px;
-  font-family: "Rajdhani", "Consolas", monospace;
-  font-size: 0.85rem;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  z-index: 2;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  font-family: ui-monospace, "SF Mono", Consolas, Menlo, monospace;
+  font-size: 0.78rem;
+  line-height: 1.35;
   letter-spacing: 0.04em;
-  color: #cad3df;
-  background: rgba(7, 15, 25, 0.62);
-  border: 1px solid rgba(173, 217, 52, 0.28);
-  border-radius: 6px;
-  backdrop-filter: blur(4px);
+  color: #d4dde9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  backdrop-filter: none;
 }
 @media (max-width: 880px) {
+  .mtower-craft-stack {
+    grid-template-columns: 1fr;
+    width: 92vw;
+    gap: 14px;
+  }
   .mtower-craft .craft-crop {
-    width: 90vw;
     aspect-ratio: 16 / 10;
   }
   .mtower-craft .craft-crop figcaption {
-    font-size: 0.78rem;
-    left: 10px;
-    bottom: 10px;
+    font-size: 0.74rem;
   }
 }
 
