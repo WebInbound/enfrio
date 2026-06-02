@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
 import MTowerSizer from "@/components/MTowerSizer";
@@ -88,11 +87,24 @@ export default function TowerMPage() {
         </div>
         <div className="deploy-grid">
           <article className="deploy-card reveal">
-            <div className="deploy-card-media">
-              <Image src="/assets/images/site/power-gen-hall.jpg" alt="Genset hall with Enfrio cooling on a bank of engines" width={1400} height={900} />
-              <div className="deploy-card-shade" />
-              <span className="deploy-card-tag">POWER GENERATION</span>
-            </div>
+            <span className="deploy-card-tag">POWER GENERATION</span>
+            {/* Subtle watermark diagram — a row of vertical "M Tower" bars
+                paired with horizontal "genset" blocks. Communicates the
+                "one M Tower per genset, line up the bank" idea without
+                resorting to a futuristic AI hero photo. */}
+            <svg
+              className="deploy-card-mark"
+              viewBox="0 0 240 80"
+              aria-hidden="true"
+              focusable="false"
+            >
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <g key={i} transform={`translate(${i * 40 + 6} 8)`}>
+                  <rect x="0" y="0" width="22" height="38" rx="2" />
+                  <rect x="0" y="44" width="28" height="22" rx="2" opacity="0.55" />
+                </g>
+              ))}
+            </svg>
             <div className="deploy-card-body">
               <h3>Backup &amp; primary gensets</h3>
               <p>
@@ -109,11 +121,35 @@ export default function TowerMPage() {
           </article>
 
           <article className="deploy-card reveal">
-            <div className="deploy-card-media">
-              <Image src="/assets/images/site/warehouse-delivery.jpg" alt="Container-ready Enfrio cooling units staged in the warehouse" width={1400} height={1050} />
-              <div className="deploy-card-shade" />
-              <span className="deploy-card-tag">DATACENTER COOLING</span>
-            </div>
+            <span className="deploy-card-tag">DATACENTER COOLING</span>
+            {/* Subtle watermark diagram — server-rack stack next to a
+                cooling tower silhouette. Same idea: visual hint, no AI
+                photo. */}
+            <svg
+              className="deploy-card-mark"
+              viewBox="0 0 240 80"
+              aria-hidden="true"
+              focusable="false"
+            >
+              {/* Server rack rows */}
+              {[0, 1, 2, 3, 4].map((i) => (
+                <rect
+                  key={`r-${i}`}
+                  x="20"
+                  y={8 + i * 14}
+                  width="120"
+                  height="9"
+                  rx="1.5"
+                  opacity={0.42 + i * 0.08}
+                />
+              ))}
+              {/* Cooling tower next to the rack */}
+              <rect x="170" y="6" width="42" height="68" rx="3" />
+              <line x1="178" y1="22" x2="204" y2="22" strokeWidth="1.5" />
+              <line x1="178" y1="34" x2="204" y2="34" strokeWidth="1.5" />
+              <line x1="178" y1="46" x2="204" y2="46" strokeWidth="1.5" />
+              <line x1="178" y1="58" x2="204" y2="58" strokeWidth="1.5" />
+            </svg>
             <div className="deploy-card-body">
               <h3>High-density compute halls</h3>
               <p>
