@@ -515,6 +515,35 @@ export default function MTowerSizer() {
           </article>
         </div>
 
+        {/* SCADA-style live spec strip — horizontal, full-width inside the
+            output panel. Sits right below the high-level metric cards and
+            adds the "instrument readout" detail (footprint, water flow,
+            weight, electrical draw) you don't get from the metrics alone. */}
+        <aside className="cfg-hud" aria-label="Live build specifications">
+          <span className="cfg-hud-led" aria-hidden="true" />
+          <p className="cfg-hud-title">LIVE BUILD READOUT</p>
+          <div className="cfg-hud-grid">
+            {hudRows
+              .filter((row) => row.key !== "thermal" && row.key !== "modules")
+              .map((row) => (
+                <div
+                  key={row.key}
+                  className={`cfg-hud-row ${flashingRows[row.key] ? "is-flashing" : ""}`}
+                >
+                  <span className="cfg-hud-label">{row.label}</span>
+                  <span className="cfg-hud-value">
+                    <AnimatedNumber
+                      value={row.value}
+                      duration={700}
+                      format={row.format}
+                      suffix={row.suffix}
+                    />
+                  </span>
+                </div>
+              ))}
+          </div>
+        </aside>
+
         <p className="cfg-note">
           Indicative figures. Derate factors: ambient +10 °C ≈ −5 to −7%,
           altitude &gt; 2000 m ≈ −8%. Final sizing is confirmed by Enfrio
@@ -539,27 +568,6 @@ export default function MTowerSizer() {
           </button>
         </div>
       </div>
-
-      {/* === SCADA-style live HUD === */}
-      <aside className="cfg-hud" aria-label="Live build specifications">
-        <p className="cfg-hud-title kicker">LIVE SPECS</p>
-        {hudRows.map((row) => (
-          <div
-            key={row.key}
-            className={`cfg-hud-row ${flashingRows[row.key] ? "is-flashing" : ""}`}
-          >
-            <span className="cfg-hud-label">{row.label}</span>
-            <span className="cfg-hud-value">
-              <AnimatedNumber
-                value={row.value}
-                duration={700}
-                format={row.format}
-                suffix={row.suffix}
-              />
-            </span>
-          </div>
-        ))}
-      </aside>
     </div>
   );
 }
