@@ -2243,15 +2243,12 @@ li {
    =========================================== */
 
 .mtower-spotlight {
-  /* HORIZONTAL EXPERIMENT — was a 2-col grid (content left, media right
-     portrait). Switched to a single-column stack: media on top as a
-     wide landscape banner, content below. The new render is portrait
-     (501×871) so it sits centered inside the wide banner with the
-     dark-navy + lime backdrop doing the breathing room. This is the
-     "una in orizzontale" test — judge by eye after deploy. */
+  /* Horizontal experiment reverted (user verdict: schifezza) — back to
+     2-col: content on the left, portrait media on the right. */
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 28px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  gap: 32px;
+  align-items: center;
   padding: 36px;
   border-radius: 22px;
   background:
@@ -2261,15 +2258,6 @@ li {
   color: #e3ebf5;
   position: relative;
   overflow: hidden;
-}
-
-/* DOM order is content first, media second. For the horizontal layout
-   we want the media banner on TOP, content below — so reorder visually. */
-.mtower-spotlight-media {
-  order: 0;
-}
-.mtower-spotlight-content {
-  order: 1;
 }
 
 .mtower-spotlight::before {
@@ -2340,9 +2328,9 @@ li {
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid rgba(173, 217, 52, 0.28);
-  /* Wide cinematic banner — 21:9 ultrawide landscape so the portrait
-     render sits centered on a generous dark-lime backdrop. */
-  aspect-ratio: 21 / 9;
+  /* Portrait container, matches the new render's aspect (501×871 ≈ 0.575)
+     with a small frame allowance. */
+  aspect-ratio: 3 / 4;
   margin: 0;
 }
 
@@ -2365,7 +2353,12 @@ li {
   padding: 18px;
 }
 
-.mtower-spotlight-media--render img {
+/* Force `contain` over the base `cover` regardless of Next.js Image's
+   inline styles — both selectors are 0,2,0 specificity so without the
+   extra `--render` class anchor the base rule wins by source order. */
+.mtower-spotlight-media.mtower-spotlight-media--render img {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.5));
 }
@@ -4542,30 +4535,66 @@ li {
   padding: 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
   width: min(900px, 92vw);
 }
+/* Dark-theme cards that match the stage above (was plain white cards
+   on a grey background — visually disconnected from the unit stage). */
 .deploy-switcher-spec {
-  border: 1px solid var(--line);
-  background: var(--surface);
-  border-radius: 12px;
-  padding: 14px 14px;
+  position: relative;
+  border: 1px solid rgba(173, 217, 52, 0.22);
+  background:
+    radial-gradient(120% 100% at 50% 0%, rgba(173, 217, 52, 0.08) 0%, transparent 65%),
+    linear-gradient(170deg, #0a1421 0%, #0b1929 100%);
+  border-radius: 14px;
+  padding: 16px 14px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  overflow: hidden;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.deploy-switcher-spec::before {
+  /* Lime accent stripe along the left edge to tie back to the stage */
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  background: linear-gradient(180deg, transparent 0%, var(--brand) 50%, transparent 100%);
+  opacity: 0.55;
+}
+.deploy-switcher-spec:hover {
+  transform: translateY(-3px);
+  border-color: rgba(173, 217, 52, 0.5);
+  box-shadow: 0 12px 28px rgba(7, 15, 25, 0.45), 0 0 0 1px rgba(173, 217, 52, 0.18);
+}
+.deploy-switcher-spec-icon {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(173, 217, 52, 0.1);
+  border: 1px solid rgba(173, 217, 52, 0.3);
+  color: var(--brand);
+  margin-bottom: 4px;
 }
 .deploy-switcher-spec-value {
   font-family: "Rajdhani", sans-serif;
   font-weight: 700;
-  font-size: 1.25rem;
-  color: var(--ink);
+  font-size: 1.35rem;
+  color: #f4f8ff;
   letter-spacing: -0.3px;
+  line-height: 1.1;
 }
 .deploy-switcher-spec-label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--brand-deep);
+  letter-spacing: 0.14em;
+  color: rgba(173, 217, 52, 0.85);
   font-weight: 700;
 }
 @media (max-width: 880px) {
