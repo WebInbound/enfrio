@@ -812,6 +812,14 @@ li {
     top: 6px;
   }
 
+  .floating-logo {
+    /* Cancel the desktop -14px nudge on mobile — there the container is
+       already near the screen edge, so the negative margin pushed the
+       logo flush against (or past) the left edge. Small positive margin
+       gives it breathing room from the edge instead. */
+    margin-left: 4px;
+  }
+
   .floating-logo img {
     width: 92px;
   }
