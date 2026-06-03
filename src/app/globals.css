@@ -35,9 +35,14 @@ body {
    the address bar disappear into the page; the bottom rubber-band shows
    the same light grey under the navy footer (accepted trade-off).
    overscroll-behavior: none still removes the bounce entirely on
-   Android/Chrome where it's honoured. */
+   Android/Chrome where it's honoured.
+
+   Colour MUST equal the body's literal top stop (#c0c7ce — the
+   linear-gradient 0% value) or a visible seam appears between the
+   rubber-band and the page. Earlier #c9cfd5 was too light → two
+   different greys. */
 html {
-  background-color: #c9cfd5;
+  background-color: #c0c7ce;
   overscroll-behavior: none;
 }
 

@@ -76,13 +76,13 @@ export const metadata: Metadata = {
   },
 };
 
-/* themeColor tints iOS Safari's address-bar to match the body's TOP.
-   The body has white radial highlights overlaid on a #c0c7ce base, so
-   the actual painted top is brighter than #c0c7ce — averaging the
-   radial influence at the corners lands around #c9cfd5. Using that
-   makes the chrome bar visually disappear into the page. */
+/* themeColor + html overscroll bg MUST equal the body's literal top
+   gradient stop (#c0c7ce) or a visible seam appears between the iOS
+   chrome bar / rubber-band and the page. #c9cfd5 (an earlier guess that
+   tried to account for the radial highlights) was too light and showed
+   as a distinct second grey. */
 export const viewport: Viewport = {
-  themeColor: "#c9cfd5",
+  themeColor: "#c0c7ce",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
