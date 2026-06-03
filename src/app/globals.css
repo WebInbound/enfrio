@@ -26,15 +26,21 @@ body {
   scroll-behavior: smooth;
 }
 
-/* html background = the dark navy footer colour so the area BELOW the
-   body (bottom overscroll / safe-area inset) reads as a continuation
-   of the footer instead of breaking with a light strip. iOS Safari's
-   chrome bar ABOVE the body is handled separately via the viewport
-   themeColor meta in layout.tsx — it tints to match the body's TOP
-   colour. The two together cover both ends without a single shared
-   compromise colour. */
+/* html bg has a viewport-fixed gradient: solid page-top grey for most of
+   the viewport, fading into the footer's navy in the bottom ~22vh.
+   Effect: bounce-overscroll at the TOP exposes the grey (matches the
+   page top), bounce at the BOTTOM exposes the navy (matches the
+   footer's continuation). Both ends look continuous. */
 html {
-  background: #070f19; /* = --deep-blue / footer start */
+  background-color: #c9cfd5;
+  background-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    transparent 78vh,
+    #0b1623 100vh
+  );
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   overscroll-behavior: none;
 }
 
@@ -4863,3 +4869,69 @@ li {
 }
 /* === /MTOWER SIZER HUD === */
 
+
+/* === BACK-TO-TOP BUTTON === */
+/* Circular brand CTA pinned to the bottom-right that fades in once the
+   visitor has scrolled past one viewport. Lime brand fill so it reads
+   as an action; dark navy icon for contrast. Magnetic-enabled. */
+.back-to-top {
+  position: fixed;
+  right: clamp(16px, 3vw, 28px);
+  bottom: clamp(16px, 3vw, 28px);
+  z-index: 95;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(173, 217, 52, 0.55);
+  background: linear-gradient(160deg, var(--brand) 0%, var(--brand-deep) 100%);
+  color: #0a121d;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  box-shadow:
+    0 14px 28px rgba(8, 14, 24, 0.35),
+    0 0 0 2px rgba(173, 217, 52, 0.18),
+    0 0 22px rgba(173, 217, 52, 0.45);
+  opacity: 0;
+  transform: translateY(14px) scale(0.85);
+  pointer-events: none;
+  transition:
+    opacity 0.4s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 0.3s ease,
+    background 0.3s ease;
+}
+.back-to-top.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+.back-to-top:hover {
+  background: linear-gradient(160deg, #c1ef62 0%, var(--brand) 100%);
+  box-shadow:
+    0 18px 36px rgba(8, 14, 24, 0.45),
+    0 0 0 2px rgba(173, 217, 52, 0.32),
+    0 0 32px rgba(173, 217, 52, 0.7);
+}
+.back-to-top:focus-visible {
+  outline: 2px solid #f4f8ff;
+  outline-offset: 3px;
+}
+.back-to-top:active {
+  transform: translateY(0) scale(0.94);
+}
+.back-to-top svg {
+  width: 22px;
+  height: 22px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .back-to-top {
+    transition: opacity 0.2s linear;
+    transform: none;
+  }
+  .back-to-top.is-visible {
+    transform: none;
+  }
+}

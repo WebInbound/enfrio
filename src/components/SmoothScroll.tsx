@@ -38,6 +38,11 @@ export default function SmoothScroll() {
       smoothWheel: true,
     });
 
+    // Expose the instance on window so siblings (BackToTop) can call
+    // lenis.scrollTo without prop-drilling. Cast through unknown so
+    // TS doesn't choke on the augmentation.
+    (window as unknown as { __lenis?: Lenis }).__lenis = lenis;
+
     let raf = 0;
     const tick = (time: number) => {
       lenis.raf(time);
@@ -48,6 +53,7 @@ export default function SmoothScroll() {
     return () => {
       cancelAnimationFrame(raf);
       lenis.destroy();
+      delete (window as unknown as { __lenis?: Lenis }).__lenis;
     };
   }, []);
 

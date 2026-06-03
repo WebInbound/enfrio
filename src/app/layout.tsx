@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import BackToTop from "@/components/BackToTop";
 import MagneticButtons from "@/components/MagneticButtons";
 import SmoothScroll from "@/components/SmoothScroll";
 import "./globals.css";
@@ -125,6 +126,7 @@ export default function RootLayout({
         <SmoothScroll />
         <MagneticButtons />
         {children}
+        <BackToTop />
       </body>
     </html>
   );
