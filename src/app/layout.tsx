@@ -76,13 +76,13 @@ export const metadata: Metadata = {
   },
 };
 
-/* themeColor + html overscroll bg MUST equal the body's literal top
-   gradient stop (#c0c7ce) or a visible seam appears between the iOS
-   chrome bar / rubber-band and the page. #c9cfd5 (an earlier guess that
-   tried to account for the radial highlights) was too light and showed
-   as a distinct second grey. */
+/* themeColor + html overscroll bg must equal the body's ACTUAL painted
+   top — which is much lighter than the #c0c7ce gradient base because the
+   body's white radial highlights sit near full strength across the top
+   edge on a tall page, brightening it to ~#d3d8de. #c0c7ce / #c9cfd5
+   both read as too dark vs the real top. */
 export const viewport: Viewport = {
-  themeColor: "#c0c7ce",
+  themeColor: "#d3d8de",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

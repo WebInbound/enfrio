@@ -37,12 +37,15 @@ body {
    overscroll-behavior: none still removes the bounce entirely on
    Android/Chrome where it's honoured.
 
-   Colour MUST equal the body's literal top stop (#c0c7ce — the
-   linear-gradient 0% value) or a visible seam appears between the
-   rubber-band and the page. Earlier #c9cfd5 was too light → two
-   different greys. */
+   Colour must equal the body's ACTUAL painted top, which is much
+   lighter than the #c0c7ce linear-gradient base: the body's two white
+   radial highlights (0.38 / 0.26 alpha) are centred just above the
+   viewport, and on a tall document their fade-to-transparent point is
+   far away, so they sit near full strength across the top edge —
+   brightening it to roughly #d3d8de. #c0c7ce and #c9cfd5 both read as
+   too dark vs this. */
 html {
-  background-color: #c0c7ce;
+  background-color: #d3d8de;
   overscroll-behavior: none;
 }
 
