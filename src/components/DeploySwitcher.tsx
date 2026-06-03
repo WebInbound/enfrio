@@ -4,6 +4,10 @@ import { useCallback, useEffect, useRef, useState, type ReactElement } from "rea
 
 type ContextKey = "data-center" | "petrochemical" | "power-gen" | "hvac";
 
+/* Helper: zero-padded 3-digit frame name from the /mtower-frames/ sequence. */
+const frame = (i: number): string =>
+  `/assets/images/mtower-frames/${String(i).padStart(3, "0")}.webp`;
+
 type IconKey =
   | "thermometer"
   | "droplet"
@@ -28,6 +32,10 @@ type ContextDef = {
   blurb: string;
   specs: Spec[];
   silhouette: (props: { className?: string }) => ReactElement;
+  /* Same M Tower unit shown at a different rotation angle per context so
+     each tab feels visually distinct without spawning new assets — uses
+     the existing 120-frame WebP sequence (safe upright range 0–30). */
+  unitSrc: string;
 };
 
 const ServerHall = ({ className }: { className?: string }) => (
@@ -156,6 +164,7 @@ const CONTEXTS: ContextDef[] = [
       { label: "Redundancy", value: "N+1 standard", icon: "shield" },
     ],
     silhouette: ServerHall,
+    unitSrc: "/assets/images/site/mtower-render.png", // canonical clean PNG, hero portrait
   },
   {
     key: "petrochemical",
@@ -169,6 +178,7 @@ const CONTEXTS: ContextDef[] = [
       { label: "Coil", value: "Cu / epoxy", icon: "coil" },
     ],
     silhouette: Refinery,
+    unitSrc: frame(8), // slight rotation toward side
   },
   {
     key: "power-gen",
@@ -182,6 +192,7 @@ const CONTEXTS: ContextDef[] = [
       { label: "Footprint", value: "Bolt pattern", icon: "footprint" },
     ],
     silhouette: GensetRow,
+    unitSrc: frame(18), // more side view (inverter cabinet visible)
   },
   {
     key: "hvac",
@@ -195,6 +206,7 @@ const CONTEXTS: ContextDef[] = [
       { label: "Glycol", value: "0 – 40%", icon: "droplet" },
     ],
     silhouette: DistrictPlant,
+    unitSrc: frame(28), // side-back, manifold visible (HVAC piping vibe)
   },
 ];
 
@@ -412,11 +424,25 @@ export default function DeploySwitcher() {
           })}
         </div>
 
-        <img
-          className="deploy-switcher-unit"
-          src="/assets/images/site/mtower-render.png"
-          alt="M Tower modular cooling unit"
-        />
+        {/* Cross-fade between the 4 context angles via stacked imgs so
+            switching tabs feels like the unit physically pivots into the
+            new perspective, not pops. Keyed on `current.unitSrc` so React
+            re-mounts the visible img and replays the fade-in. */}
+        <div className="deploy-switcher-unit-wrap" aria-hidden="false">
+          {CONTEXTS.map((ctx) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={ctx.key}
+              className={`deploy-switcher-unit${
+                ctx.key === active ? " is-active" : ""
+              }`}
+              src={ctx.unitSrc}
+              alt={ctx.key === active ? "M Tower modular cooling unit" : ""}
+              loading="lazy"
+              draggable={false}
+            />
+          ))}
+        </div>
       </div>
 
       <p className="deploy-switcher-blurb">{current.blurb}</p>
