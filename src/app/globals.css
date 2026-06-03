@@ -2680,10 +2680,10 @@ li {
 
 /* Product spec card filling the leftover space under N+1 */
 .cfg-product-card {
-  /* Previously pulled to column bottom via margin-top:auto. The LIVE BUILD
-     READOUT now lives between N+1 and this card, so there's no void to
-     auto-fill anymore — the card sits naturally after the readout. */
-  margin-top: 4px;
+  /* Stays glued right under the LIVE BUILD READOUT (which carries the
+     margin-top:auto). Small fixed gap so the two read as a connected
+     bottom cluster. */
+  margin-top: 10px;
   padding: 14px 16px;
   border-radius: 14px;
   background:
@@ -3138,19 +3138,116 @@ li {
   white-space: nowrap;
 }
 
-/* Hydraulic interface "snap" connector between adjacent modules */
+/* Hydraulic interface between adjacent modules — TWO parallel flows
+   visualising the dual-circuit nature of the bank:
+     ::before = HOT side (warm orange→red), flowing DOWN (engine → tower)
+     ::after  = COLD side (cool cyan→blue), flowing UP   (tower → engine)
+   Both keep a faint lime drop-shadow so the brand colour still anchors
+   the whole stage. */
 .cfg-mod-link {
   position: absolute;
-  right: -7px;
-  top: 22%;
-  bottom: 22%;
-  width: 14px;
+  right: -10px;
+  top: 18%;
+  bottom: 18%;
+  width: 20px;
   z-index: 1;
-  background:
-    linear-gradient(180deg, transparent 0 18%, rgba(173, 217, 52, 0.85) 18% 22%, transparent 22% 46%, rgba(173, 217, 52, 0.85) 46% 50%, transparent 50% 74%, rgba(173, 217, 52, 0.85) 74% 78%, transparent 78% 100%);
-  filter: drop-shadow(0 0 6px rgba(173, 217, 52, 0.6));
+  background: transparent;
   pointer-events: none;
-  animation: cfgPulse 1.8s ease-in-out infinite;
+  display: flex;
+  justify-content: space-between;
+  filter: drop-shadow(0 0 5px rgba(173, 217, 52, 0.35));
+}
+
+.cfg-mod-link::before,
+.cfg-mod-link::after {
+  content: "";
+  display: block;
+  width: 7px;
+  height: 100%;
+  border-radius: 4px;
+  background-repeat: repeat-y;
+  background-size: 100% 48px;
+}
+
+/* HOT side — flowing DOWN. Warm orange→red dashes on a faint hot tint. */
+.cfg-mod-link::before {
+  background-image:
+    linear-gradient(
+      180deg,
+      transparent 0 18%,
+      #ff8a4a 18% 24%,
+      #ff6b48 24% 30%,
+      transparent 30% 48%,
+      #ff8a4a 48% 54%,
+      #ff6b48 54% 60%,
+      transparent 60% 78%,
+      #ff8a4a 78% 84%,
+      #ff6b48 84% 90%,
+      transparent 90% 100%
+    );
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 138, 74, 0.35),
+    0 0 7px rgba(255, 122, 74, 0.55);
+  animation: cfgFlowHot 1.4s linear infinite;
+}
+
+/* COLD side — flowing UP. Cool cyan→blue dashes on a faint cold tint. */
+.cfg-mod-link::after {
+  background-image:
+    linear-gradient(
+      180deg,
+      transparent 0 18%,
+      #5ad7ff 18% 24%,
+      #4ab7ff 24% 30%,
+      transparent 30% 48%,
+      #5ad7ff 48% 54%,
+      #4ab7ff 54% 60%,
+      transparent 60% 78%,
+      #5ad7ff 78% 84%,
+      #4ab7ff 84% 90%,
+      transparent 90% 100%
+    );
+  box-shadow:
+    inset 0 0 0 1px rgba(90, 215, 255, 0.35),
+    0 0 7px rgba(74, 183, 255, 0.55);
+  animation: cfgFlowCold 1.4s linear infinite;
+}
+
+@keyframes cfgFlowHot {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 48px; }
+}
+
+@keyframes cfgFlowCold {
+  0%   { background-position: 0 48px; }
+  100% { background-position: 0 0; }
+}
+
+/* Single-circuit (HT only) — collapse the link to one centered pipe
+   with a hot↔cold gradient so the bank still reads as fluid moving
+   but doesn't fake a second loop the user opted out of. */
+.cfg-stage[data-circuit="single"] .cfg-mod-link::after {
+  display: none;
+}
+.cfg-stage[data-circuit="single"] .cfg-mod-link {
+  justify-content: center;
+}
+.cfg-stage[data-circuit="single"] .cfg-mod-link::before {
+  width: 9px;
+  background-image:
+    linear-gradient(
+      180deg,
+      transparent 0 18%,
+      #ffa766 18% 24%,
+      #ff7a4a 24% 30%,
+      transparent 30% 48%,
+      #ffa766 48% 54%,
+      #ff7a4a 54% 60%,
+      transparent 60% 78%,
+      #ffa766 78% 84%,
+      #ff7a4a 84% 90%,
+      transparent 90% 100%
+    );
 }
 
 
@@ -3263,32 +3360,9 @@ li {
   z-index: 4;
 }
 
-/* Hydraulic link — replace the static gradient with a flowing one. The
-   background-position scrolls down the link, making it look like fluid
-   moving between modules. */
-.cfg-mod-link {
-  background:
-    linear-gradient(
-      180deg,
-      transparent 0 14%,
-      rgba(173, 217, 52, 0.95) 14% 22%,
-      transparent 22% 42%,
-      rgba(173, 217, 52, 0.95) 42% 50%,
-      transparent 50% 70%,
-      rgba(173, 217, 52, 0.95) 70% 78%,
-      transparent 78% 100%
-    );
-  background-size: 100% 60px;
-  background-repeat: repeat-y;
-  animation:
-    cfgFlow 1.4s linear infinite,
-    cfgPulse 1.8s ease-in-out infinite;
-}
-
-@keyframes cfgFlow {
-  0%   { background-position: 0 0; }
-  100% { background-position: 0 60px; }
-}
+/* (Stage v2 hydraulic link override removed — dual-flow hot/cold
+   pipes now live up in the .cfg-mod-link rule itself, no second
+   override needed.) */
 
 /* Power-up sweep — a vertical lime band that traverses the stage left-
    to-right whenever the bank count changes. The component re-keys this
@@ -3372,7 +3446,9 @@ li {
   .cfg-mod-card {
     animation: cfgModSnapIn 0.55s cubic-bezier(0.2, 0.85, 0.25, 1.1) both;
   }
-  .cfg-mod-link { animation: none; }
+  .cfg-mod-link,
+  .cfg-mod-link::before,
+  .cfg-mod-link::after { animation: none; }
   .cfg-stage-sweep { animation: none; opacity: 0; }
   .cfg-stage-status-led { animation: none; }
 }
@@ -4583,7 +4659,10 @@ li {
    column, so the readout grid is 2-up (not 4-up). */
 .cfg-hud {
   position: relative;
-  margin-top: 4px;
+  /* Glue the readout + product card to the bottom of the form column so
+     they read as a separate "system info" cluster, visually detached
+     from the N+1 toggle which is the last interactive input. */
+  margin-top: auto;
   padding: 14px 16px 14px;
   border: 1px solid rgba(163, 230, 53, 0.22);
   border-radius: 14px;

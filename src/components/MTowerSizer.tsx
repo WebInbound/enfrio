@@ -466,7 +466,12 @@ export default function MTowerSizer() {
             rows.push(arr);
           }
           return (
-            <div className="cfg-stage" role="img" aria-label={`Visualisation of ${totalUnits} M Tower modules`}>
+            <div
+              className="cfg-stage"
+              role="img"
+              aria-label={`Visualisation of ${totalUnits} M Tower modules`}
+              data-circuit={circuit}
+            >
               <div className="cfg-stage-ground" aria-hidden="true" />
               <div className="cfg-stage-grid" data-rows={rowsCount}>
                 {rows.map((rowIdxs, rIdx) => (
