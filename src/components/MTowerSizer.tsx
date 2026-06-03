@@ -386,6 +386,36 @@ export default function MTowerSizer() {
           </span>
         </label>
 
+        {/* SCADA-style live spec strip — sits inside the form column so the
+            user sees the impact of every input change next to the input
+            itself. Fills the space between N+1 and the static product card. */}
+        <aside className="cfg-hud" aria-label="Live build specifications">
+          <header className="cfg-hud-head">
+            <span className="cfg-hud-led" aria-hidden="true" />
+            <p className="cfg-hud-title">LIVE BUILD READOUT</p>
+          </header>
+          <div className="cfg-hud-grid">
+            {hudRows
+              .filter((row) => row.key !== "thermal" && row.key !== "modules")
+              .map((row) => (
+                <div
+                  key={row.key}
+                  className={`cfg-hud-row ${flashingRows[row.key] ? "is-flashing" : ""}`}
+                >
+                  <span className="cfg-hud-label">{row.label}</span>
+                  <span className="cfg-hud-value">
+                    <AnimatedNumber
+                      value={row.value}
+                      duration={700}
+                      format={row.format}
+                      suffix={row.suffix}
+                    />
+                  </span>
+                </div>
+              ))}
+          </div>
+        </aside>
+
         <div className="cfg-product-card">
           <p className="kicker">SINGLE M TOWER MODULE</p>
           <ul className="cfg-product-specs">
@@ -514,35 +544,6 @@ export default function MTowerSizer() {
             </span>
           </article>
         </div>
-
-        {/* SCADA-style live spec strip — horizontal, full-width inside the
-            output panel. Sits right below the high-level metric cards and
-            adds the "instrument readout" detail (footprint, water flow,
-            weight, electrical draw) you don't get from the metrics alone. */}
-        <aside className="cfg-hud" aria-label="Live build specifications">
-          <span className="cfg-hud-led" aria-hidden="true" />
-          <p className="cfg-hud-title">LIVE BUILD READOUT</p>
-          <div className="cfg-hud-grid">
-            {hudRows
-              .filter((row) => row.key !== "thermal" && row.key !== "modules")
-              .map((row) => (
-                <div
-                  key={row.key}
-                  className={`cfg-hud-row ${flashingRows[row.key] ? "is-flashing" : ""}`}
-                >
-                  <span className="cfg-hud-label">{row.label}</span>
-                  <span className="cfg-hud-value">
-                    <AnimatedNumber
-                      value={row.value}
-                      duration={700}
-                      format={row.format}
-                      suffix={row.suffix}
-                    />
-                  </span>
-                </div>
-              ))}
-          </div>
-        </aside>
 
         <p className="cfg-note">
           Indicative figures. Derate factors: ambient +10 °C ≈ −5 to −7%,

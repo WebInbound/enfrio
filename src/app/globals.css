@@ -2680,9 +2680,10 @@ li {
 
 /* Product spec card filling the leftover space under N+1 */
 .cfg-product-card {
-  /* On desktop the card is pushed to the bottom of the input column with
-     margin-top: auto, filling the empty space below the N+1 toggle. */
-  margin-top: auto;
+  /* Previously pulled to column bottom via margin-top:auto. The LIVE BUILD
+     READOUT now lives between N+1 and this card, so there's no void to
+     auto-fill anymore — the card sits naturally after the readout. */
+  margin-top: 4px;
   padding: 14px 16px;
   border-radius: 14px;
   background:
@@ -4386,51 +4387,54 @@ li {
 /* === /MTOWER PAGE SECTIONS WOW === */
 
 /* === MTOWER SIZER HUD ===
-   v2: horizontal strip BELOW the metric cards inside the output column.
-   The previous v1 stuck the HUD as a narrow 3rd column on the right — that
-   left an irreducible void on the right (HUD content was short) AND on the
-   left bottom (the form's bottom card was pushed by margin-top:auto on a
-   too-tall row). Back to the original 2-col .cfg grid; the HUD lives in
-   the .cfg-output column as an instrument-readout strip. */
+   v3: lives INSIDE the form column, between the N+1 toggle and the static
+   product card — so the readout sits in the void the form column used to
+   leave under the inputs, and the user sees the impact of every choice
+   next to the choice itself. Form column is narrower than the result
+   column, so the readout grid is 2-up (not 4-up). */
 .cfg-hud {
   position: relative;
-  margin-top: 16px;
-  padding: 14px 18px 16px;
+  margin-top: 4px;
+  padding: 14px 16px 14px;
   border: 1px solid rgba(163, 230, 53, 0.22);
-  border-radius: 12px;
+  border-radius: 14px;
   background:
-    linear-gradient(90deg, rgba(163, 230, 53, 0.04) 0%, rgba(163, 230, 53, 0) 100%),
-    rgba(7, 15, 25, 0.55);
+    radial-gradient(ellipse at 0% 0%, rgba(163, 230, 53, 0.08) 0%, transparent 65%),
+    linear-gradient(160deg, rgba(13, 22, 33, 0.55) 0%, rgba(5, 11, 20, 0.5) 100%);
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  column-gap: 22px;
-  row-gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   overflow: hidden;
 }
 
-/* Live-status LED on the left edge of the strip — pulses lime to signal
-   "this is a live readout, not a static label". */
+.cfg-hud-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Live-status LED — pulses lime to signal "live readout, not a static
+   label". Sits inline with the title. */
 .cfg-hud-led {
   width: 9px;
   height: 9px;
   border-radius: 50%;
   background: #a3e635;
-  box-shadow: 0 0 0 2px rgba(163, 230, 53, 0.25), 0 0 12px rgba(163, 230, 53, 0.7);
+  box-shadow: 0 0 0 2px rgba(163, 230, 53, 0.22), 0 0 12px rgba(163, 230, 53, 0.65);
   animation: cfg-hud-led-pulse 1.6s ease-in-out infinite;
   flex: 0 0 9px;
 }
 @keyframes cfg-hud-led-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.6; transform: scale(0.85); }
+  50%      { opacity: 0.55; transform: scale(0.82); }
 }
 
 .cfg-hud-title {
   margin: 0;
   font-family: "Rajdhani", sans-serif;
   font-weight: 700;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: rgba(163, 230, 53, 0.92);
@@ -4438,25 +4442,25 @@ li {
 }
 
 .cfg-hud-grid {
-  grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px 22px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 18px;
 }
 
 .cfg-hud-row {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 4px 0;
-  border-top: 1px dashed rgba(163, 230, 53, 0.12);
-  border-radius: 0;
+  padding: 6px 8px;
+  border: 1px solid rgba(163, 230, 53, 0.1);
+  border-radius: 8px;
+  background: rgba(7, 15, 25, 0.35);
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .cfg-hud-row .cfg-hud-label {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.66rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.62rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-family: "Rajdhani", sans-serif;
@@ -4471,18 +4475,15 @@ li {
 
 .cfg-hud-row.is-flashing {
   background: rgba(163, 230, 53, 0.08);
-  border-top-color: rgba(163, 230, 53, 0.5);
-  box-shadow: inset 0 0 0 1px rgba(163, 230, 53, 0.25),
-    0 0 16px -4px rgba(163, 230, 53, 0.35);
+  border-color: rgba(163, 230, 53, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(163, 230, 53, 0.18),
+    0 0 16px -4px rgba(163, 230, 53, 0.45);
 }
 
 @media (max-width: 880px) {
-  .cfg-hud {
-    column-gap: 14px;
-  }
   .cfg-hud-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 14px;
+    gap: 8px 12px;
   }
   .cfg-hud-row .cfg-hud-value {
     font-size: 1rem;
