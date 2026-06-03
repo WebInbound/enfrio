@@ -85,11 +85,18 @@ his partner ("il socio") generates AI images from another machine and pushes the
   Word labels (e.g. "Engineer") overflow — scope an override (see `.mtower-outro-timeline`).
 
 ## Mobile specifics
-- White-strip-at-edges bug fixed via: `html` viewport-fixed gradient (grey top 78vh →
-  navy footer bottom 22vh) + `themeColor: #c9cfd5` (iOS chrome bar) + `overscroll-behavior: none`.
-  The split gradient is deliberate: top overscroll shows grey, bottom shows footer navy.
+- **iOS overscroll HARD LIMIT (don't re-attempt gradients!):** iOS Safari paints BOTH
+  the top and bottom rubber-band regions with the SINGLE solid `html` background-color.
+  It IGNORES background gradients and `background-attachment: fixed` there. So distinct
+  top/bottom overscroll colours are NOT possible on iOS — wasted 3 attempts on this.
+  Current solution (user's choice): `html { background-color: #c9cfd5 }` (single light
+  grey = page top + themeColor), so the TOP rubber-band + iOS chrome bar blend into the
+  page; the bottom shows the same light grey under the navy footer (accepted trade-off).
+  `overscroll-behavior: none` still kills the bounce on Android/Chrome.
+- `themeColor: #c9cfd5` in layout.tsx viewport export (iOS Safari chrome bar).
 - Floating logo: desktop has `margin-left:-14px` (breathes into wide gutter); mobile
   (≤760px) overrides to `+4px` so it isn't flush with the screen edge.
+- BackToTop button: fixed bottom-right lime circle, fades in past 60vh scroll.
 
 ## Things the user cares about (style of feedback)
 - Hates AI-futuristic-looking images. Where M Tower appears it must be 1:1 with the
