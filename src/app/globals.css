@@ -26,12 +26,14 @@ body {
   scroll-behavior: smooth;
 }
 
-/* Match html's background to the body's bottom-gradient stop so iOS /
-   Android bounce-scroll past the top or bottom doesn't reveal the
-   default white html background. overscroll-behavior: none also tells
-   the engine to skip the bounce entirely where the OS allows it. */
+/* html bg matches the body gradient's TOP stop (#c0c7ce), not the bottom,
+   so the iOS Safari chrome bar (which sits ABOVE the page) reads as a
+   continuation of the page top, not a dark band. Bottom overscroll is
+   a tiny visible gap and tolerates a small mismatch better than the
+   chrome bar does. overscroll-behavior: none disables the bounce where
+   the OS honours it. */
 html {
-  background: #a5afb8;
+  background: #c0c7ce;
   overscroll-behavior: none;
 }
 

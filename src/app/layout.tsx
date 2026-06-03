@@ -76,10 +76,12 @@ export const metadata: Metadata = {
 };
 
 /* Viewport + theme-color so iOS Safari's address-bar area tints to the
-   page's bottom-gradient colour instead of defaulting to white (which
-   reads as a "white strip" at the top/bottom on mobile). */
+   page's TOP gradient colour (#c0c7ce — the body's 0% stop) instead of
+   defaulting to white. Previously set to the bottom-gradient stop
+   (#a5afb8), which read as a dark band above the page since the chrome
+   bar sits at the top, not the bottom. */
 export const viewport: Viewport = {
-  themeColor: "#a5afb8",
+  themeColor: "#c0c7ce",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
