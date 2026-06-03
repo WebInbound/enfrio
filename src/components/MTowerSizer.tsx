@@ -513,6 +513,34 @@ export default function MTowerSizer() {
                 <span />
                 <span />
               </div>
+
+              {/* Bottom status bar — SCADA-style line that reads the bank
+                  state at a glance. Lime LED + monospaced segments. */}
+              <div className="cfg-stage-status" aria-hidden="true">
+                <span className="cfg-stage-status-led" />
+                <span className="cfg-stage-status-seg">BANK ONLINE</span>
+                <span className="cfg-stage-status-sep">·</span>
+                <span className="cfg-stage-status-seg">
+                  {totalUnits} {totalUnits === 1 ? "MODULE" : "MODULES"}
+                </span>
+                <span className="cfg-stage-status-sep">·</span>
+                <span className="cfg-stage-status-seg">
+                  {(totalUnits * UNIT_KW / 1000).toFixed(1).replace(/\.0$/, "")} MW
+                </span>
+                <span className="cfg-stage-status-sep">·</span>
+                <span className="cfg-stage-status-seg">
+                  {redundancy ? "N+1 READY" : "BASELOAD"}
+                </span>
+              </div>
+
+              {/* Power-up sweep — a vertical lime light bar that traverses
+                  the stage every time the module count changes. Keyed to
+                  totalUnits so React replays the animation. */}
+              <span
+                key={`sweep-${totalUnits}`}
+                className="cfg-stage-sweep"
+                aria-hidden="true"
+              />
             </div>
           );
         })()}

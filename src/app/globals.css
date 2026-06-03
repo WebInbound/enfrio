@@ -3183,9 +3183,198 @@ li {
   50% { opacity: 0.35; }
 }
 
+/* === Stage v2 — perspective floor, flow link, status bar, sweep, hover tilt === */
+
+/* Perspective floor: a lime grid that recedes into the back of the stage,
+   replacing the previously-flat grid::before. Gives the bank a real
+   "factory hall floor" feel. */
+.cfg-stage::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 38%;
+  background-image:
+    linear-gradient(rgba(173, 217, 52, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(173, 217, 52, 0.16) 1px, transparent 1px);
+  background-size: 44px 44px;
+  transform: perspective(420px) rotateX(58deg);
+  transform-origin: 50% 100%;
+  mask-image: linear-gradient(180deg, transparent 0%, black 30%, black 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, black 30%, black 80%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.7;
+}
+
+/* Re-tune the flat grid overlay so it only paints the upper half (the
+   perspective floor takes the bottom). Keeps the structural feel without
+   competing with the perspective. */
+.cfg-stage::before {
+  mask-image: radial-gradient(ellipse at 50% 35%, black 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 35%, black 0%, transparent 70%);
+}
+
+/* Each module gently bobs on the floor — barely perceptible, but makes
+   the bank feel alive instead of statically pasted. Layered onto the
+   existing snap-in animation. */
+.cfg-mod-card {
+  animation:
+    cfgModSnapIn 0.55s cubic-bezier(0.2, 0.85, 0.25, 1.1) both,
+    cfgModBob 4.8s ease-in-out infinite 0.55s;
+}
+
+@keyframes cfgModBob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+
+/* Floor reflection: a mirrored, faded copy of the render under each
+   module. Pure ::after pseudo-element, no extra DOM. */
+.cfg-mod-card::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -22%;
+  height: 22%;
+  background: var(--cfg-mod-img, none);
+  background-image: url("/assets/images/site/mtower-render.png");
+  background-size: contain;
+  background-position: center top;
+  background-repeat: no-repeat;
+  transform: scaleY(-1);
+  filter: blur(2px);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, transparent 75%);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, transparent 75%);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Hover: stop the bob and lift with a subtle 3D tilt so the card
+   reads as "selectable". */
+.cfg-mod-card:hover {
+  animation:
+    cfgModSnapIn 0.55s cubic-bezier(0.2, 0.85, 0.25, 1.1) both;
+  transform: perspective(700px) rotateX(4deg) rotateY(-3deg) translateY(-6px) scale(1.04);
+  filter: drop-shadow(0 12px 22px rgba(173, 217, 52, 0.45));
+  z-index: 4;
+}
+
+/* Hydraulic link — replace the static gradient with a flowing one. The
+   background-position scrolls down the link, making it look like fluid
+   moving between modules. */
+.cfg-mod-link {
+  background:
+    linear-gradient(
+      180deg,
+      transparent 0 14%,
+      rgba(173, 217, 52, 0.95) 14% 22%,
+      transparent 22% 42%,
+      rgba(173, 217, 52, 0.95) 42% 50%,
+      transparent 50% 70%,
+      rgba(173, 217, 52, 0.95) 70% 78%,
+      transparent 78% 100%
+    );
+  background-size: 100% 60px;
+  background-repeat: repeat-y;
+  animation:
+    cfgFlow 1.4s linear infinite,
+    cfgPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes cfgFlow {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 60px; }
+}
+
+/* Power-up sweep — a vertical lime band that traverses the stage left-
+   to-right whenever the bank count changes. The component re-keys this
+   element on totalUnits change, so React replays the animation. */
+.cfg-stage-sweep {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -15%;
+  width: 22%;
+  z-index: 4;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(173, 217, 52, 0) 30%,
+    rgba(173, 217, 52, 0.32) 50%,
+    rgba(173, 217, 52, 0) 70%,
+    transparent 100%
+  );
+  filter: blur(8px);
+  pointer-events: none;
+  animation: cfgStageSweep 0.85s cubic-bezier(0.2, 0.7, 0.2, 1) 1 forwards;
+}
+
+@keyframes cfgStageSweep {
+  0%   { left: -25%; opacity: 0; }
+  35%  { opacity: 1; }
+  100% { left: 110%; opacity: 0; }
+}
+
+/* SCADA status bar at the bottom of the stage. Pulsing lime LED + 4
+   monospaced segments: BANK ONLINE / N MODULES / N MW / N+1 status. */
+.cfg-stage-status {
+  position: relative;
+  z-index: 2;
+  margin: 16px 8px 0;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  color: rgba(173, 217, 52, 0.85);
+  background:
+    linear-gradient(90deg, rgba(173, 217, 52, 0.08) 0%, rgba(173, 217, 52, 0) 60%),
+    rgba(7, 15, 25, 0.55);
+  border: 1px solid rgba(173, 217, 52, 0.22);
+  border-radius: 999px;
+}
+
+.cfg-stage-status-led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 0 2px rgba(173, 217, 52, 0.22), 0 0 10px rgba(173, 217, 52, 0.7);
+  animation: cfg-hud-led-pulse 1.6s ease-in-out infinite;
+}
+
+.cfg-stage-status-seg {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.cfg-stage-status-sep {
+  color: rgba(173, 217, 52, 0.45);
+  font-weight: 400;
+}
+
+@media (max-width: 880px) {
+  .cfg-stage-status {
+    font-size: 0.64rem;
+    gap: 6px;
+    padding: 6px 12px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .cfg-mod-card { animation: none; }
+  .cfg-mod-card {
+    animation: cfgModSnapIn 0.55s cubic-bezier(0.2, 0.85, 0.25, 1.1) both;
+  }
   .cfg-mod-link { animation: none; }
+  .cfg-stage-sweep { animation: none; opacity: 0; }
+  .cfg-stage-status-led { animation: none; }
 }
 
 /* Legacy fallback container — keep block but hide if both exist */
