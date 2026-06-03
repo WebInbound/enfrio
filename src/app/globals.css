@@ -26,30 +26,18 @@ body {
   scroll-behavior: smooth;
 }
 
-/* Distinct top/bottom overscroll colours — the RELIABLE way.
-   Both the top and bottom iOS rubber-band regions sample the <html>
-   background, so a single colour can only match one end. The trick is a
-   DOCUMENT-spanning gradient (NOT background-attachment: fixed — iOS
-   Safari renders fixed backgrounds unreliably, which is why the earlier
-   version showed grey at the bottom instead of navy).
-
-   html grows to the full document height (its content/body is the whole
-   page), so a default-attachment gradient with percentage stops maps
-   grey → navy across the entire document: grey at the very top, navy at
-   the very bottom (matching the footer). When iOS overscrolls past
-   either edge it extends the nearest edge colour — grey above the top,
-   navy below the bottom. The body's own opaque bg covers this gradient
-   on the visible page, so only the two edges ever show. */
+/* iOS Safari paints BOTH the top and bottom rubber-band (overscroll)
+   regions with the single solid <html> background-color — it ignores
+   gradients and background-attachment: fixed there. So distinct top vs
+   bottom colours are not reliably possible on iOS. Per the user's choice
+   we match the TOP: a single light grey equal to the page's top colour
+   and the iOS chrome-bar theme-color (#c9cfd5). The top rubber-band and
+   the address bar disappear into the page; the bottom rubber-band shows
+   the same light grey under the navy footer (accepted trade-off).
+   overscroll-behavior: none still removes the bounce entirely on
+   Android/Chrome where it's honoured. */
 html {
-  background-color: #0b1623; /* fallback = footer navy (bottom) */
-  background-image: linear-gradient(
-    180deg,
-    #c9cfd5 0%,
-    #c0c7ce 6%,
-    #aeb6be 40%,
-    #0b1623 100%
-  );
-  background-repeat: no-repeat;
+  background-color: #c9cfd5;
   overscroll-behavior: none;
 }
 
