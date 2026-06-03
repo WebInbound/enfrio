@@ -26,14 +26,15 @@ body {
   scroll-behavior: smooth;
 }
 
-/* html bg matches the body gradient's TOP stop (#c0c7ce), not the bottom,
-   so the iOS Safari chrome bar (which sits ABOVE the page) reads as a
-   continuation of the page top, not a dark band. Bottom overscroll is
-   a tiny visible gap and tolerates a small mismatch better than the
-   chrome bar does. overscroll-behavior: none disables the bounce where
-   the OS honours it. */
+/* html background = the dark navy footer colour so the area BELOW the
+   body (bottom overscroll / safe-area inset) reads as a continuation
+   of the footer instead of breaking with a light strip. iOS Safari's
+   chrome bar ABOVE the body is handled separately via the viewport
+   themeColor meta in layout.tsx — it tints to match the body's TOP
+   colour. The two together cover both ends without a single shared
+   compromise colour. */
 html {
-  background: #c0c7ce;
+  background: #070f19; /* = --deep-blue / footer start */
   overscroll-behavior: none;
 }
 
