@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import MagneticButtons from "@/components/MagneticButtons";
 import SmoothScroll from "@/components/SmoothScroll";
 import "./globals.css";
@@ -73,6 +73,16 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-icon.png",
   },
+};
+
+/* Viewport + theme-color so iOS Safari's address-bar area tints to the
+   page's bottom-gradient colour instead of defaulting to white (which
+   reads as a "white strip" at the top/bottom on mobile). */
+export const viewport: Viewport = {
+  themeColor: "#a5afb8",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

@@ -26,6 +26,15 @@ body {
   scroll-behavior: smooth;
 }
 
+/* Match html's background to the body's bottom-gradient stop so iOS /
+   Android bounce-scroll past the top or bottom doesn't reveal the
+   default white html background. overscroll-behavior: none also tells
+   the engine to skip the bounce entirely where the OS allows it. */
+html {
+  background: #a5afb8;
+  overscroll-behavior: none;
+}
+
 body {
   font-family: "Urbanist", sans-serif;
   color: var(--ink);
@@ -34,6 +43,10 @@ body {
     radial-gradient(circle at 12% -18%, rgba(255, 255, 255, 0.38) 0%, transparent 34%),
     radial-gradient(circle at 88% -22%, rgba(255, 255, 255, 0.26) 0%, transparent 32%),
     linear-gradient(180deg, #c0c7ce 0%, #aeb6be 52%, #a5afb8 100%);
+  /* Belt-and-suspenders fallback: even if html bg gets overridden, the
+     body's bottom colour extends infinitely down via min-height. */
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .bg-grid {
