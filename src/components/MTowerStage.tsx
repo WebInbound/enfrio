@@ -322,9 +322,42 @@ export default function MTowerStage() {
             })}
 
             <div className="mtower-stage-hint" aria-hidden="true">
-              <span>↔ drag</span>
+              <span className="mtower-stage-hint-item">
+                <svg
+                  className="mtower-stage-hint-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="M4 12h16" />
+                  <path d="m7 9-3 3 3 3" />
+                  <path d="m17 9 3 3-3 3" />
+                </svg>
+                drag
+              </span>
               <span>·</span>
-              <span>↓ scroll</span>
+              <span className="mtower-stage-hint-item">
+                <svg
+                  className="mtower-stage-hint-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="M12 4v16" />
+                  <path d="m9 17 3 3 3-3" />
+                </svg>
+                scroll
+              </span>
             </div>
           </div>
         </div>

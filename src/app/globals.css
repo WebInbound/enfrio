@@ -3916,6 +3916,21 @@ li {
   backdrop-filter: blur(8px);
 }
 
+/* Drag + scroll hint items: glyphs replaced with matching SVG icons so
+   the horizontal "drag" arrow and the vertical "scroll" arrow share the
+   exact same stroke weight and size (the old ↔ unicode glyph rendered
+   heavier/uglier than ↓). */
+.mtower-stage-hint-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.mtower-stage-hint-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
+
 /* Mobile: text first, then canvas, then explore copy. The two grid
    cells stack and the visual gets a fixed height. */
 @media (max-width: 900px) {
