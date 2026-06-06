@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PropsWithChildren, useEffect, useMemo, useState } from "react";
@@ -274,7 +275,7 @@ export default function SiteShell({ active, children }: SiteShellProps) {
 
       <div className="topbar-wrap">
         <Link className="floating-logo" href="/" aria-label="Enfrio home">
-          <img src="/assets/images/logo-enfrio.png" alt="Enfrio logo" />
+          <Image src="/assets/images/logo-enfrio.png" alt="Enfrio logo" width={649} height={403} priority />
         </Link>
 
         <header className={`topbar ${isSolid ? "is-solid" : ""} ${isMenuOpen ? "menu-open" : ""}`.trim()}>

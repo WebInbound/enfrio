@@ -118,7 +118,7 @@ export default function HomePage() {
             </div>
           </div>
           <figure className="mtower-spotlight-media mtower-spotlight-media--render">
-            <Image src="/assets/images/site/mtower-render.png" alt="Enfrio M Tower module — canonical product render" width={1040} height={1080} priority />
+            <Image src="/assets/images/site/mtower-render.png" alt="Enfrio M Tower module — canonical product render" width={1040} height={1080} loading="lazy" />
           </figure>
         </div>
       </section>

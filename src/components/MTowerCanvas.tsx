@@ -44,17 +44,30 @@ function MTowerBillboard({
     return tex;
   }, []);
 
-  // Preload all 120 frames as HTMLImage so swaps come from browser cache.
+  // Frame cache as HTMLImage so swaps come from browser cache, not network.
   const imgsRef = useRef<HTMLImageElement[] | null>(null);
   useEffect(() => {
     const arr: HTMLImageElement[] = [];
-    for (let i = 0; i < FRAME_COUNT; i++) {
-      const img = new window.Image();
-      img.src = framePath(i);
-      arr.push(img);
-    }
+    for (let i = 0; i < FRAME_COUNT; i++) arr.push(new window.Image());
     imgsRef.current = arr;
+    // Eager-load only the scroll-arc frames (0..30) the hero shows on load and
+    // during the capped scroll rotation. The remaining drag-only angles are
+    // deferred until the browser is idle so they don't compete for bandwidth
+    // on first paint (was: all 120 frames, ~7.6MB, fetched on mount). Any
+    // frame dragged to before the idle pass runs is fetched on demand in the
+    // swap effect below.
+    const EAGER = 31;
+    for (let i = 0; i < EAGER; i++) arr[i].src = framePath(i);
+    const loadRest = () => {
+      for (let i = EAGER; i < FRAME_COUNT; i++) if (!arr[i].src) arr[i].src = framePath(i);
+    };
+    const hasRIC = typeof window.requestIdleCallback === "function";
+    const idleId = hasRIC
+      ? window.requestIdleCallback(loadRest, { timeout: 3000 })
+      : window.setTimeout(loadRest, 1500);
     return () => {
+      if (hasRIC) window.cancelIdleCallback(idleId as number);
+      else window.clearTimeout(idleId as number);
       for (const img of arr) img.src = "";
     };
   }, []);
@@ -64,6 +77,8 @@ function MTowerBillboard({
     if (!imgs) return;
     const idx = ((frame % FRAME_COUNT) + FRAME_COUNT) % FRAME_COUNT;
     const img = imgs[idx];
+    // On-demand fetch for a frame dragged to before the idle prefetch ran.
+    if (img && !img.src) img.src = framePath(idx);
     const apply = () => {
       texture.image = img;
       texture.needsUpdate = true;
