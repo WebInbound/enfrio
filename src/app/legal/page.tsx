@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/legal",
   title: "Enfrio | Privacy & Cookies",
   description:
     "How Enfrio Srl handles personal data collected through this website, in line with the EU General Data Protection Regulation (GDPR).",
-};
+});
 
 const LAST_UPDATED = "29 May 2026";
 

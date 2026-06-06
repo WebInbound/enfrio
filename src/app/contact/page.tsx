@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { Suspense } from "react";
 import Image from "next/image";
 import SiteShell from "@/components/SiteShell";
 import ContactForm from "@/components/ContactForm";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/contact",
   title: "Contact Enfrio | Start Your Cooling Project",
   description: "Contact Enfrio to discuss engine cooling projects, technical requirements and production transfer plans.",
-};
+});
 
 export default function ContactPage() {
   return (

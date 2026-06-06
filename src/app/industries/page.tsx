@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/industries",
   title: "Enfrio Industries | Application Domains",
   description: "Industry applications for Enfrio engine cooling solutions across power generation and datacenter sectors.",
-};
+});
 
 const MADRID_PHOTOS = [
   { src: "waste-madrid-01.jpg", caption: "Custom core-box opening on radiator package." },

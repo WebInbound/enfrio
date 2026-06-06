@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/technology",
   title: "Enfrio Technology | Manufacturing and Process Capability",
   description: "Advanced machinery, fabrication control and process technology for industrial cooling systems.",
-};
+});
 
 const MACHINERY_GALLERY = [
   { src: "mach-bending-a.jpg", alt: "Bending machine overview", caption: "Bending platform setup for thermal line integration." },

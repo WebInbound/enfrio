@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/company",
   title: "Enfrio Company | Team and Industrial Culture",
   description: "Enfrio company profile: people, expertise and production culture behind cooling solutions.",
-};
+});
 
 export default function CompanyPage() {
   return (

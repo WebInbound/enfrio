@@ -54,8 +54,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: OG_IMAGE,
-        width: 1200,
-        height: 900,
+        width: 1536,
+        height: 1024,
         alt: "Enfrio — engineering aluminium cooling systems",
       },
     ],

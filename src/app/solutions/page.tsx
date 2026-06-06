@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/solutions",
   title: "Enfrio Solutions | 5P Execution and Cooling Systems",
   description:
     "Enfrio business solutions across project management, engineering, process definition, procurement and production transfer.",
-};
+});
 
 export default function SolutionsPage() {
   return (

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import SiteShell from "@/components/SiteShell";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/qhse",
   title: "Enfrio | QHSE Policy",
   description: "Enfrio Quality, Health, Safety and Environment policy aligned with ISO certification requirements for engine cooling manufacturing.",
-};
+});
 
 export default function QhsePage() {
   return (

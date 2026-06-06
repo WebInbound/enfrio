@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
 import MTowerSizer from "@/components/MTowerSizer";
@@ -7,11 +8,12 @@ import MTowerStage from "@/components/MTowerStage";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import DeploySwitcher from "@/components/DeploySwitcher";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/tower-m",
   title: "M Tower | Modular cooling that scales with your power | Enfrio",
   description:
     "Enfrio M Tower is a modular heat-rejection platform: 1500 kW per unit, scaling from standalone gensets to 12 MW datacenter halls. Real engineering, ATEX-ready, sea-water proof.",
-};
+});
 
 export default function TowerMPage() {
   return (

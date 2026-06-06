@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/projects",
   title: "Enfrio Projects | Applied Industrial Credibility",
   description: "Selected Enfrio projects and references demonstrating technical delivery in real contexts.",
-};
+});
 
 export default function ProjectsPage() {
   return (
