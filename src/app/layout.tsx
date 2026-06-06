@@ -1,8 +1,26 @@
 import type { Metadata, Viewport } from "next";
+import { Rajdhani, Urbanist } from "next/font/google";
 import BackToTop from "@/components/BackToTop";
 import MagneticButtons from "@/components/MagneticButtons";
 import SmoothScroll from "@/components/SmoothScroll";
 import "./globals.css";
+
+// Self-hosted via next/font (replaces the render-blocking Google Fonts
+// @import that used to sit at the top of globals.css). Exposed as CSS
+// variables (--font-urbanist / --font-rajdhani) consumed throughout
+// globals.css; display:swap keeps text visible during font load.
+const urbanist = Urbanist({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-urbanist",
+});
+const rajdhani = Rajdhani({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+  variable: "--font-rajdhani",
+});
 
 const SITE_URL = process.env.SITE_URL ?? "https://www.enfrio.it";
 const OG_IMAGE = "/assets/images/site/hero-main.jpg";
@@ -94,7 +112,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${urbanist.variable} ${rajdhani.variable}`}>
       <body>
         {/* JSON-LD organisation schema — helps search engines understand
             who Enfrio is and surfaces sitelinks / knowledge panels. */}
