@@ -317,9 +317,11 @@ export default function TowerMPage() {
               <Link className="btn solid magnetic" href="/contact?subject=M+Tower+Inquiry">
                 Talk to the M Tower team
               </Link>
-              {/* TODO: replace href with /assets/datasheet-mtower.pdf once the
+              {/* Disabled until the asset exists — was href="#", which just
+                  jumped to the top of the page. TODO: swap for
+                  <a href="/assets/datasheet-mtower.pdf" download> once the
                   final datasheet is signed off by Engineering. */}
-              <a className="btn ghost" href="#">Download datasheet</a>
+              <button type="button" className="btn ghost" disabled aria-disabled="true" title="Datasheet available on request — contact the M Tower team">Download datasheet</button>
             </div>
           </div>
         </div>

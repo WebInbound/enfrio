@@ -53,7 +53,7 @@ export default function IndustriesPage() {
           <h2>From component-level products to integrated cooling packages.</h2>
         </div>
         <div className="grid-4">
-          <article className="panel reveal"><h3>Water Radiators</h3><p>Aluminum architecture optimized for heat rejection and durability.</p></article>
+          <article className="panel reveal"><h3>Water Radiators</h3><p>Aluminium architecture optimized for heat rejection and durability.</p></article>
           <article className="panel reveal"><h3>Oil &amp; Fuel Coolers</h3><p>Stable thermal windows for reliable operation under variable load profiles.</p></article>
           <article className="panel reveal"><h3>Charge Air Coolers</h3><p>Air-path temperature control for efficiency and engine consistency.</p></article>
           <article className="panel reveal"><h3>Condensers</h3><p>Climate-unit heat exchange systems with corrosion and lifecycle focus.</p></article>

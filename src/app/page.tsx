@@ -81,7 +81,7 @@ export default function HomePage() {
         <div className="grid-3">
           <article className="card reveal">
             <h3>Engine Cooling</h3>
-            <p>Aluminum radiator systems with robust heat rejection and field durability.</p>
+            <p>Aluminium radiator systems with robust heat rejection and field durability.</p>
           </article>
           <article className="card reveal">
             <h3>Thermal Subsystems</h3>

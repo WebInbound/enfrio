@@ -55,7 +55,7 @@ export default function MTowerSizer() {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const p = Number(params.get("power"));
-    if (Number.isFinite(p) && p >= 100 && p <= 50000) setPower(p);
+    if (Number.isFinite(p) && p >= 100 && p <= 100000) setPower(p);
     const a = params.get("application");
     if (APPLICATIONS.some((opt) => opt.value === a))
       setApplication(a as ApplicationValue);
@@ -186,7 +186,7 @@ export default function MTowerSizer() {
       {
         key: "footprint",
         label: "Footprint",
-        value: result.units * 4.2,
+        value: result.units * 12,
         suffix: " m²",
         format: "float" as const,
       },

@@ -30,16 +30,16 @@ export default function GlobalError({
         display: "grid",
         placeItems: "center",
         padding: "40px 24px",
-        background: "linear-gradient(170deg, #0c1422, #131f33)",
+        background: "linear-gradient(170deg, var(--deep-blue), var(--deep-blue-2))",
         color: "#f4f8ff",
-        fontFamily: "var(--font-body, system-ui, sans-serif)",
+        fontFamily: "var(--font-urbanist, system-ui, sans-serif)",
         textAlign: "center",
       }}
     >
       <div style={{ maxWidth: 540 }}>
         <p
           style={{
-            color: "#add934",
+            color: "var(--brand)",
             fontWeight: 600,
             letterSpacing: "0.16em",
             margin: 0,
@@ -67,8 +67,8 @@ export default function GlobalError({
             type="button"
             onClick={() => reset()}
             style={{
-              background: "#add934",
-              color: "#0c1422",
+              background: "var(--brand)",
+              color: "var(--deep-blue-2)",
               border: "none",
               padding: "11px 22px",
               borderRadius: 999,

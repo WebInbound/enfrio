@@ -82,7 +82,7 @@ body {
   z-index: 100;
   transform-origin: 0 50%;
   transform: scaleX(0);
-  background: linear-gradient(90deg, rgba(173, 217, 52, 0.8), #add934);
+  background: linear-gradient(90deg, rgba(173, 217, 52, 0.8), var(--brand));
 }
 
 main,
@@ -365,7 +365,7 @@ li {
 }
 
 .btn.solid {
-  background: #add934;
+  background: var(--brand);
   color: #101510;
   box-shadow: 0 10px 24px rgba(120, 160, 30, 0.28);
 }
@@ -627,7 +627,7 @@ li {
 }
 
 .site-footer a {
-  color: #add934;
+  color: var(--brand);
   text-decoration: none;
 }
 
@@ -1068,7 +1068,7 @@ li {
 
 /* === Link visibility + mail CTA clarity === */
 .dark-block a {
-  color: #add934;
+  color: var(--brand);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -4062,10 +4062,11 @@ li {
   font-weight: 600;
 }
 
-/* Mobile / tablet fallback: < 880px hides chips and stacks the
-   hero specs vertically. (Sticky pin was removed — no sticky overrides
-   needed anymore.) */
-@media (max-width: 880px) {
+/* Mobile / tablet fallback: < 900px hides chips and stacks the hero specs
+   vertically — aligned with the 900px hero stack so the annotation chips
+   never render against the reflowed full-width layout. (Sticky pin was
+   removed — no sticky overrides needed anymore.) */
+@media (max-width: 900px) {
   .mtower-anno-chip,
   .mtower-anno-lines {
     display: none;
@@ -4602,7 +4603,8 @@ li {
   }
   .deploy-switcher-tab {
     font-size: 0.86rem;
-    padding: 8px 12px;
+    padding: 11px 14px;
+    min-height: 44px;
   }
 }
 @media (max-width: 480px) {
@@ -4666,7 +4668,7 @@ li {
   font-size: clamp(2rem, 4vw, 3.5rem);
   line-height: 1;
   letter-spacing: -1px;
-  background: linear-gradient(180deg, #f4f8ff 0%, #c6f06a 100%);
+  background: linear-gradient(180deg, #f4f8ff 0%, var(--brand) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -4824,6 +4826,17 @@ li {
     font-size: 1rem;
   }
 }
+@media (max-width: 480px) {
+  /* Narrow phones: drop to one column and let wide values like
+     "16,080 L/min" or "100,500 kW" wrap instead of being clipped by the
+     card's overflow:hidden. */
+  .cfg-hud-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cfg-hud-row .cfg-hud-value {
+    white-space: normal;
+  }
+}
 /* === /MTOWER SIZER HUD === */
 
 
@@ -4921,3 +4934,17 @@ li {
   outline-offset: 4px;
 }
 /* === /A11Y FOCUS RINGS === */
+
+/* === DISABLED BUTTONS === */
+/* No disabled state existed before: the contact submit button (disabled while
+   sending) and the not-yet-wired "Download datasheet" button both looked fully
+   active. Make disabled read as inactive and non-interactive. */
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+  transform: none;
+}
+/* === /DISABLED BUTTONS === */
