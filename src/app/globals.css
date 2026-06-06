@@ -247,7 +247,11 @@ main {
   margin: 0;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: var(--brand-deep);
+  /* Darker olive than --brand-deep (#7f9f22): the small uppercase eyebrow
+     must clear WCAG AA 4.5:1 on the light section backgrounds it sits on.
+     Measured worst case improved from 2.41:1 to 4.69:1. The dark-block and
+     hero .kicker overrides further down keep their own brighter colours. */
+  color: #4f6312;
   font-size: 0.78rem;
   font-weight: 700;
 }
@@ -4888,3 +4892,32 @@ li {
     transform: none;
   }
 }
+
+/* === A11Y FOCUS RINGS === */
+/* Keyboard focus indicators for controls that suppressed the UA default
+   (the power slider's `outline: none`) or were not focusable before (the
+   home capability-showcase items, now tabIndex=0 — see SiteShell). */
+.cfg-slider:focus-visible {
+  outline: none;
+}
+.cfg-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 4px 12px rgba(173, 217, 52, 0.45),
+    0 0 0 3px rgba(7, 15, 25, 0.65),
+    0 0 0 6px var(--brand);
+}
+.cfg-slider:focus-visible::-moz-range-thumb {
+  box-shadow:
+    0 4px 12px rgba(173, 217, 52, 0.45),
+    0 0 0 3px rgba(7, 15, 25, 0.65),
+    0 0 0 6px var(--brand);
+}
+
+.wow-item {
+  border-radius: 12px;
+}
+.wow-item:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 4px;
+}
+/* === /A11Y FOCUS RINGS === */

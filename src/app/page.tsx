@@ -137,15 +137,15 @@ export default function HomePage() {
               <Image data-id="integration" className="fit-contain focus-left" src="/assets/images/site/handwork-detail.jpg" alt="Final hand assembly detail on a cooling unit" width={1500} height={1000} />
             </figure>
             <div className="wow-copy">
-              <article className="wow-item active" data-id="fabrication">
+              <article className="wow-item active" data-id="fabrication" tabIndex={0}>
                 <h3>Fabrication Precision</h3>
                 <p>Controlled welding and joining quality on heat-critical assemblies.</p>
               </article>
-              <article className="wow-item" data-id="machinery">
+              <article className="wow-item" data-id="machinery" tabIndex={0}>
                 <h3>Advanced Machinery</h3>
                 <p>Bending and laser operations designed for repeatable industrial throughput.</p>
               </article>
-              <article className="wow-item" data-id="integration">
+              <article className="wow-item" data-id="integration" tabIndex={0}>
                 <h3>Hands-on Quality</h3>
                 <p>Hand-finished detail work on every cooling unit before it leaves the line.</p>
               </article>

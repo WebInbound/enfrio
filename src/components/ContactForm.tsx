@@ -89,18 +89,18 @@ export default function ContactForm() {
       <div className="form-grid">
         <label className="form-field">
           <span>Name *</span>
-          <input type="text" name="name" required autoComplete="name" aria-invalid={Boolean(errors.name)} />
-          {errors.name ? <em className="form-error">{errors.name}</em> : null}
+          <input type="text" name="name" required autoComplete="name" aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? "err-name" : undefined} />
+          {errors.name ? <em className="form-error" id="err-name" role="alert">{errors.name}</em> : null}
         </label>
         <label className="form-field">
           <span>Company *</span>
-          <input type="text" name="company" required autoComplete="organization" aria-invalid={Boolean(errors.company)} />
-          {errors.company ? <em className="form-error">{errors.company}</em> : null}
+          <input type="text" name="company" required autoComplete="organization" aria-invalid={Boolean(errors.company)} aria-describedby={errors.company ? "err-company" : undefined} />
+          {errors.company ? <em className="form-error" id="err-company" role="alert">{errors.company}</em> : null}
         </label>
         <label className="form-field">
           <span>Work email *</span>
-          <input type="email" name="email" required autoComplete="email" aria-invalid={Boolean(errors.email)} />
-          {errors.email ? <em className="form-error">{errors.email}</em> : null}
+          <input type="email" name="email" required autoComplete="email" aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? "err-email" : undefined} />
+          {errors.email ? <em className="form-error" id="err-email" role="alert">{errors.email}</em> : null}
         </label>
         <label className="form-field">
           <span>Phone</span>
@@ -140,21 +140,22 @@ export default function ContactForm() {
           rows={8}
           required
           aria-invalid={Boolean(errors.message)}
+          aria-describedby={errors.message ? "err-message" : undefined}
           placeholder="Engine power class, heat rejection target, installation context, anything we should know..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
-        {errors.message ? <em className="form-error">{errors.message}</em> : null}
+        {errors.message ? <em className="form-error" id="err-message" role="alert">{errors.message}</em> : null}
       </label>
 
       <label className="form-check">
-        <input type="checkbox" name="consent" required aria-invalid={Boolean(errors.consent)} />
+        <input type="checkbox" name="consent" required aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? "err-consent" : undefined} />
         <span>
           I consent to Enfrio processing the data I submitted to reply to my inquiry, in line with the{" "}
           <a href="/legal">privacy policy</a>.
         </span>
       </label>
-      {errors.consent ? <em className="form-error">{errors.consent}</em> : null}
+      {errors.consent ? <em className="form-error" id="err-consent" role="alert">{errors.consent}</em> : null}
 
       <div className="form-actions">
         <SubmitButton />

@@ -174,11 +174,17 @@ export default function SiteShell({ active, children }: SiteShellProps) {
         item.addEventListener("click", onClick);
         item.addEventListener("mouseenter", onEnter);
         item.addEventListener("mouseleave", onLeave);
+        // Keyboard parity: focusing an item (Tab) activates it and pauses the
+        // auto-cycle, blurring resumes — mirrors hover for non-mouse users.
+        item.addEventListener("focus", onEnter);
+        item.addEventListener("blur", onLeave);
 
         cleanups.push(() => {
           item.removeEventListener("click", onClick);
           item.removeEventListener("mouseenter", onEnter);
           item.removeEventListener("mouseleave", onLeave);
+          item.removeEventListener("focus", onEnter);
+          item.removeEventListener("blur", onLeave);
         });
       });
 
