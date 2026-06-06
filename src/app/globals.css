@@ -977,11 +977,6 @@ li {
   background: #c8d0d8;
 }
 
-/* Keep optional contain only where explicitly needed */
-.fit-contain {
-  object-fit: contain !important;
-}
-
 /* WOW auto-showcase */
 .wow-showcase {
   margin-top: 16px;
@@ -3519,79 +3514,11 @@ li {
   .cfg-stage-status-led { animation: none; }
 }
 
-/* Legacy fallback container — keep block but hide if both exist */
-.cfg-modules {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  padding: 18px;
-  border-radius: 14px;
-  background: rgba(7, 13, 22, 0.6);
-  margin: 18px 0;
-  position: relative;
-}
-
-.cfg-mod {
-  aspect-ratio: 1;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(173, 217, 52, 0.12);
-  transition: all 0.4s cubic-bezier(0.2, 0.7, 0.1, 1);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 6px;
-}
-
-.cfg-mod-inner {
-  position: absolute;
-  inset: 14%;
-  border-radius: 4px;
-  background:
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 3px, transparent 3px 6px);
-  transition: background 0.4s ease, box-shadow 0.4s ease;
-}
-
-.cfg-mod-cap {
-  position: relative;
-  z-index: 1;
-  font-size: 0.62rem;
-  color: rgba(244, 248, 255, 0.7);
-  font-weight: 600;
-  letter-spacing: 0.4px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.cfg-mod.lit {
-  border-color: rgba(173, 217, 52, 0.7);
-  background: rgba(173, 217, 52, 0.08);
-  box-shadow: 0 0 18px rgba(173, 217, 52, 0.2);
-}
-
-.cfg-mod.lit .cfg-mod-inner {
-  background:
-    linear-gradient(180deg, rgba(173, 217, 52, 0.55) 0%, rgba(127, 159, 34, 0.65) 100%),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 3px, transparent 3px 6px);
-  box-shadow: inset 0 0 18px rgba(173, 217, 52, 0.4);
-}
-
-.cfg-mod.lit .cfg-mod-cap {
-  opacity: 1;
-}
-
-.cfg-mod-overflow {
-  grid-column: span 4;
-  text-align: center;
-  padding: 6px 0;
-  color: var(--brand);
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 700;
-  font-size: 1.2rem;
-  letter-spacing: 1px;
-}
+/* (Removed dead "legacy fallback" module styles — .cfg-modules / .cfg-mod /
+   .cfg-mod-inner / .cfg-mod.lit* / .cfg-mod-overflow + a stray duplicate
+   .cfg-mod-cap. None of those classes exist in the markup anymore; the live
+   bank renders .cfg-mod-card (styled above). The stray .cfg-mod-cap rule was
+   leaking opacity:0 onto the live kW caption and hiding it.) */
 
 /* Metrics */
 .cfg-metrics {
@@ -4802,10 +4729,10 @@ li {
      from the N+1 toggle which is the last interactive input. */
   margin-top: auto;
   padding: 14px 16px 14px;
-  border: 1px solid rgba(163, 230, 53, 0.22);
+  border: 1px solid rgba(173, 217, 52, 0.22);
   border-radius: 14px;
   background:
-    radial-gradient(ellipse at 0% 0%, rgba(163, 230, 53, 0.08) 0%, transparent 65%),
+    radial-gradient(ellipse at 0% 0%, rgba(173, 217, 52, 0.08) 0%, transparent 65%),
     linear-gradient(160deg, rgba(13, 22, 33, 0.55) 0%, rgba(5, 11, 20, 0.5) 100%);
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
   display: flex;
@@ -4826,8 +4753,8 @@ li {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #a3e635;
-  box-shadow: 0 0 0 2px rgba(163, 230, 53, 0.22), 0 0 12px rgba(163, 230, 53, 0.65);
+  background: var(--brand);
+  box-shadow: 0 0 0 2px rgba(173, 217, 52, 0.22), 0 0 12px rgba(173, 217, 52, 0.65);
   animation: cfg-hud-led-pulse 1.6s ease-in-out infinite;
   flex: 0 0 9px;
 }
@@ -4843,7 +4770,7 @@ li {
   font-size: 0.72rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(163, 230, 53, 0.92);
+  color: rgba(173, 217, 52, 0.92);
   white-space: nowrap;
 }
 
@@ -4858,7 +4785,7 @@ li {
   flex-direction: column;
   gap: 2px;
   padding: 6px 8px;
-  border: 1px solid rgba(163, 230, 53, 0.1);
+  border: 1px solid rgba(173, 217, 52, 0.1);
   border-radius: 8px;
   background: rgba(7, 15, 25, 0.35);
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
@@ -4873,17 +4800,17 @@ li {
 }
 
 .cfg-hud-row .cfg-hud-value {
-  color: #a3e635;
+  color: var(--brand);
   font-size: 1.05rem;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .cfg-hud-row.is-flashing {
-  background: rgba(163, 230, 53, 0.08);
-  border-color: rgba(163, 230, 53, 0.5);
-  box-shadow: inset 0 0 0 1px rgba(163, 230, 53, 0.18),
-    0 0 16px -4px rgba(163, 230, 53, 0.45);
+  background: rgba(173, 217, 52, 0.08);
+  border-color: rgba(173, 217, 52, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(173, 217, 52, 0.18),
+    0 0 16px -4px rgba(173, 217, 52, 0.45);
 }
 
 @media (max-width: 880px) {
