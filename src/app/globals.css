@@ -247,11 +247,12 @@ main {
   margin: 0;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-  /* Darker olive than --brand-deep (#7f9f22): the small uppercase eyebrow
-     must clear WCAG AA 4.5:1 on the light section backgrounds it sits on.
-     Measured worst case improved from 2.41:1 to 4.69:1. The dark-block and
-     hero .kicker overrides further down keep their own brighter colours. */
-  color: #4f6312;
+  /* Brand lime eyebrow. NOTE: ~2.4:1 on the light section backgrounds —
+     below WCAG AA 4.5:1 for this small text — kept as a deliberate brand
+     decision (a darker accessible olive #4f6312 was tried and rejected as
+     off-brand). The dark-block and hero .kicker overrides further down keep
+     their own colours. */
+  color: var(--brand-deep);
   font-size: 0.78rem;
   font-weight: 700;
 }
