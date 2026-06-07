@@ -9,6 +9,9 @@ export type ContactFormState = {
 };
 
 const TARGET_INBOX = process.env.CONTACT_TO ?? "info@enfrio.eu";
+// FormSubmit ties a form to its referring domain and rejects server-side
+// calls that don't look like they came from it. Must match the live origin.
+const SITE_ORIGIN = process.env.SITE_URL ?? "https://www.enfrio.it";
 
 // Per-browser rate limit. Set after a successful send, blocks resubmits
 // from the same browser for RATE_LIMIT_SECONDS. Not a defence against
@@ -96,13 +99,33 @@ export async function submitContactForm(
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        // FormSubmit's anti-abuse check rejects server-side calls with no
+        // browser Origin/Referer ("...open this page through a web server"),
+        // and it's the domain it ties the form + activation to. This runs as
+        // a server action, so set them explicitly to the live site origin.
+        Origin: SITE_ORIGIN,
+        Referer: `${SITE_ORIGIN}/contact`,
       },
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      const detail = await response.text().catch(() => "<no body>");
-      console.error("[contact] FormSubmit error", response.status, detail);
+    // FormSubmit returns HTTP 200 even on logical failures (missing referer,
+    // form not yet activated, captcha, etc.) with {"success":"false"}. Only
+    // checking response.ok would report a FALSE success and silently drop the
+    // lead — so validate the JSON success flag (it comes back as a string).
+    const result = (await response.json().catch(() => null)) as
+      | { success?: string | boolean; message?: string }
+      | null;
+    const delivered =
+      response.ok &&
+      (result?.success === true || result?.success === "true");
+
+    if (!delivered) {
+      console.error(
+        "[contact] FormSubmit not delivered",
+        response.status,
+        result?.message ?? "<no body>",
+      );
       return {
         status: "error",
         message:
