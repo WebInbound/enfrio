@@ -11,6 +11,9 @@ his partner ("il socio") generates AI images from another machine and pushes the
 - Next.js 16.1.6 App Router + React 19 + TypeScript, Turbopack build
 - React Three Fiber + three.js (~200KB) for the M Tower 3D canvas
 - Lenis smooth scroll (site-wide, exposed on `window.__lenis`)
+- **Fonts: `next/font/google`** (Rajdhani + Urbanist) in `layout.tsx`, exposed as
+  `--font-rajdhani` / `--font-urbanist` CSS vars on `<html>`. Do NOT re-add a Google
+  Fonts `@import` to globals.css (it's render-blocking; that's why it was removed).
 - No GSAP / framer-motion — keep it that way unless impact is huge
 - Build/lint: `npm run build` (the real gate). `npx tsc --noEmit` clean.
   ESLint has pre-existing `react-hooks/set-state-in-effect` warnings in
@@ -111,3 +114,26 @@ his partner ("il socio") generates AI images from another machine and pushes the
 - Workflow tooling available; the M Tower WOW pass was done with a 5-agent audit workflow
   then a 4-agent implementation workflow (file-scoped, sequential to avoid globals.css
   conflicts). Worked well. User must include "workflow" keyword to opt in.
+- A later full-site audit ran an 8-dimension finder → adversarial-verify → synthesize
+  workflow (a11y, perf, SEO, responsive, dead-code, bugs, brand, content). 32 confirmed
+  findings → fixed in 6 commits (SEO/perf/a11y/polish/cleanup). globals.css editing is
+  always done by ONE actor; for big mechanical dead-CSS removal a single agent edited the
+  file then the diff was reviewed line-by-line before commit.
+
+## Decisions from the 2026-06 audit (don't regress these)
+- **SEO**: every page sets its own metadata via `pageMetadata({path,title,description})`
+  in `src/lib/seo.ts` (per-page canonical + OG/Twitter; Next merges metadata shallowly so
+  the helper re-emits og:image). Home keeps root metadata in `layout.tsx`. New pages must
+  use the helper, not a bare `{title,description}`.
+- **`.kicker` is intentionally brand lime `--brand-deep` (#7f9f22)** even though it's only
+  ~2.4:1 on light sections (fails WCAG AA on that small label). The owner chose brand over
+  the accessible olive `#4f6312`. Do NOT "fix" it again.
+- **Dead CSS families were purged**: `.sizer*`, `.mtower-hero/-explore/-spin*`,
+  `.deploy-card/-grid/-stats`, `.team-*`, `.photo-grid-2/3`, `.contact-grid`, plus
+  `page.module.css`. The live equivalents are `.cfg-*`, `.mtower-stage*` + `.mtower-hero-spec*`,
+  `.deploy-switcher-*`, `.photo-card`, `.grid-3/4`. Don't reintroduce the old names.
+- **Sizer coefficients are placeholders** (TODO): footprint is 12 m²/module everywhere now
+  (HUD reconciled from a stray 4.2). Power clamp on shared-link read = 100000 (matches the
+  number input). Awaiting Enfrio's real numbers.
+- **Pending (need owner input)**: real datasheet PDF (button is `disabled` until it exists),
+  JSON-LD `sameAs` (social URLs) + `telephone`/contactPoint.
