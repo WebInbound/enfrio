@@ -95,7 +95,7 @@ export default function ProjectsPage() {
         <div className="wow-showcase reveal" data-wow>
           <div className="wow-grid">
             <figure className="wow-media">
-              <Image className="active focus-left" data-id="expo" src="/assets/images/site/fair-dubai-2.jpg" alt="Expo presence" width={1400} height={900} />
+              <Image className="active" data-id="expo" src="/assets/images/site/fair-dubai-2.jpg" alt="Enfrio exhibition stand with cooling units on display at an energy trade show in Dubai" width={1400} height={900} />
               <Image data-id="installed" className="fit-contain" src="/assets/images/site/installed-baudouin-canopy.jpg" alt="Enfrio cooling package installed in finished canopy" width={1400} height={900} />
               <Image data-id="delivery" className="focus-right" src="/assets/images/site/rad-truck-load.jpg" alt="Enfrio cooling unit being loaded onto a delivery truck" width={1400} height={1050} />
             </figure>
