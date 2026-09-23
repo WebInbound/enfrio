@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
+import { draftMode } from "next/headers";
 import type { BlockDef, Content, PageDef } from "@/content/types";
 
 /**
@@ -208,6 +209,37 @@ const cachedAllBlocks = unstable_cache(fetchAllBlocks.bind(null), ["kiwi-blocks-
   revalidate: false,
 });
 
+// Draft mode (Kiwi editor) skips unstable_cache: every render, and every
+// router prefetch of the menu links, would read Kiwi again (the bulk endpoint
+// allows 60 requests/min). Inside the editor, reads of one server instance are
+// shared for a couple of seconds, and the last good answer covers a refusal
+// (429/5xx), so the editor never shows the registry defaults by mistake.
+const EDIT_SHARE_MS = 2000;
+let editRead: { at: number; promise: Promise<BulkBlocks> } | null = null;
+let lastGoodBulk: BulkBlocks | null = null;
+
+async function inDraftMode(): Promise<boolean> {
+  try {
+    return (await draftMode()).isEnabled;
+  } catch {
+    return false; // outside a request (build worker): not the editor
+  }
+}
+
+async function readAllBlocks(): Promise<BulkBlocks> {
+  if (!(await inDraftMode())) return cachedAllBlocks(COMPANY_ID);
+  if (!editRead || Date.now() - editRead.at > EDIT_SHARE_MS) {
+    editRead = { at: Date.now(), promise: cachedAllBlocks(COMPANY_ID) };
+  }
+  try {
+    return await editRead.promise;
+  } catch (err) {
+    editRead = null;
+    if (lastGoodBulk && !(err instanceof BulkUnsupportedError)) return lastGoodBulk;
+    throw err;
+  }
+}
+
 /** All blocks, once per render; null if the bulk read isn't available. */
 const allBlocks = cache(async (): Promise<BulkBlocks | null> => {
   if (!kiwiEnabled || Date.now() < bulkUnsupportedUntil) return null;
@@ -215,7 +247,8 @@ const allBlocks = cache(async (): Promise<BulkBlocks | null> => {
     // Always through unstable_cache: a no-store fetch made directly in a
     // render would turn the page dynamic (or abort its prerender). In draft
     // mode (Kiwi editor) unstable_cache skips the cache: fresh values.
-    const all = await cachedAllBlocks(COMPANY_ID);
+    const all = await readAllBlocks();
+    lastGoodBulk = all;
     // unstable_cache hands back plain JSON: restore null-prototype maps.
     return {
       blocks: Object.assign(Object.create(null), all.blocks),
@@ -253,8 +286,12 @@ function finalize(def: BlockDef, raw: string): string {
   return raw;
 }
 
-/** Value (normalised) + style of one block. Never throws. */
-async function readBlockEntry(slug: string, group: string, def: BlockDef): Promise<BlockEntry> {
+/**
+ * Value (normalised) + style of one block. Never throws. Once per render and
+ * slug (getContent, getEntries and the editor panel read the same blocks; in
+ * draft mode unstable_cache would not dedupe them).
+ */
+const readBlockEntry = cache(async (slug: string, group: string, def: BlockDef): Promise<BlockEntry> => {
   if (!kiwiEnabled) return { value: def.default, style: null };
   try {
     const all = await allBlocks();
@@ -270,7 +307,7 @@ async function readBlockEntry(slug: string, group: string, def: BlockDef): Promi
     }
     return { value: def.default, style: null };
   }
-}
+});
 
 export type BlockMeta = { label?: string; group?: string; type?: BlockDef["type"] };
 
