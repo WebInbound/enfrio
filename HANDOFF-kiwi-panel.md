@@ -1,7 +1,20 @@
 # HANDOFF — Enfrio collegato al pannello Kiwi (23 set 2026)
 
-Branch `feat/kiwi-panel`. Obiettivo: il cliente modifica testi, immagini principali e dati
-dal pannello Kiwi e riceve lì i contatti, **senza che il sito cambi di un pixel**.
+**In produzione dal 23 set 2026** (merge fast-forward di `feat/kiwi-panel` su `main`, commit `3be7849`,
+deploy `dpl_2ABuYJpYwngA66ZvwV5GDpTwZwKp`, regione `dub1`). Obiettivo: il cliente modifica testi, immagini
+principali e dati dal pannello Kiwi e riceve lì i contatti, **senza che il sito cambi di un pixel**.
+
+## Stato al 23 set 2026
+
+- www.enfrio.it dopo il deploy: HTML normalizzato delle 10 pagine + 404 **identico** a quello di prima
+  del merge; configuratore, schede M Tower, canvas 3D e validazione del form funzionanti, zero errori in console.
+- Webhook configurato su Kiwi: `companies.site_revalidate_url = https://www.enfrio.it/api/revalidate`
+  + `site_revalidate_secret` (= `KIWI_REVALIDATE_SECRET` su Vercel).
+- Prova in produzione: blocco `qhse_closing_note` modificato nel DB + chiamata al webhook come fa Kiwi →
+  testo nuovo online in ~80 s (la prima rigenerazione ha preso un 429: cache ancora fredda dopo il primo
+  deploy); testo originale rimesso → online in ~15 s. Tutti i 666 blocchi sono di nuovo = default.
+- Nel pannello: 666 blocchi in 71 gruppi ("Globale ›", "Home ›", ..., "SEO", "Form contatti ›",
+  "M Tower › Configuratore — coefficienti di calcolo (DA CONFERMARE)") e 4 elenchi con 18 elementi.
 
 ## Cosa c'è
 
