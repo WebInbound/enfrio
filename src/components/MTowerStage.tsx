@@ -1,5 +1,8 @@
 "use client";
 
+import EditSpan from "@/components/EditSpan";
+import type { EditMap } from "@/lib/kiwi-edit";
+import type { TOWER_M } from "@/content/tower-m";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Stat from "@/components/Stat";
@@ -163,7 +166,14 @@ export type MTowerStageContent = {
   };
 };
 
-export default function MTowerStage({ content }: { content: MTowerStageContent }) {
+export default function MTowerStage({
+  content,
+  edit: ed,
+}: {
+  content: MTowerStageContent;
+  /** Kiwi editor markers (undefined for visitors). */
+  edit?: Pick<EditMap<typeof TOWER_M>, "stage" | "explore">;
+}) {
   const { stage: t, explore } = content;
   const chipText = [
     { label: t.chip1_label, spec: t.chip1_spec },
@@ -263,42 +273,42 @@ export default function MTowerStage({ content }: { content: MTowerStageContent }
 
         <div className="mtower-stage-row">
           <div className="mtower-stage-content">
-            <p className="kicker">{t.kicker}</p>
+            <p className="kicker" {...ed?.stage.kicker}>{t.kicker}</p>
             <h1>
-              {t.title_line1}
+              <EditSpan a={ed?.stage.title_line1}>{t.title_line1}</EditSpan>
               <br />
-              <span className="accent">{t.title_accent}</span>{" "}{t.title_end}
+              <span className="accent" {...ed?.stage.title_accent}>{t.title_accent}</span>{" "}<EditSpan a={ed?.stage.title_end}>{t.title_end}</EditSpan>
             </h1>
-            <p className="lead">{t.lead}</p>
+            <p className="lead" {...ed?.stage.lead}>{t.lead}</p>
 
             <div className="mtower-hero-specs reveal">
               <div className="mtower-hero-spec">
                 <span className="mtower-hero-spec-num">
                   <Stat text={t.spec1_value} />
                 </span>
-                <span className="mtower-hero-spec-label">{t.spec1_label}</span>
+                <span className="mtower-hero-spec-label" {...ed?.stage.spec1_label}>{t.spec1_label}</span>
               </div>
               <div className="mtower-hero-spec">
                 <span className="mtower-hero-spec-num">
                   <Stat text={t.spec2_value} />
                 </span>
-                <span className="mtower-hero-spec-label">{t.spec2_label}</span>
+                <span className="mtower-hero-spec-label" {...ed?.stage.spec2_label}>{t.spec2_label}</span>
               </div>
               <div className="mtower-hero-spec">
-                <span className="mtower-hero-spec-num">{t.spec3_value}</span>
-                <span className="mtower-hero-spec-label">{t.spec3_label}</span>
+                <span className="mtower-hero-spec-num" {...ed?.stage.spec3_value}>{t.spec3_value}</span>
+                <span className="mtower-hero-spec-label" {...ed?.stage.spec3_label}>{t.spec3_label}</span>
               </div>
             </div>
 
             <div className="btn-row">
-              <a className="btn solid magnetic" href="#mtower-sizer">
+              <a className="btn solid magnetic" href="#mtower-sizer" {...ed?.stage.cta_primary}>
                 {t.cta_primary}
               </a>
-              <a className="btn ghost" href="#mtower-explore">
+              <a className="btn ghost" href="#mtower-explore" {...ed?.stage.cta_secondary}>
                 {t.cta_secondary}
               </a>
             </div>
-            <p className="mtower-stage-scroll-hint" aria-hidden="true">
+            <p className="mtower-stage-scroll-hint" aria-hidden="true" {...ed?.stage.scroll_hint}>
               {t.scroll_hint}
             </p>
           </div>
@@ -403,27 +413,27 @@ export default function MTowerStage({ content }: { content: MTowerStageContent }
 
       <section className="section dark-block" id="mtower-explore">
         <div className="section-head reveal">
-          <p className="kicker">{explore.kicker}</p>
-          <h2>{explore.title}</h2>
-          <p>{explore.text}</p>
+          <p className="kicker" {...ed?.explore.kicker}>{explore.kicker}</p>
+          <h2 {...ed?.explore.title}>{explore.title}</h2>
+          <p {...ed?.explore.text}>{explore.text}</p>
         </div>
         <div className="grid-2">
           <article className="panel reveal">
-            <h3>{explore.mech_title}</h3>
+            <h3 {...ed?.explore.mech_title}>{explore.mech_title}</h3>
             <ul className="checks">
-              <li>{explore.mech_1}</li>
-              <li>{explore.mech_2}</li>
-              <li>{explore.mech_3}</li>
-              <li>{explore.mech_4}</li>
+              <li {...ed?.explore.mech_1}>{explore.mech_1}</li>
+              <li {...ed?.explore.mech_2}>{explore.mech_2}</li>
+              <li {...ed?.explore.mech_3}>{explore.mech_3}</li>
+              <li {...ed?.explore.mech_4}>{explore.mech_4}</li>
             </ul>
           </article>
           <article className="panel reveal">
-            <h3>{explore.integ_title}</h3>
+            <h3 {...ed?.explore.integ_title}>{explore.integ_title}</h3>
             <ul className="checks">
-              <li>{explore.integ_1}</li>
-              <li>{explore.integ_2}</li>
-              <li>{explore.integ_3}</li>
-              <li>{explore.integ_4}</li>
+              <li {...ed?.explore.integ_1}>{explore.integ_1}</li>
+              <li {...ed?.explore.integ_2}>{explore.integ_2}</li>
+              <li {...ed?.explore.integ_3}>{explore.integ_3}</li>
+              <li {...ed?.explore.integ_4}>{explore.integ_4}</li>
             </ul>
           </article>
         </div>

@@ -167,5 +167,27 @@ The site is connected to the Kiwi Network panel (company **Enfrio Srl**
 - **Contact form**: stored in the Kiwi panel AND emailed via FormSubmit; success if either worked.
 - **Parity check**: `npm run build` then `node scripts/parity-check.mjs` (diffs the normalised HTML of
   `.next/server/app/*.html` against www.enfrio.it). Zero diff is the bar for any integration change.
-- Env (Vercel, Preview + Production): `KIWI_COMPANY_ID`, `KIWI_API_BASE`, `KIWI_REVALIDATE_SECRET`.
-- Edit-in-place (click-to-edit in the Kiwi editor) is NOT wired yet: see the handoff.
+- Env (Vercel, Preview + Production): `KIWI_COMPANY_ID`, `KIWI_API_BASE`, `KIWI_REVALIDATE_SECRET`,
+  and for the editor `KIWI_EDIT_SHARED_SECRET` (same value as kiwi-network; without it edit mode is a no-op).
+
+## Kiwi editor (click-to-edit) — since 2026-09-23
+
+The Kiwi editor opens `www.enfrio.it/<page>?kiwi_edit=1&token=<jwt>` in an iframe. `src/proxy.ts`
+(matcher: only URLs with `kiwi_edit`) hands the token to `/api/kiwi-edit/init`, which verifies it
+(HS256, `KIWI_EDIT_SHARED_SECRET`, company = `KIWI_COMPANY_ID`) and turns on **`draftMode()`** + the
+`kiwi_edit_token` cookie (both SameSite=None, Secure, Partitioned). Detail: `HANDOFF-kiwi-panel.md`.
+
+- **Visitors are untouched**: pages stay static; `isEditing()` (`src/lib/kiwi-edit.ts`) reads cookies only
+  when draft mode is already on. Never call `cookies()` in a page for edit mode — use `isEditing()`.
+- **Markers**: every element that renders a block spreads its attributes:
+  `const e = await getEdit(PAGE)` → `<h2 {...e.section.key}>{section.key}</h2>`,
+  `<Image {...e.section.image} …>`. For visitors they are `{}` (or the editor's saved text style); in the
+  editor, `data-kiwi-block/type/label/group` + `data-kiwi-no-drag="1"` (layout locked: texts and images
+  change, nothing moves). Part of a sentence → `<EditSpan a={e.section.key}>`. Client components get
+  `getEditForClient(PAGE)` (undefined for visitors) as an `edit` prop.
+- Blocks with no clickable element (SEO, alts, form messages, sizer coefficients, animated numbers,
+  composed texts, hidden tab states) are edited from the floating "Altri testi della pagina" panel
+  (`KiwiHiddenFields`, lists what isn't on screen). Adding a block to the registry is enough for it
+  to show up there.
+- `src/components/KiwiEditOverlay.tsx` = platform template + patches marked `ENFRIO:` (see its header).
+  Overlay and panel are separate chunks loaded only in the editor.

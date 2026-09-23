@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
 import { getContent } from "@/lib/kiwi";
+import { getEdit } from "@/lib/kiwi-edit";
 import { getList, pageSeo } from "@/lib/site-content";
 import { TECHNOLOGY } from "@/content/technology";
 import { MACHINERY_GALLERY } from "@/content/collections";
@@ -18,57 +19,59 @@ export default async function TechnologyPage() {
     getList(MACHINERY_GALLERY),
   ]);
 
+  const e = await getEdit(TECHNOLOGY);
+
   return (
     <SiteShell active="technology">
       <section className="page-hero split">
         <div className="page-hero-text reveal">
-          <p className="kicker">{hero.kicker}</p>
-          <h1>{hero.title}</h1>
-          <p>{hero.lead}</p>
+          <p className="kicker" {...e.hero.kicker}>{hero.kicker}</p>
+          <h1 {...e.hero.title}>{hero.title}</h1>
+          <p {...e.hero.lead}>{hero.lead}</p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image priority className="focus-left" src={hero.image} alt={hero.image_alt} width={1500} height={1000} />
+          <Image {...e.hero.image} priority className="focus-left" src={hero.image} alt={hero.image_alt} width={1500} height={1000} />
         </figure>
       </section>
 
       <section className="section dark-block">
         <div className="section-head reveal">
-          <p className="kicker">{flow.kicker}</p>
-          <h2>{flow.title}</h2>
+          <p className="kicker" {...e.flow.kicker}>{flow.kicker}</p>
+          <h2 {...e.flow.title}>{flow.title}</h2>
         </div>
 
         <div className="process-story">
           <div className="process-steps reveal">
             <article className="process-step active" tabIndex={0} data-image="bending">
-              <h3>{flow.step1_title}</h3>
-              <p>{flow.step1_text}</p>
+              <h3 {...e.flow.step1_title}>{flow.step1_title}</h3>
+              <p {...e.flow.step1_text}>{flow.step1_text}</p>
             </article>
             <article className="process-step" tabIndex={0} data-image="laser">
-              <h3>{flow.step2_title}</h3>
-              <p>{flow.step2_text}</p>
+              <h3 {...e.flow.step2_title}>{flow.step2_title}</h3>
+              <p {...e.flow.step2_text}>{flow.step2_text}</p>
             </article>
             <article className="process-step" tabIndex={0} data-image="quality">
-              <h3>{flow.step3_title}</h3>
-              <p>{flow.step3_text}</p>
+              <h3 {...e.flow.step3_title}>{flow.step3_title}</h3>
+              <p {...e.flow.step3_text}>{flow.step3_text}</p>
             </article>
             <article className="process-step" tabIndex={0} data-image="assembly">
-              <h3>{flow.step4_title}</h3>
-              <p>{flow.step4_text}</p>
+              <h3 {...e.flow.step4_title}>{flow.step4_title}</h3>
+              <p {...e.flow.step4_text}>{flow.step4_text}</p>
             </article>
           </div>
           <figure className="process-visual reveal">
-            <Image className="active" data-id="bending" src={flow.step1_image} alt={flow.step1_image_alt} width={1500} height={1000} />
-            <Image data-id="laser" src={flow.step2_image} alt={flow.step2_image_alt} width={1400} height={900} />
-            <Image data-id="quality" src={flow.step3_image} alt={flow.step3_image_alt} width={1400} height={900} />
-            <Image data-id="assembly" src={flow.step4_image} alt={flow.step4_image_alt} width={1500} height={1000} />
+            <Image {...e.flow.step1_image} className="active" data-id="bending" src={flow.step1_image} alt={flow.step1_image_alt} width={1500} height={1000} />
+            <Image {...e.flow.step2_image} data-id="laser" src={flow.step2_image} alt={flow.step2_image_alt} width={1400} height={900} />
+            <Image {...e.flow.step3_image} data-id="quality" src={flow.step3_image} alt={flow.step3_image_alt} width={1400} height={900} />
+            <Image {...e.flow.step4_image} data-id="assembly" src={flow.step4_image} alt={flow.step4_image_alt} width={1500} height={1000} />
           </figure>
         </div>
       </section>
 
       <section className="section">
         <div className="section-head reveal">
-          <p className="kicker">{machinery.kicker}</p>
-          <h2>{machinery.title}</h2>
+          <p className="kicker" {...e.machinery.kicker}>{machinery.kicker}</p>
+          <h2 {...e.machinery.title}>{machinery.title}</h2>
         </div>
         <div className="editorial-rail auto-lux-wrap reveal" aria-label="Machinery detail auto gallery">
           <div className="auto-lux-track">
@@ -89,11 +92,11 @@ export default async function TechnologyPage() {
       </section>
 
       <section className="section cta reveal">
-        <p className="kicker">{cta.kicker}</p>
-        <h2>{cta.title}</h2>
-        <p>{cta.text}</p>
+        <p className="kicker" {...e.cta.kicker}>{cta.kicker}</p>
+        <h2 {...e.cta.title}>{cta.title}</h2>
+        <p {...e.cta.text}>{cta.text}</p>
         <div className="btn-row" style={{ justifyContent: "center" }}>
-          <Link className="btn solid" href="/contact">{cta.button}</Link>
+          <Link className="btn solid" href="/contact" {...e.cta.button}>{cta.button}</Link>
         </div>
       </section>
     </SiteShell>

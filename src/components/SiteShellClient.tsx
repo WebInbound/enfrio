@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PropsWithChildren, useEffect, useMemo, useState } from "react";
+import type { EditMap } from "@/lib/kiwi-edit";
+import type { GLOBAL } from "@/content/global";
 
 export type NavKey = "home" | "solutions" | "technology" | "industries" | "projects" | "company" | "contact" | "legal" | "qhse" | "tower-m";
 
@@ -32,7 +34,14 @@ export type ShellContent = {
   };
 };
 
-type SiteShellProps = PropsWithChildren<{ active: NavKey; content: ShellContent }>;
+type SiteShellProps = PropsWithChildren<{
+  active: NavKey;
+  content: ShellContent;
+  /** Kiwi editor markers for the global blocks (undefined for visitors). */
+  edit?: EditMap<typeof GLOBAL>;
+  /** True only inside the Kiwi editor: menu links tell it which pages exist. */
+  editing?: boolean;
+}>;
 
 type NavItem = {
   key: MenuKey;
@@ -50,7 +59,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: "contact", href: "/contact" },
 ];
 
-export default function SiteShellClient({ active, content, children }: SiteShellProps) {
+export default function SiteShellClient({ active, content, edit, editing, children }: SiteShellProps) {
   const { nav, footer } = content;
   const pathname = usePathname();
   const [isSolid, setIsSolid] = useState(false);
@@ -306,7 +315,7 @@ export default function SiteShellClient({ active, content, children }: SiteShell
 
       <div className="topbar-wrap">
         <Link className="floating-logo" href="/" aria-label="Enfrio home">
-          <Image src={content.logo} alt={content.logoAlt} width={649} height={403} priority />
+          <Image {...edit?.images.logo} src={content.logo} alt={content.logoAlt} width={649} height={403} priority />
         </Link>
 
         <header className={`topbar ${isSolid ? "is-solid" : ""} ${isMenuOpen ? "menu-open" : ""}`.trim()}>
@@ -324,7 +333,14 @@ export default function SiteShellClient({ active, content, children }: SiteShell
 
           <nav id="site-menu">
             {NAV_ITEMS.map((item) => (
-              <Link key={item.key} data-nav={item.key} className={activeKey === item.key ? "active" : ""} href={item.href} onClick={() => setIsMenuOpen(false)}>
+              <Link
+                key={item.key}
+                data-nav={item.key}
+                className={activeKey === item.key ? "active" : ""}
+                href={item.href}
+                onClick={() => setIsMenuOpen(false)}
+                {...(editing ? { "data-kiwi-page": item.key, "data-kiwi-page-title": nav[item.key] } : {})}
+              >
                 {nav[item.key]}
               </Link>
             ))}
@@ -338,35 +354,35 @@ export default function SiteShellClient({ active, content, children }: SiteShell
         <div className="site-footer-inner">
           <div className="footer-grid">
             <div>
-              <h4>{footer.companyName}</h4>
-              <p>{footer.tagline}</p>
+              <h4 {...edit?.company.name}>{footer.companyName}</h4>
+              <p {...edit?.footer.tagline}>{footer.tagline}</p>
             </div>
             <div>
-              <h4>{footer.hqTitle}</h4>
+              <h4 {...edit?.footer.hq_title}>{footer.hqTitle}</h4>
               <p>{footer.address}</p>
               <p>{footer.vatLine}</p>
             </div>
             <div>
-              <h4>{footer.contactTitle}</h4>
+              <h4 {...edit?.footer.contact_title}>{footer.contactTitle}</h4>
               <p>
-                <a href={`mailto:${footer.email}`}>{footer.email}</a>
+                <a href={`mailto:${footer.email}`} {...edit?.company.email}>{footer.email}</a>
               </p>
               <p>
-                <Link href="/contact">{footer.contactLink}</Link>
+                <Link href="/contact" {...edit?.footer.contact_link}>{footer.contactLink}</Link>
               </p>
             </div>
             <div>
-              <h4>{footer.complianceTitle}</h4>
+              <h4 {...edit?.footer.compliance_title}>{footer.complianceTitle}</h4>
               <p>
-                <a href={footer.isoUrl} target="_blank" rel="noopener noreferrer">
+                <a href={footer.isoUrl} target="_blank" rel="noopener noreferrer" {...edit?.footer.iso_link}>
                   {footer.isoLink}
                 </a>
               </p>
               <p>
-                <Link href="/legal">{footer.privacyLink}</Link>
+                <Link href="/legal" {...edit?.footer.privacy_link}>{footer.privacyLink}</Link>
               </p>
               <p>
-                <Link href="/qhse">{footer.qhseLink}</Link>
+                <Link href="/qhse" {...edit?.footer.qhse_link}>{footer.qhseLink}</Link>
               </p>
             </div>
           </div>

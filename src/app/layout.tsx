@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Rajdhani, Urbanist } from "next/font/google";
 import BackToTop from "@/components/BackToTop";
+import KiwiEditMount from "@/components/KiwiEditMount";
 import MagneticButtons from "@/components/MagneticButtons";
 import SmoothScroll from "@/components/SmoothScroll";
 import { lines } from "@/lib/content-format";
+import { isEditing } from "@/lib/kiwi-edit";
 import { getGlobal } from "@/lib/site-content";
 import "./globals.css";
 
@@ -114,7 +116,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { company, images } = await getGlobal();
+  const [{ company, images }, editing] = await Promise.all([getGlobal(), isEditing()]);
   const logo = images.logo.startsWith("/") ? `${SITE_URL}${images.logo}` : images.logo;
 
   return (
@@ -152,6 +154,8 @@ export default async function RootLayout({
         <MagneticButtons />
         {children}
         <BackToTop />
+        {/* Kiwi editor only (draft mode + valid edit token): the click-to-edit overlay. */}
+        {editing && <KiwiEditMount />}
       </body>
     </html>
   );

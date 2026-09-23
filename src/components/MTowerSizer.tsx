@@ -1,5 +1,6 @@
 "use client";
 
+import type { EditAttrs } from "@/lib/kiwi-edit";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AnimatedNumber from "./AnimatedNumber";
@@ -90,9 +91,13 @@ type SizerProps = {
   coefficients: SizerCoefficients;
   /** Canonical M Tower render used for the module cards. */
   moduleImg: string;
+  /** Kiwi editor markers, same keys as `text` (undefined for visitors). */
+  edit?: Partial<Record<keyof SizerText, EditAttrs>>;
+  /** Inside the Kiwi editor the configurator keeps working (the overlay lets its controls through). */
+  editing?: boolean;
 };
 
-export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODULE_IMG }: SizerProps) {
+export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODULE_IMG, edit: ed, editing }: SizerProps) {
   const UNIT_KW = k.unitKw;
 
   const APPLICATIONS = useMemo(
@@ -347,12 +352,12 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
   }, [hudRows]);
 
   return (
-    <div className="cfg">
+    <div className="cfg" {...(editing ? { "data-kiwi-allow-click": "" } : {})}>
       {/* === INPUT PANEL === */}
       <div className="cfg-input">
         <div className="cfg-power">
           <div className="cfg-power-head">
-            <span className="cfg-label">{t.power}</span>
+            <span className="cfg-label" {...ed?.power}>{t.power}</span>
             <span className="cfg-power-value">
               <strong>{power.toLocaleString("en-US")}</strong>
               <span> kW</span>
@@ -389,7 +394,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
         </div>
 
         <fieldset className="cfg-segmented">
-          <legend className="cfg-label">{t.application}</legend>
+          <legend className="cfg-label" {...ed?.application}>{t.application}</legend>
           <div className="cfg-segmented-row">
             {APPLICATIONS.map((a) => (
               <button
@@ -406,7 +411,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
         </fieldset>
 
         <fieldset className="cfg-segmented">
-          <legend className="cfg-label">{t.circuit}</legend>
+          <legend className="cfg-label" {...ed?.circuit}>{t.circuit}</legend>
           <div className="cfg-segmented-row two">
             <button
               type="button"
@@ -429,7 +434,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
 
         <div className="cfg-row">
           <fieldset className="cfg-segmented">
-            <legend className="cfg-label">{t.ambient}</legend>
+            <legend className="cfg-label" {...ed?.ambient}>{t.ambient}</legend>
             <div className="cfg-segmented-row">
               {AMBIENT_TEMPS.map((opt) => (
                 <button
@@ -446,7 +451,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
           </fieldset>
 
           <fieldset className="cfg-segmented">
-            <legend className="cfg-label">{t.altitude}</legend>
+            <legend className="cfg-label" {...ed?.altitude}>{t.altitude}</legend>
             <div className="cfg-segmented-row">
               {ALTITUDES.map((a) => (
                 <button
@@ -471,8 +476,8 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
           />
           <span className="cfg-toggle-slider" aria-hidden="true" />
           <span className="cfg-toggle-label">
-            <strong>{t.redundancy}</strong>
-            <em>{t.redundancy_hint}</em>
+            <strong {...ed?.redundancy}>{t.redundancy}</strong>
+            <em {...ed?.redundancy_hint}>{t.redundancy_hint}</em>
           </span>
         </label>
 
@@ -482,7 +487,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
         <aside className="cfg-hud" aria-label="Live build specifications">
           <header className="cfg-hud-head">
             <span className="cfg-hud-led" aria-hidden="true" />
-            <p className="cfg-hud-title">{t.hud_title}</p>
+            <p className="cfg-hud-title" {...ed?.hud_title}>{t.hud_title}</p>
           </header>
           <div className="cfg-hud-grid">
             {hudRows
@@ -507,17 +512,17 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
         </aside>
 
         <div className="cfg-product-card">
-          <p className="kicker">{t.card_kicker}</p>
+          <p className="kicker" {...ed?.card_kicker}>{t.card_kicker}</p>
           <ul className="cfg-product-specs">
-            <li><strong>{`${UNIT_KW.toLocaleString("en-US")} kW`}</strong><span>{t.card_heat}</span></li>
-            <li><strong>{`~${k.footprintM2.toLocaleString("en-US")} m²`}</strong><span>{t.card_footprint}</span></li>
-            <li><strong>{t.card_circuits_value}</strong><span>{t.card_circuits}</span></li>
+            <li><strong>{`${UNIT_KW.toLocaleString("en-US")} kW`}</strong><span {...ed?.card_heat}>{t.card_heat}</span></li>
+            <li><strong>{`~${k.footprintM2.toLocaleString("en-US")} m²`}</strong><span {...ed?.card_footprint}>{t.card_footprint}</span></li>
+            <li><strong {...ed?.card_circuits_value}>{t.card_circuits_value}</strong><span {...ed?.card_circuits}>{t.card_circuits}</span></li>
           </ul>
           <p className="cfg-product-tags">
-            <span>{t.tag1}</span>
-            <span>{t.tag2}</span>
-            <span>{t.tag3}</span>
-            <span>{t.tag4}</span>
+            <span {...ed?.tag1}>{t.tag1}</span>
+            <span {...ed?.tag2}>{t.tag2}</span>
+            <span {...ed?.tag3}>{t.tag3}</span>
+            <span {...ed?.tag4}>{t.tag4}</span>
           </p>
         </div>
       </div>
@@ -525,7 +530,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
       {/* === OUTPUT PANEL: photoreal build === */}
       <div className="cfg-output" aria-live="polite">
         <div className="cfg-headline">
-          <p className="kicker">{t.build_kicker}</p>
+          <p className="kicker" {...ed?.build_kicker}>{t.build_kicker}</p>
           <p className="cfg-headline-main">
             <strong>{result.units}</strong>
             <span>{result.units === 1 ? t.module_one : t.module_many}</span>
@@ -613,7 +618,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
                   state at a glance. Lime LED + monospaced segments. */}
               <div className="cfg-stage-status" aria-hidden="true">
                 <span className="cfg-stage-status-led" />
-                <span className="cfg-stage-status-seg">{t.status_online}</span>
+                <span className="cfg-stage-status-seg" {...ed?.status_online}>{t.status_online}</span>
                 <span className="cfg-stage-status-sep">·</span>
                 <span className="cfg-stage-status-seg">
                   {totalUnits} {totalUnits === 1 ? t.status_module : t.status_modules}
@@ -642,25 +647,25 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
 
         <div className="cfg-metrics">
           <article className="cfg-metric">
-            <span className="cfg-metric-label">{t.metric_heat}</span>
+            <span className="cfg-metric-label" {...ed?.metric_heat}>{t.metric_heat}</span>
             <span className="cfg-metric-value">
               {result.heat.toLocaleString("en-US")} <small>kW</small>
             </span>
           </article>
           <article className="cfg-metric">
-            <span className="cfg-metric-label">{t.metric_capacity}</span>
+            <span className="cfg-metric-label" {...ed?.metric_capacity}>{t.metric_capacity}</span>
             <span className="cfg-metric-value">
               {result.capacity.toLocaleString("en-US")} <small>kW</small>
             </span>
           </article>
           <article className="cfg-metric">
-            <span className="cfg-metric-label">{t.metric_derated}</span>
+            <span className="cfg-metric-label" {...ed?.metric_derated}>{t.metric_derated}</span>
             <span className="cfg-metric-value">
               {result.effectiveUnitKw.toLocaleString("en-US")} <small>kW</small>
             </span>
           </article>
           <article className="cfg-metric">
-            <span className="cfg-metric-label">{t.metric_headroom}</span>
+            <span className="cfg-metric-label" {...ed?.metric_headroom}>{t.metric_headroom}</span>
             <span className="cfg-metric-value">
               +{Math.max(0, result.headroomPct)}
               <small>%</small>
@@ -668,10 +673,10 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
           </article>
         </div>
 
-        <p className="cfg-note">{t.note}</p>
+        <p className="cfg-note" {...ed?.note}>{t.note}</p>
 
         <div className="cfg-cta">
-          <Link className="btn solid magnetic" href={ctaHref}>
+          <Link className="btn solid magnetic" href={ctaHref} {...ed?.cta}>
             {t.cta}
           </Link>
           <button

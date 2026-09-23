@@ -6,13 +6,19 @@
 // SEO tags of <head> and the JSON-LD.
 //
 //   node scripts/parity-check.mjs                    (vs https://www.enfrio.it)
-//   node scripts/parity-check.mjs https://preview-url  (e.g. with a share cookie: see HANDOFF)
+//   node scripts/parity-check.mjs https://preview-url  (local build vs that site)
+//   node scripts/parity-check.mjs https://preview-url https://www.enfrio.it
+//                                   (two live sites: the first one takes the place of the local build;
+//                                    PARITY_COOKIE="_vercel_jwt=..." is sent to it, for a protected preview)
 //
 // Exit code 1 when any page differs; the diffs are written to .parity/.
 import fs from "node:fs";
 import path from "node:path";
 
-const BASE = (process.argv[2] ?? "https://www.enfrio.it").replace(/\/+$/, "");
+const trim = (u) => u.replace(/\/+$/, "");
+const SITE = process.argv[3] ? trim(process.argv[2]) : null;
+const BASE = trim(process.argv[3] ?? process.argv[2] ?? "https://www.enfrio.it");
+const COOKIE = process.env.PARITY_COOKIE ?? "";
 const APP = path.join(process.cwd(), ".next", "server", "app");
 const OUT = path.join(process.cwd(), ".parity");
 const PAGES = [
@@ -60,14 +66,18 @@ fs.mkdirSync(OUT, { recursive: true });
 let failed = 0;
 for (const [route, file] of PAGES) {
   const local = path.join(APP, file);
-  if (!fs.existsSync(local)) {
+  if (!SITE && !fs.existsSync(local)) {
     console.log(`${route || "/"}: MISSING local ${file}`);
     failed++;
     continue;
   }
   const remote = await (await fetch(`${BASE}/${route}`)).text();
   const a = normalize(remote);
-  const b = normalize(fs.readFileSync(local, "utf8"));
+  const b = normalize(
+    SITE
+      ? await (await fetch(`${SITE}/${route}`, { headers: COOKIE ? { cookie: COOKIE } : {} })).text()
+      : fs.readFileSync(local, "utf8"),
+  );
   const diff = [];
   const n = Math.max(a.length, b.length);
   for (let i = 0; i < n; i++) if (a[i] !== b[i]) diff.push(`@${i}\n- ${a[i] ?? ""}\n+ ${b[i] ?? ""}`);

@@ -8,6 +8,7 @@ import AnimatedNumber from "@/components/AnimatedNumber";
 import DeploySwitcher from "@/components/DeploySwitcher";
 import Stat from "@/components/Stat";
 import { getContent } from "@/lib/kiwi";
+import { getEdit, getEditForClient, isEditing } from "@/lib/kiwi-edit";
 import { toNumber } from "@/lib/content-format";
 import { getGlobal, pageSeo } from "@/lib/site-content";
 import { SIZER, TOWER_M } from "@/content/tower-m";
@@ -56,28 +57,35 @@ export default async function TowerMPage() {
   const datasheetUrl = g.documents.mtower_datasheet_url;
   const tierLabels = [scale.tier1_label, scale.tier2_label, scale.tier3_label, scale.tier4_label];
 
+  const [e, ec, sc, editing] = await Promise.all([
+    getEdit(TOWER_M),
+    getEditForClient(TOWER_M),
+    getEditForClient(SIZER),
+    isEditing(),
+  ]);
+
   return (
     <SiteShell active="tower-m">
-      <MTowerStage content={{ stage: c.stage, explore: c.explore }} />
+      <MTowerStage content={{ stage: c.stage, explore: c.explore }} edit={ec && { stage: ec.stage, explore: ec.explore }} />
 
       {/* PLAY 7 — Engineering Detail macro crops */}
       <section className="section mtower-craft">
         <div className="section-head reveal">
-          <p className="kicker">{craft.kicker}</p>
-          <h2>{craft.title}</h2>
+          <p className="kicker" {...e.craft.kicker}>{craft.kicker}</p>
+          <h2 {...e.craft.title}>{craft.title}</h2>
         </div>
         <div className="mtower-craft-stack">
           <figure className="craft-crop reveal">
             <img src={craft.crop1_image} alt={craft.crop1_image_alt} />
-            <figcaption>{craft.crop1_caption}</figcaption>
+            <figcaption {...e.craft.crop1_caption}>{craft.crop1_caption}</figcaption>
           </figure>
           <figure className="craft-crop reveal">
             <img src={craft.crop2_image} alt={craft.crop2_image_alt} />
-            <figcaption>{craft.crop2_caption}</figcaption>
+            <figcaption {...e.craft.crop2_caption}>{craft.crop2_caption}</figcaption>
           </figure>
           <figure className="craft-crop reveal">
             <img src={craft.crop3_image} alt={craft.crop3_image_alt} />
-            <figcaption>{craft.crop3_caption}</figcaption>
+            <figcaption {...e.craft.crop3_caption}>{craft.crop3_caption}</figcaption>
           </figure>
         </div>
       </section>
@@ -85,8 +93,8 @@ export default async function TowerMPage() {
       {/* PLAY 3 — Why modular: SVG stat cards */}
       <section className="section dark-block">
         <div className="section-head reveal">
-          <p className="kicker">{why.kicker}</p>
-          <h2>{why.title}</h2>
+          <p className="kicker" {...e.why.kicker}>{why.kicker}</p>
+          <h2 {...e.why.title}>{why.title}</h2>
         </div>
         <div className="grid-3">
           <article className="stat reveal mtower-why-mod-card">
@@ -115,8 +123,8 @@ export default async function TowerMPage() {
             <h3>
               <Stat text={why.card1_value} />
             </h3>
-            <p className="kicker">{why.card1_tag}</p>
-            <p>{why.card1_text}</p>
+            <p className="kicker" {...e.why.card1_tag}>{why.card1_tag}</p>
+            <p {...e.why.card1_text}>{why.card1_text}</p>
           </article>
 
           <article className="stat reveal mtower-why-mod-card">
@@ -149,8 +157,8 @@ export default async function TowerMPage() {
             <h3>
               <Stat text={why.card2_value} />
             </h3>
-            <p className="kicker">{why.card2_tag}</p>
-            <p>{why.card2_text}</p>
+            <p className="kicker" {...e.why.card2_tag}>{why.card2_tag}</p>
+            <p {...e.why.card2_text}>{why.card2_text}</p>
           </article>
 
           <article className="stat reveal mtower-why-mod-card">
@@ -190,8 +198,8 @@ export default async function TowerMPage() {
             <h3>
               <Stat text={why.card3_value} />
             </h3>
-            <p className="kicker">{why.card3_tag}</p>
-            <p>{why.card3_text}</p>
+            <p className="kicker" {...e.why.card3_tag}>{why.card3_tag}</p>
+            <p {...e.why.card3_text}>{why.card3_text}</p>
           </article>
         </div>
       </section>
@@ -199,9 +207,9 @@ export default async function TowerMPage() {
       {/* PLAY 5 — Modular scale band */}
       <section className="section mtower-scale">
         <div className="section-head reveal">
-          <p className="kicker">{scale.kicker}</p>
-          <h2>{scale.title}</h2>
-          <p>{scale.text}</p>
+          <p className="kicker" {...e.scale.kicker}>{scale.kicker}</p>
+          <h2 {...e.scale.title}>{scale.title}</h2>
+          <p {...e.scale.text}>{scale.text}</p>
         </div>
         <div className="grid-4 mtower-scale-grid">
           {[
@@ -298,23 +306,25 @@ export default async function TowerMPage() {
 
       <section className="section dark-block" id="mtower-sizer">
         <div className="section-head reveal">
-          <p className="kicker">{sizer_intro.kicker}</p>
-          <h2>{sizer_intro.title}</h2>
-          <p>{sizer_intro.text}</p>
+          <p className="kicker" {...e.sizer_intro.kicker}>{sizer_intro.kicker}</p>
+          <h2 {...e.sizer_intro.title}>{sizer_intro.title}</h2>
+          <p {...e.sizer_intro.text}>{sizer_intro.text}</p>
         </div>
         <MTowerSizer
           text={{ ...sizer.inputs, ...sizer.readout }}
           coefficients={sizerCoefficients(sizer.coefficients)}
           moduleImg={render}
+          edit={sc && { ...sc.inputs, ...sc.readout }}
+          editing={editing || undefined}
         />
       </section>
 
       {/* PLAY 6 — Deployment Contexts: tabbed switcher */}
       <section className="section">
         <div className="section-head reveal">
-          <p className="kicker">{deploy.kicker}</p>
-          <h2>{deploy.title}</h2>
-          <p>{deploy.text}</p>
+          <p className="kicker" {...e.deploy.kicker}>{deploy.kicker}</p>
+          <h2 {...e.deploy.title}>{deploy.title}</h2>
+          <p {...e.deploy.text}>{deploy.text}</p>
         </div>
         <DeploySwitcher
           content={{
@@ -322,6 +332,8 @@ export default async function TowerMPage() {
             unitAlt: deploy.unit_alt,
             renderSrc: render,
           }}
+          edit={ec && [ec.deploy_dc, ec.deploy_petro, ec.deploy_power, ec.deploy_hvac]}
+          editing={editing || undefined}
         />
       </section>
 
@@ -332,42 +344,42 @@ export default async function TowerMPage() {
             <img src={render} alt={outro.image_alt} />
           </div>
           <div className="mtower-outro-content reveal">
-            <p className="kicker">{outro.kicker}</p>
-            <h2>{outro.title}</h2>
+            <p className="kicker" {...e.outro.kicker}>{outro.kicker}</p>
+            <h2 {...e.outro.title}>{outro.title}</h2>
             <div className="mtower-outro-strip">
-              <span className="mtower-outro-strip-num">{outro.strip1}</span>
+              <span className="mtower-outro-strip-num" {...e.outro.strip1}>{outro.strip1}</span>
               <span className="mtower-outro-strip-dot">&middot;</span>
-              <span className="mtower-outro-strip-num">{outro.strip2}</span>
+              <span className="mtower-outro-strip-num" {...e.outro.strip2}>{outro.strip2}</span>
               <span className="mtower-outro-strip-dot">&middot;</span>
-              <span className="mtower-outro-strip-num">{outro.strip3}</span>
+              <span className="mtower-outro-strip-num" {...e.outro.strip3}>{outro.strip3}</span>
             </div>
             <ol className="timeline mtower-outro-timeline">
               <li>
-                <span className="step">{outro.step1_label}</span>
-                <span>{outro.step1_text}</span>
+                <span className="step" {...e.outro.step1_label}>{outro.step1_label}</span>
+                <span {...e.outro.step1_text}>{outro.step1_text}</span>
               </li>
               <li>
-                <span className="step">{outro.step2_label}</span>
-                <span>{outro.step2_text}</span>
+                <span className="step" {...e.outro.step2_label}>{outro.step2_label}</span>
+                <span {...e.outro.step2_text}>{outro.step2_text}</span>
               </li>
               <li>
-                <span className="step">{outro.step3_label}</span>
-                <span>{outro.step3_text}</span>
+                <span className="step" {...e.outro.step3_label}>{outro.step3_label}</span>
+                <span {...e.outro.step3_text}>{outro.step3_text}</span>
               </li>
               <li>
-                <span className="step">{outro.step4_label}</span>
-                <span>{outro.step4_text}</span>
+                <span className="step" {...e.outro.step4_label}>{outro.step4_label}</span>
+                <span {...e.outro.step4_text}>{outro.step4_text}</span>
               </li>
             </ol>
             <div className="btn-row">
-              <Link className="btn solid magnetic" href="/contact?subject=M+Tower+Inquiry">
+              <Link className="btn solid magnetic" href="/contact?subject=M+Tower+Inquiry" {...e.outro.cta}>
                 {outro.cta}
               </Link>
               {/* Datasheet PDF link is set in the Kiwi panel ("Globale ›
                   Documenti"). Until then the button stays disabled (it was
                   href="#", which just jumped to the top of the page). */}
               {datasheetUrl ? (
-                <a className="btn ghost" href={datasheetUrl} target="_blank" rel="noopener noreferrer">{outro.datasheet}</a>
+                <a className="btn ghost" href={datasheetUrl} target="_blank" rel="noopener noreferrer" {...e.outro.datasheet}>{outro.datasheet}</a>
               ) : (
                 <button type="button" className="btn ghost" disabled aria-disabled="true" title={outro.datasheet_missing}>{outro.datasheet}</button>
               )}

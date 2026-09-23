@@ -81,9 +81,9 @@ async function withSlot<T>(fn: () => Promise<T>): Promise<T> {
 /** The only function that talks to Kiwi (GET). */
 async function kiwiGet(url: URL, opts: { allow404?: boolean } = {}): Promise<Response> {
   assertBreakerClosed();
-  // Kiwi's public GETs are CDN-cached for 30-90 s: right after a publish the
-  // CDN would still hand back the old value, and the site would cache it
-  // with no expiry. The site caches on its own, so always go to the origin.
+  // Cache-buster: Kiwi's public GETs used to be CDN-cached for 30-90 s (the
+  // site would have cached a stale value with no expiry). They are no-store
+  // since 23 Sep 2026; the parameter is ignored by Kiwi and kept as a guard.
   url.searchParams.set("_kv", Date.now().toString(36));
   return withSlot(async () => {
     assertBreakerClosed();
@@ -112,14 +112,23 @@ async function kiwiGet(url: URL, opts: { allow404?: boolean } = {}): Promise<Res
 /* Blocks                                                             */
 /* ---------------------------------------------------------------- */
 
-async function fetchBlockValue(
+/** A block as read from Kiwi: raw value + the style set in the editor toolbar. */
+type BlockEntry = { value: string; style: Record<string, unknown> | null };
+
+function styleObject(v: unknown): Record<string, unknown> | null {
+  return v && typeof v === "object" && !Array.isArray(v) && Object.keys(v).length > 0
+    ? (v as Record<string, unknown>)
+    : null;
+}
+
+async function fetchBlockEntry(
   companyId: string,
   slug: string,
   fallback: string,
   label: string,
   group: string,
   type: string,
-): Promise<string> {
+): Promise<BlockEntry> {
   const url = new URL(`${API_BASE}/api/site/block`);
   url.searchParams.set("company_id", companyId);
   url.searchParams.set("slug", slug);
@@ -129,18 +138,13 @@ async function fetchBlockValue(
   url.searchParams.set("group", group);
   url.searchParams.set("type", type);
 
+  // Since kiwi-network PR #245/#246 (23 Sep 2026) a failed database read is a
+  // 503 (kiwiGet trips the breaker, the last good value is kept) and every
+  // answer is `no-store`: a 200 is always the stored value.
   const res = await kiwiGet(url);
-  // /api/site/block answers 200 + the default (and no cacheable header) when
-  // its own database read fails. That value is not the stored one: treat it
-  // as a failure so the last good value is kept instead of the default.
-  const cacheControl = res.headers.get("cache-control") ?? "";
-  if (/no-store/i.test(cacheControl) || /max-age=0\b/i.test(cacheControl)) {
-    tripBreaker("block read not confirmed by Kiwi");
-    throw new KiwiUnavailableError("unconfirmed value");
-  }
-  const json = (await res.json()) as { value?: unknown };
+  const json = (await res.json()) as { value?: unknown; styleOverrides?: unknown };
   if (typeof json?.value !== "string") throw new Error("invalid block payload");
-  return json.value;
+  return { value: json.value, style: styleObject(json.styleOverrides) };
 }
 
 // `.bind(null)`: unstable_cache keys on cb.toString(); a bound function always
@@ -148,7 +152,7 @@ async function fetchBlockValue(
 // on the key parts below and survives rebuilds and deploys (the source of the
 // minified function would change them, and every deploy would start cold).
 // Bump the "-vN" part if what the function returns changes.
-const cachedBlockValue = unstable_cache(fetchBlockValue.bind(null), ["kiwi-block-v1"], {
+const cachedBlockEntry = unstable_cache(fetchBlockEntry.bind(null), ["kiwi-block-v2"], {
   tags: [KIWI_TAG],
   revalidate: false,
 });
@@ -158,26 +162,40 @@ const cachedBlockValue = unstable_cache(fetchBlockValue.bind(null), ["kiwi-block
 class BulkUnsupportedError extends Error {}
 let bulkUnsupportedUntil = 0;
 
-/** Accepts `{ blocks: [{ slug, value }] }`, `{ blocks: { slug: value } }` and close variants. */
-function parseBulk(json: unknown): Record<string, string> {
+type BulkBlocks = { blocks: Record<string, string>; styles: Record<string, Record<string, unknown>> };
+
+/**
+ * Kiwi answers `{ blocks: { slug: value }, styles: { slug: styleOverrides }, count }`;
+ * `{ blocks: [{ slug, value }] }` is accepted too. Maps without a prototype:
+ * a slug like "constructor" must not hit Object.prototype.
+ */
+function parseBulk(json: unknown): BulkBlocks {
   const root = json as Record<string, unknown> | unknown[] | null;
   const list = Array.isArray(root) ? root : root && (root.blocks ?? root.items ?? root.data);
-  const out: Record<string, string> = {};
+  const blocks: Record<string, string> = Object.create(null);
+  const styles: Record<string, Record<string, unknown>> = Object.create(null);
   if (Array.isArray(list)) {
     for (const row of list as Array<Record<string, unknown>>) {
-      if (row && typeof row.slug === "string" && typeof row.value === "string") out[row.slug] = row.value;
+      if (row && typeof row.slug === "string" && typeof row.value === "string") blocks[row.slug] = row.value;
     }
   } else if (list && typeof list === "object") {
     for (const [slug, v] of Object.entries(list as Record<string, unknown>)) {
-      if (typeof v === "string") out[slug] = v;
-      else if (v && typeof (v as { value?: unknown }).value === "string") out[slug] = (v as { value: string }).value;
+      if (typeof v === "string") blocks[slug] = v;
+      else if (v && typeof (v as { value?: unknown }).value === "string") blocks[slug] = (v as { value: string }).value;
     }
   }
-  if (Object.keys(out).length === 0) throw new Error("bulk blocks: empty or unknown payload");
-  return out;
+  const rawStyles = !Array.isArray(root) && root ? root.styles : null;
+  if (rawStyles && typeof rawStyles === "object") {
+    for (const [slug, s] of Object.entries(rawStyles as Record<string, unknown>)) {
+      const o = styleObject(s);
+      if (o) styles[slug] = o;
+    }
+  }
+  if (Object.keys(blocks).length === 0) throw new Error("bulk blocks: empty or unknown payload");
+  return { blocks, styles };
 }
 
-async function fetchAllBlocks(companyId: string): Promise<Record<string, string>> {
+async function fetchAllBlocks(companyId: string): Promise<BulkBlocks> {
   const url = new URL(`${API_BASE}/api/site/blocks`);
   url.searchParams.set("company_id", companyId);
   const res = await kiwiGet(url, { allow404: true });
@@ -185,18 +203,24 @@ async function fetchAllBlocks(companyId: string): Promise<Record<string, string>
   return parseBulk(await res.json());
 }
 
-const cachedAllBlocks = unstable_cache(fetchAllBlocks.bind(null), ["kiwi-blocks-all-v1"], {
+const cachedAllBlocks = unstable_cache(fetchAllBlocks.bind(null), ["kiwi-blocks-all-v2"], {
   tags: [KIWI_TAG],
   revalidate: false,
 });
 
-/** Map slug → value, once per render; null if the bulk read isn't available. */
-const allBlocks = cache(async (): Promise<Record<string, string> | null> => {
+/** All blocks, once per render; null if the bulk read isn't available. */
+const allBlocks = cache(async (): Promise<BulkBlocks | null> => {
   if (!kiwiEnabled || Date.now() < bulkUnsupportedUntil) return null;
   try {
     // Always through unstable_cache: a no-store fetch made directly in a
-    // render would turn the page dynamic (or abort its prerender).
-    return await cachedAllBlocks(COMPANY_ID);
+    // render would turn the page dynamic (or abort its prerender). In draft
+    // mode (Kiwi editor) unstable_cache skips the cache: fresh values.
+    const all = await cachedAllBlocks(COMPANY_ID);
+    // unstable_cache hands back plain JSON: restore null-prototype maps.
+    return {
+      blocks: Object.assign(Object.create(null), all.blocks),
+      styles: Object.assign(Object.create(null), all.styles),
+    };
   } catch (err) {
     // Endpoint missing: don't ask again for 10 minutes, use per-block reads.
     if (err instanceof BulkUnsupportedError) bulkUnsupportedUntil = Date.now() + 10 * 60_000;
@@ -229,26 +253,22 @@ function finalize(def: BlockDef, raw: string): string {
   return raw;
 }
 
-async function readBlock(slug: string, group: string, def: BlockDef): Promise<string> {
-  if (!kiwiEnabled) return def.default;
+/** Value (normalised) + style of one block. Never throws. */
+async function readBlockEntry(slug: string, group: string, def: BlockDef): Promise<BlockEntry> {
+  if (!kiwiEnabled) return { value: def.default, style: null };
   try {
     const all = await allBlocks();
-    if (all && typeof all[slug] === "string") return finalize(def, all[slug]);
+    if (all && typeof all.blocks[slug] === "string") {
+      return { value: finalize(def, all.blocks[slug]), style: all.styles[slug] ?? null };
+    }
     // No bulk read, or a block Kiwi doesn't have yet: single get-or-create.
-    const raw = await cachedBlockValue(
-      COMPANY_ID,
-      slug,
-      def.default,
-      def.label,
-      group,
-      def.type ?? "text",
-    );
-    return finalize(def, raw);
+    const entry = await cachedBlockEntry(COMPANY_ID, slug, def.default, def.label, group, def.type ?? "text");
+    return { value: finalize(def, entry.value), style: entry.style };
   } catch (err) {
     if (!(err instanceof KiwiUnavailableError)) {
       console.warn(`[kiwi] block ${slug}: ${err instanceof Error ? err.message : err}`);
     }
-    return def.default;
+    return { value: def.default, style: null };
   }
 }
 
@@ -259,27 +279,50 @@ export type BlockMeta = { label?: string; group?: string; type?: BlockDef["type"
  * last good value or `fallback`.
  */
 export async function getBlock(slug: string, fallback: string, meta: BlockMeta = {}): Promise<string> {
-  return readBlock(slug, meta.group ?? "", { label: meta.label ?? slug, default: fallback, type: meta.type });
+  const entry = await readBlockEntry(slug, meta.group ?? "", {
+    label: meta.label ?? slug,
+    default: fallback,
+    type: meta.type,
+  });
+  return entry.value;
 }
 
 export function blockSlug(page: PageDef, section: string, key: string): string {
   return `${page.id}_${section}_${key}`;
 }
 
-/** Load every block of a page definition. Never throws. */
-export async function getContent<P extends PageDef>(page: P): Promise<Content<P>> {
-  const entries = await Promise.all(
+async function mapPage<P extends PageDef, T>(
+  page: P,
+  fn: (slug: string, group: string, def: BlockDef) => Promise<T>,
+): Promise<Record<string, Record<string, T>>> {
+  const sections = await Promise.all(
     Object.entries(page.sections).map(async ([sectionKey, section]) => {
       const values = await Promise.all(
-        Object.entries(section.blocks).map(async ([key, def]) => [
-          key,
-          await readBlock(blockSlug(page, sectionKey, key), section.group, def),
-        ] as const),
+        Object.entries(section.blocks).map(
+          async ([key, def]) => [key, await fn(blockSlug(page, sectionKey, key), section.group, def)] as const,
+        ),
       );
       return [sectionKey, Object.fromEntries(values)] as const;
     }),
   );
-  return Object.fromEntries(entries) as Content<P>;
+  return Object.fromEntries(sections);
+}
+
+/** Load every block of a page definition. Never throws. */
+export async function getContent<P extends PageDef>(page: P): Promise<Content<P>> {
+  return (await mapPage(page, async (slug, group, def) => (await readBlockEntry(slug, group, def)).value)) as Content<P>;
+}
+
+/** Same as getContent, with each block's editor style (null when none). */
+export async function getEntries<P extends PageDef>(
+  page: P,
+): Promise<{ [S in keyof P["sections"]]: { [B in keyof P["sections"][S]["blocks"]]: BlockEntry & { slug: string; group: string; def: BlockDef } } }> {
+  return (await mapPage(page, async (slug, group, def) => ({
+    ...(await readBlockEntry(slug, group, def)),
+    slug,
+    group,
+    def,
+  }))) as never;
 }
 
 /* ---------------------------------------------------------------- */

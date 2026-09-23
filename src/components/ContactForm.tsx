@@ -4,6 +4,8 @@ import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import { submitContactForm, type ContactFormState } from "@/app/contact/actions";
+import EditSpan from "@/components/EditSpan";
+import type { EditAttrs } from "@/lib/kiwi-edit";
 
 /** Form texts, resolved server-side from the Kiwi panel ("Form contatti › Campi"). */
 export type ContactFormLabels = {
@@ -52,7 +54,14 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
   );
 }
 
-export default function ContactForm({ labels: t }: { labels: ContactFormLabels }) {
+export default function ContactForm({
+  labels: t,
+  edit: ed,
+}: {
+  labels: ContactFormLabels;
+  /** Kiwi editor markers, same keys as `labels` (undefined for visitors). */
+  edit?: Partial<Record<keyof ContactFormLabels, EditAttrs>>;
+}) {
   const [state, formAction] = useActionState(submitContactForm, initialState);
   const errors = state.fieldErrors ?? {};
 
@@ -99,7 +108,7 @@ export default function ContactForm({ labels: t }: { labels: ContactFormLabels }
       {prefilled ? (
         <div className="form-prefill" role="status">
           <span>✓</span>
-          <p>{t.prefill}</p>
+          <p {...ed?.prefill}>{t.prefill}</p>
         </div>
       ) : null}
 
@@ -113,26 +122,26 @@ export default function ContactForm({ labels: t }: { labels: ContactFormLabels }
 
       <div className="form-grid">
         <label className="form-field">
-          <span>{t.name}</span>
+          <span {...ed?.name}>{t.name}</span>
           <input type="text" name="name" required autoComplete="name" aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? "err-name" : undefined} />
           {errors.name ? <em className="form-error" id="err-name" role="alert">{errors.name}</em> : null}
         </label>
         <label className="form-field">
-          <span>{t.company}</span>
+          <span {...ed?.company}>{t.company}</span>
           <input type="text" name="company" required autoComplete="organization" aria-invalid={Boolean(errors.company)} aria-describedby={errors.company ? "err-company" : undefined} />
           {errors.company ? <em className="form-error" id="err-company" role="alert">{errors.company}</em> : null}
         </label>
         <label className="form-field">
-          <span>{t.email}</span>
+          <span {...ed?.email}>{t.email}</span>
           <input type="email" name="email" required autoComplete="email" aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? "err-email" : undefined} />
           {errors.email ? <em className="form-error" id="err-email" role="alert">{errors.email}</em> : null}
         </label>
         <label className="form-field">
-          <span>{t.phone}</span>
+          <span {...ed?.phone}>{t.phone}</span>
           <input type="tel" name="phone" autoComplete="tel" />
         </label>
         <label className="form-field">
-          <span>{t.scope}</span>
+          <span {...ed?.scope}>{t.scope}</span>
           <select
             name="projectScope"
             value={scope}
@@ -147,7 +156,7 @@ export default function ContactForm({ labels: t }: { labels: ContactFormLabels }
           </select>
         </label>
         <label className="form-field">
-          <span>{t.timeline}</span>
+          <span {...ed?.timeline}>{t.timeline}</span>
           <select name="timeline" defaultValue="">
             <option value="" disabled>{t.select_placeholder}</option>
             <option value="under-3m">{t.timeline_3m}</option>
@@ -159,7 +168,7 @@ export default function ContactForm({ labels: t }: { labels: ContactFormLabels }
       </div>
 
       <label className="form-field full">
-        <span>{t.message}</span>
+        <span {...ed?.message}>{t.message}</span>
         <textarea
           name="message"
           rows={8}
@@ -176,8 +185,8 @@ export default function ContactForm({ labels: t }: { labels: ContactFormLabels }
       <label className="form-check">
         <input type="checkbox" name="consent" required aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? "err-consent" : undefined} />
         <span>
-          {t.consent}{" "}
-          <a href="/legal">{t.consent_link}</a>{t.consent_end}
+          <EditSpan a={ed?.consent}>{t.consent}</EditSpan>{" "}
+          <a href="/legal" {...ed?.consent_link}>{t.consent_link}</a><EditSpan a={ed?.consent_end}>{t.consent_end}</EditSpan>
         </span>
       </label>
       {errors.consent ? <em className="form-error" id="err-consent" role="alert">{errors.consent}</em> : null}

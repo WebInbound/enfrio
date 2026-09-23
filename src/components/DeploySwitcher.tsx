@@ -1,5 +1,6 @@
 "use client";
 
+import type { EditAttrs } from "@/lib/kiwi-edit";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 
 type ContextKey = "data-center" | "petrochemical" | "power-gen" | "hvac";
@@ -24,7 +25,7 @@ type IconKey =
   | "sound"
   | "control";
 
-type Spec = { label: string; value: string; icon: IconKey };
+type Spec = { label: string; value: string; icon: IconKey; labelEdit?: EditAttrs; valueEdit?: EditAttrs };
 
 /** Texts of one context tab, from the Kiwi panel (tower-m page). */
 export type DeployContextContent = {
@@ -52,6 +53,7 @@ type ContextDef = {
   key: ContextKey;
   label: string;
   blurb: string;
+  blurbEdit?: EditAttrs;
   specs: Spec[];
   silhouette: (props: { className?: string }) => ReactElement;
   /* Same M Tower unit shown at a different rotation angle per context so
@@ -330,13 +332,27 @@ function SpecIcon({ name, className }: { name: IconKey; className?: string }) {
   }
 }
 
-export default function DeploySwitcher({ content }: { content: DeploySwitcherContent }) {
+/** Kiwi editor markers of one context tab (same keys as its texts). */
+export type DeployContextEdit = Partial<Record<keyof DeployContextContent, EditAttrs>>;
+
+export default function DeploySwitcher({
+  content,
+  edit,
+  editing,
+}: {
+  content: DeploySwitcherContent;
+  /** Kiwi editor markers, same order as `content.contexts` (undefined for visitors). */
+  edit?: DeployContextEdit[];
+  /** Inside the Kiwi editor the tabs keep switching (the overlay lets them through). */
+  editing?: boolean;
+}) {
   const [active, setActive] = useState<ContextKey>("data-center");
 
   const contexts: ContextDef[] = useMemo(
     () =>
       CONTEXTS.map((ctx, i) => {
         const t = content.contexts[i];
+        const ed = edit?.[i];
         const specText = [
           [t.spec1_label, t.spec1_value],
           [t.spec2_label, t.spec2_value],
@@ -349,10 +365,17 @@ export default function DeploySwitcher({ content }: { content: DeploySwitcherCon
           unitSrc: i === 0 ? content.renderSrc : ctx.unitSrc,
           label: t.tab,
           blurb: t.blurb,
-          specs: ctx.icons.map((icon, j) => ({ icon, label: specText[j][0], value: specText[j][1] })),
+          blurbEdit: ed?.blurb,
+          specs: ctx.icons.map((icon, j) => ({
+            icon,
+            label: specText[j][0],
+            value: specText[j][1],
+            labelEdit: ed?.[`spec${j + 1}_label` as keyof DeployContextContent],
+            valueEdit: ed?.[`spec${j + 1}_value` as keyof DeployContextContent],
+          })),
         };
       }),
-    [content],
+    [content, edit],
   );
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -413,6 +436,7 @@ export default function DeploySwitcher({ content }: { content: DeploySwitcherCon
               className={`deploy-switcher-tab${selected ? " is-active" : ""}`}
               onClick={() => setActive(ctx.key)}
               onKeyDown={(e) => onKeyDown(e, i)}
+              {...(editing ? { "data-kiwi-allow-click": "" } : {})}
             >
               {ctx.label}
             </button>
@@ -461,7 +485,7 @@ export default function DeploySwitcher({ content }: { content: DeploySwitcherCon
         </div>
       </div>
 
-      <p className="deploy-switcher-blurb">{current.blurb}</p>
+      <p className="deploy-switcher-blurb" {...current.blurbEdit}>{current.blurb}</p>
 
       <ul className="deploy-switcher-specs">
         {current.specs.map((spec, j) => (
@@ -469,8 +493,8 @@ export default function DeploySwitcher({ content }: { content: DeploySwitcherCon
             <span className="deploy-switcher-spec-icon">
               <SpecIcon name={spec.icon} />
             </span>
-            <span className="deploy-switcher-spec-value">{spec.value}</span>
-            <span className="deploy-switcher-spec-label">{spec.label}</span>
+            <span className="deploy-switcher-spec-value" {...spec.valueEdit}>{spec.value}</span>
+            <span className="deploy-switcher-spec-label" {...spec.labelEdit}>{spec.label}</span>
           </li>
         ))}
       </ul>
