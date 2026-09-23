@@ -143,7 +143,12 @@ async function fetchBlockValue(
   return json.value;
 }
 
-const cachedBlockValue = unstable_cache(fetchBlockValue, ["kiwi-block-v1"], {
+// `.bind(null)`: unstable_cache keys on cb.toString(); a bound function always
+// stringifies to "function () { [native code] }", so the cache key depends only
+// on the key parts below and survives rebuilds and deploys (the source of the
+// minified function would change them, and every deploy would start cold).
+// Bump the "-vN" part if what the function returns changes.
+const cachedBlockValue = unstable_cache(fetchBlockValue.bind(null), ["kiwi-block-v1"], {
   tags: [KIWI_TAG],
   revalidate: false,
 });
@@ -180,7 +185,7 @@ async function fetchAllBlocks(companyId: string): Promise<Record<string, string>
   return parseBulk(await res.json());
 }
 
-const cachedAllBlocks = unstable_cache(fetchAllBlocks, ["kiwi-blocks-all-v1"], {
+const cachedAllBlocks = unstable_cache(fetchAllBlocks.bind(null), ["kiwi-blocks-all-v1"], {
   tags: [KIWI_TAG],
   revalidate: false,
 });
@@ -301,7 +306,7 @@ async function fetchCollectionItems(companyId: string, slug: string): Promise<Ki
   return json.items as KiwiItem[];
 }
 
-const cachedCollectionItems = unstable_cache(fetchCollectionItems, ["kiwi-collection-v1"], {
+const cachedCollectionItems = unstable_cache(fetchCollectionItems.bind(null), ["kiwi-collection-v1"], {
   tags: [KIWI_TAG],
   revalidate: false,
 });
