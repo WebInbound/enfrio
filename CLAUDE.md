@@ -73,7 +73,8 @@ his partner ("il socio") generates AI images from another machine and pushes the
 - **LIVE BUILD READOUT** (HUD) lives in the FORM column (left), bottom-glued via
   margin-top:auto, paired with the SINGLE M TOWER MODULE card. 4 specs: footprint,
   water flow, weight, electrical draw. (Two earlier placements left voids — this is the
-  one that works.) Coefficients are placeholders, flagged with TODO for Enfrio to confirm.
+  one that works.) Coefficients are placeholders for Enfrio to confirm — since 2026-09-23 they
+  live in the Kiwi panel (see "Kiwi integration"), not in the component.
 
 ## Design system
 - Brand lime `#add934` / `--brand`, deep lime `--brand-deep` `#7f9f22`.
@@ -132,8 +133,39 @@ his partner ("il socio") generates AI images from another machine and pushes the
   `.deploy-card/-grid/-stats`, `.team-*`, `.photo-grid-2/3`, `.contact-grid`, plus
   `page.module.css`. The live equivalents are `.cfg-*`, `.mtower-stage*` + `.mtower-hero-spec*`,
   `.deploy-switcher-*`, `.photo-card`, `.grid-3/4`. Don't reintroduce the old names.
-- **Sizer coefficients are placeholders** (TODO): footprint is 12 m²/module everywhere now
+- **Sizer coefficients are placeholders** (now editable in the Kiwi panel, group "M Tower ›
+  Configuratore — coefficienti di calcolo (DA CONFERMARE)"): footprint is 12 m²/module everywhere now
   (HUD reconciled from a stray 4.2). Power clamp on shared-link read = 100000 (matches the
   number input). Awaiting Enfrio's real numbers.
-- **Pending (need owner input)**: real datasheet PDF (button is `disabled` until it exists),
+- **Pending (need owner input)** — now panel fields, no code change needed: datasheet PDF link
+  (`global_documents_mtower_datasheet_url`; empty = button stays `disabled`),
   JSON-LD `sameAs` (social URLs) + `telephone`/contactPoint.
+
+## Kiwi integration (panel) — since 2026-09-23
+
+The site is connected to the Kiwi Network panel (company **Enfrio Srl**
+`9f5b766d-d5f6-4f0d-8195-da13dd435aac`). Full detail: `HANDOFF-kiwi-panel.md`.
+
+- **No text lives in JSX any more.** Every visible text, main image, SEO field, company datum
+  and sizer coefficient is a block declared in `src/content/<page>.ts` (slug =
+  `<page>_<section>_<key>`, Italian label + panel group, default = the text the site shipped
+  with). Pages read them with `getContent(PAGE)` from `src/lib/kiwi.ts`; client components
+  (SiteShellClient, MTowerStage, MTowerSizer, DeploySwitcher, ContactForm) get them as props.
+  Photo galleries + project references are Kiwi collections (`src/content/collections.ts`).
+- **Adding or changing a text**: add it to the registry, use it in the page, then register it in
+  the DB with `node scripts/kiwi-seed-sql.mjs --part N` (Kiwi no longer auto-creates blocks for
+  this company: it is above the platform's 500-block cap). A new default in code does NOT change
+  the live text: the DB value wins.
+- **Company data has one source**: `global_company_*` blocks feed footer, contact card, privacy
+  page and JSON-LD (`companyInfo()` in `src/lib/site-content.ts`). Never hard-code the address,
+  VAT or email again.
+- **Pages stay static** (ISR, `revalidate = 60` in `layout.tsx`). Kiwi is read only while a page
+  regenerates, through `unstable_cache` (tag `kiwi`, no time expiry), 2.5 s timeout, ≤4 requests
+  in flight, circuit breaker. Kiwi slow/down → last good value, else the registry default. Never
+  call `cookies()`/`headers()` or a no-store fetch in a page render: it would make the site dynamic.
+- **Publishing**: Kiwi POSTs `/api/revalidate?secret=` → `revalidateTag("kiwi", "max")`.
+- **Contact form**: stored in the Kiwi panel AND emailed via FormSubmit; success if either worked.
+- **Parity check**: `npm run build` then `node scripts/parity-check.mjs` (diffs the normalised HTML of
+  `.next/server/app/*.html` against www.enfrio.it). Zero diff is the bar for any integration change.
+- Env (Vercel, Preview + Production): `KIWI_COMPANY_ID`, `KIWI_API_BASE`, `KIWI_REVALIDATE_SECRET`.
+- Edit-in-place (click-to-edit in the Kiwi editor) is NOT wired yet: see the handoff.

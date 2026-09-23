@@ -55,3 +55,6 @@ public/assets/images.zip
 
 # Local image backups (safety net before AI swap)
 public/assets/images/_backup-*
+
+# parity check output (scripts/parity-check.mjs)
+.parity/

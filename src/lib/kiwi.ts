@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import type { BlockDef, Content, PageDef } from "@/content/types";
 
@@ -22,9 +23,12 @@ import type { BlockDef, Content, PageDef } from "@/content/types";
  *    /api/revalidate (the panel's "Pubblica"), which marks the `kiwi` tag
  *    stale.
  *
- * Kiwi exposes blocks one per request (GET /api/site/block, 120 req/min per
- * IP+company): hence the per-block cache entries, so a publish refetches
- * each block once and every other render is a cache hit.
+ * Reading blocks: all of them in one request from GET /api/site/blocks when
+ * Kiwi offers it, otherwise (and for any slug missing from that answer) one
+ * request per block via GET /api/site/block, the get-or-create endpoint
+ * (120 req/min per IP+company). Either way every value sits in the data
+ * cache, so a publish refetches once and every other render is a cache hit.
+ * The only network code is kiwiGet(); switching strategy touches readBlock().
  */
 
 const COMPANY_ID = (process.env.KIWI_COMPANY_ID ?? "").trim();
@@ -74,8 +78,13 @@ async function withSlot<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
-async function kiwiGet(url: URL): Promise<Response> {
+/** The only function that talks to Kiwi (GET). */
+async function kiwiGet(url: URL, opts: { allow404?: boolean } = {}): Promise<Response> {
   assertBreakerClosed();
+  // Kiwi's public GETs are CDN-cached for 30-90 s: right after a publish the
+  // CDN would still hand back the old value, and the site would cache it
+  // with no expiry. The site caches on its own, so always go to the origin.
+  url.searchParams.set("_kv", Date.now().toString(36));
   return withSlot(async () => {
     assertBreakerClosed();
     let res: Response;
@@ -93,6 +102,7 @@ async function kiwiGet(url: URL): Promise<Response> {
       tripBreaker(`HTTP ${res.status}`);
       throw new KiwiUnavailableError(`HTTP ${res.status}`);
     }
+    if (res.status === 404 && opts.allow404) return res;
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res;
   });
@@ -138,6 +148,60 @@ const cachedBlockValue = unstable_cache(fetchBlockValue, ["kiwi-block-v1"], {
   revalidate: false,
 });
 
+/* All blocks in one request (GET /api/site/blocks), when Kiwi has it. */
+
+class BulkUnsupportedError extends Error {}
+let bulkUnsupportedUntil = 0;
+
+/** Accepts `{ blocks: [{ slug, value }] }`, `{ blocks: { slug: value } }` and close variants. */
+function parseBulk(json: unknown): Record<string, string> {
+  const root = json as Record<string, unknown> | unknown[] | null;
+  const list = Array.isArray(root) ? root : root && (root.blocks ?? root.items ?? root.data);
+  const out: Record<string, string> = {};
+  if (Array.isArray(list)) {
+    for (const row of list as Array<Record<string, unknown>>) {
+      if (row && typeof row.slug === "string" && typeof row.value === "string") out[row.slug] = row.value;
+    }
+  } else if (list && typeof list === "object") {
+    for (const [slug, v] of Object.entries(list as Record<string, unknown>)) {
+      if (typeof v === "string") out[slug] = v;
+      else if (v && typeof (v as { value?: unknown }).value === "string") out[slug] = (v as { value: string }).value;
+    }
+  }
+  if (Object.keys(out).length === 0) throw new Error("bulk blocks: empty or unknown payload");
+  return out;
+}
+
+async function fetchAllBlocks(companyId: string): Promise<Record<string, string>> {
+  const url = new URL(`${API_BASE}/api/site/blocks`);
+  url.searchParams.set("company_id", companyId);
+  const res = await kiwiGet(url, { allow404: true });
+  if (res.status === 404) throw new BulkUnsupportedError("no bulk endpoint");
+  return parseBulk(await res.json());
+}
+
+const cachedAllBlocks = unstable_cache(fetchAllBlocks, ["kiwi-blocks-all-v1"], {
+  tags: [KIWI_TAG],
+  revalidate: false,
+});
+
+/** Map slug → value, once per render; null if the bulk read isn't available. */
+const allBlocks = cache(async (): Promise<Record<string, string> | null> => {
+  if (!kiwiEnabled || Date.now() < bulkUnsupportedUntil) return null;
+  try {
+    // Always through unstable_cache: a no-store fetch made directly in a
+    // render would turn the page dynamic (or abort its prerender).
+    return await cachedAllBlocks(COMPANY_ID);
+  } catch (err) {
+    // Endpoint missing: don't ask again for 10 minutes, use per-block reads.
+    if (err instanceof BulkUnsupportedError) bulkUnsupportedUntil = Date.now() + 10 * 60_000;
+    else if (!(err instanceof KiwiUnavailableError)) {
+      console.warn(`[kiwi] bulk blocks: ${err instanceof Error ? err.message : err}`);
+    }
+    return null;
+  }
+});
+
 const SITE_ORIGIN_RE = /^https?:\/\/(www\.)?enfrio\.(it|eu)(?=\/)/i;
 const SAFE_IMAGE_RE = /^(\/(?!\/)|https:\/\/)[^\s"'<>]*$/i;
 const SAFE_URL_RE = /^(\/(?!\/)|https?:\/\/|mailto:|tel:|#)[^\s"'<>]*$/i;
@@ -163,6 +227,9 @@ function finalize(def: BlockDef, raw: string): string {
 async function readBlock(slug: string, group: string, def: BlockDef): Promise<string> {
   if (!kiwiEnabled) return def.default;
   try {
+    const all = await allBlocks();
+    if (all && typeof all[slug] === "string") return finalize(def, all[slug]);
+    // No bulk read, or a block Kiwi doesn't have yet: single get-or-create.
     const raw = await cachedBlockValue(
       COMPANY_ID,
       slug,
@@ -178,6 +245,16 @@ async function readBlock(slug: string, group: string, def: BlockDef): Promise<st
     }
     return def.default;
   }
+}
+
+export type BlockMeta = { label?: string; group?: string; type?: BlockDef["type"] };
+
+/**
+ * One block, skill-compatible signature. Never throws: Kiwi unavailable →
+ * last good value or `fallback`.
+ */
+export async function getBlock(slug: string, fallback: string, meta: BlockMeta = {}): Promise<string> {
+  return readBlock(slug, meta.group ?? "", { label: meta.label ?? slug, default: fallback, type: meta.type });
 }
 
 export function blockSlug(page: PageDef, section: string, key: string): string {

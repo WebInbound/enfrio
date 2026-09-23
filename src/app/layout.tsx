@@ -27,9 +27,10 @@ const rajdhani = Rajdhani({
 const SITE_URL = process.env.SITE_URL ?? "https://www.enfrio.it";
 
 // Pages are static and are refreshed by the Kiwi panel through
-// /api/revalidate. This periodic regeneration only retries content that
-// could not be read from Kiwi (every other read is a cache hit).
-export const revalidate = 300;
+// /api/revalidate. The periodic regeneration only retries content that
+// could not be read from Kiwi and replaces, within a minute, a deploy built
+// from an older build cache (every other read is a cache hit, no Kiwi call).
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const g = await getGlobal();
