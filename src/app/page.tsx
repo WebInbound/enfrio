@@ -2,96 +2,94 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
-import AnimatedNumber from "@/components/AnimatedNumber";
+import Stat from "@/components/Stat";
+import { getContent } from "@/lib/kiwi";
+import { GLOBAL } from "@/content/global";
+import { HOME } from "@/content/home";
 
-export const metadata: Metadata = {
-  title: "Enfrio | Cooling Engineered to Perform",
-  description:
-    "Enfrio designs products, processes and tests for cooling engines with end-to-end engineering and manufacturing support.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getContent(HOME);
+  return { title: seo.title, description: seo.description };
+}
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [c, g] = await Promise.all([getContent(HOME), getContent(GLOBAL)]);
+  const { hero, model, inside, domain, spotlight, motion, cta } = c;
+
   return (
     <SiteShell active="home">
       <section className="page-hero split">
         <div className="page-hero-text reveal">
-          <p className="kicker">ENGINEER LEADERS</p>
-          <h1>We de-risk thermal performance for mission-critical engines.</h1>
-          <p className="lead">
-            From bid phase to production transfer, Enfrio runs the full execution chain so your teams hit launch windows,
-            cost targets and field reliability.
-          </p>
+          <p className="kicker">{hero.kicker}</p>
+          <h1>{hero.title}</h1>
+          <p className="lead">{hero.lead}</p>
           <div className="btn-row">
             <Link className="btn solid magnetic" href="/contact">
-              Request executive call
+              {hero.cta_primary}
             </Link>
             <Link className="btn ghost" href="/solutions">
-              Explore 5P solutions
+              {hero.cta_secondary}
             </Link>
           </div>
         </div>
         <figure className="page-hero-media reveal">
-          <Image priority className="focus-right" src="/assets/images/site/hero-main.jpg" alt="Enfrio technician welding radiator" width={1200} height={900} />
+          <Image priority className="focus-right" src={hero.image} alt={hero.image_alt} width={1200} height={900} />
         </figure>
       </section>
 
       <section className="section">
         <div className="section-head reveal">
-          <p className="kicker">END-TO-END MODEL</p>
-          <h2>One accountable partner from concept freeze to stable serial output.</h2>
+          <p className="kicker">{model.kicker}</p>
+          <h2>{model.title}</h2>
         </div>
         <div className="grid-3">
           <article className="stat reveal">
-            <h3>5P</h3>
-            <p>
-              Project Management, Product Design Engineering, Process Definition, Procurement, Production Transfers.
-            </p>
+            <h3>{model.stat1_value}</h3>
+            <p>{model.stat1_text}</p>
           </article>
           <article className="stat reveal">
-            <h3><AnimatedNumber value={12000} suffix=" kW" /></h3>
-            <p>Heat rejection per M Tower bank — modular, scalable, datacenter-ready.</p>
+            <h3><Stat text={model.stat2_value} /></h3>
+            <p>{model.stat2_text}</p>
           </article>
           <article className="stat reveal">
-            <h3>24/7</h3>
-            <p>Focus on uptime, durability and thermal stability in demanding environments.</p>
+            <h3>{model.stat3_value}</h3>
+            <p>{model.stat3_text}</p>
           </article>
         </div>
       </section>
 
       <section className="section">
         <div className="section-head reveal">
-          <p className="kicker">INSIDE ENFRIO</p>
-          <h2>Real engineering. Real manufacturing. Real delivery discipline.</h2>
+          <p className="kicker">{inside.kicker}</p>
+          <h2>{inside.title}</h2>
         </div>
         <div className="dominant-cluster reveal">
-          <Image className="dominant focus-left" src="/assets/images/site/prod-line.jpg" alt="Enfrio production line" width={1400} height={900} />
+          <Image className="dominant focus-left" src={inside.photo_main} alt={inside.photo_main_alt} width={1400} height={900} />
           <div className="support">
-            <Image className="focus-left" src="/assets/images/site/tube-bending-operator.jpg" alt="6-axis tube bending in operation" width={900} height={600} />
-            <Image className="focus-top tall-shot" src="/assets/images/site/assembly-worker.jpg" alt="Enfrio operator at the assembly station" width={800} height={1200} />
-            <Image className="fit-contain" src="/assets/images/site/rad-engine-complete.jpg" alt="Integrated cooling unit with engine" width={1200} height={900} />
+            <Image className="focus-left" src={inside.photo_2} alt={inside.photo_2_alt} width={900} height={600} />
+            <Image className="focus-top tall-shot" src={inside.photo_3} alt={inside.photo_3_alt} width={800} height={1200} />
+            <Image className="fit-contain" src={inside.photo_4} alt={inside.photo_4_alt} width={1200} height={900} />
           </div>
         </div>
       </section>
 
       <section className="section dark-block">
         <div className="section-head reveal">
-          <p className="kicker">COOLING DOMAIN</p>
-          <h2>High-performance cooling architecture for critical industrial platforms.</h2>
+          <p className="kicker">{domain.kicker}</p>
+          <h2>{domain.title}</h2>
         </div>
         <div className="grid-3">
           <article className="card reveal">
-            <h3>Engine Cooling</h3>
-            <p>Aluminium radiator systems with robust heat rejection and field durability.</p>
+            <h3>{domain.card1_title}</h3>
+            <p>{domain.card1_text}</p>
           </article>
           <article className="card reveal">
-            <h3>Thermal Subsystems</h3>
-            <p>
-              Oil coolers, fuel coolers, charge air coolers and climate condensers engineered for duty cycles.
-            </p>
+            <h3>{domain.card2_title}</h3>
+            <p>{domain.card2_text}</p>
           </article>
           <article className="card reveal">
-            <h3>Custom Integration</h3>
-            <p>Packaging logic for container constraints, remote environments and OEM installation envelopes.</p>
+            <h3>{domain.card3_title}</h3>
+            <p>{domain.card3_text}</p>
           </article>
         </div>
       </section>
@@ -99,55 +97,57 @@ export default function HomePage() {
       <section className="section">
         <div className="mtower-spotlight reveal">
           <div className="mtower-spotlight-content">
-            <p className="kicker">FLAGSHIP PRODUCT</p>
-            <h2>M Tower: cooling that scales as your power grows.</h2>
+            <p className="kicker">{spotlight.kicker}</p>
+            <h2>{spotlight.title}</h2>
             <p>
-              Modular heat-rejection units of <strong><AnimatedNumber value={1500} suffix=" kW" /></strong> each. Start with one,
-              add more as the plant scales. From a 1.5&nbsp;MW genset to a <strong>12&nbsp;MW</strong> datacenter hall — same proven core,
-              same hydraulic interface, same control logic.
+              {spotlight.text_start}{" "}
+              <strong><Stat text={spotlight.text_stat} /></strong>{" "}
+              {spotlight.text_middle}{" "}
+              <strong>{spotlight.text_bold}</strong>{" "}
+              {spotlight.text_end}
             </p>
             <ul className="checks">
-              <li>1 → 8 unit configurations, vertical or horizontal</li>
-              <li>Inverter-ready variable cooling on every fan stage</li>
-              <li>ATEX-ready and sea-water options available</li>
-              <li>Container-fit logic for fast field deployment</li>
+              <li>{spotlight.check1}</li>
+              <li>{spotlight.check2}</li>
+              <li>{spotlight.check3}</li>
+              <li>{spotlight.check4}</li>
             </ul>
             <div className="btn-row">
-              <Link className="btn solid magnetic" href="/tower-m">Explore M Tower</Link>
-              <Link className="btn ghost" href="/tower-m#mtower-sizer">Size your installation</Link>
+              <Link className="btn solid magnetic" href="/tower-m">{spotlight.cta_primary}</Link>
+              <Link className="btn ghost" href="/tower-m#mtower-sizer">{spotlight.cta_secondary}</Link>
             </div>
           </div>
           <figure className="mtower-spotlight-media mtower-spotlight-media--render">
-            <Image src="/assets/images/site/mtower-render.png" alt="Enfrio M Tower module — canonical product render" width={1040} height={1080} loading="lazy" />
+            <Image src={g.images.mtower_render} alt={spotlight.image_alt} width={1040} height={1080} loading="lazy" />
           </figure>
         </div>
       </section>
 
       <section className="section dark-block">
         <div className="section-head reveal">
-          <p className="kicker">CAPABILITY IN MOTION</p>
-          <h2>Three real moments that auto-cycle through Enfrio execution flow.</h2>
+          <p className="kicker">{motion.kicker}</p>
+          <h2>{motion.title}</h2>
         </div>
 
         <div id="wow-home" className="wow-showcase reveal" data-wow>
           <div className="wow-grid">
             <figure className="wow-media">
-              <Image className="active" data-id="fabrication" src="/assets/images/site/welder-action.jpg" alt="Enfrio operator welding a radiator core in front of the company logo" width={1500} height={1000} />
-              <Image data-id="machinery" src="/assets/images/site/tube-bending-operator.jpg" alt="Operator at the 6-axis tube bending machine" width={1500} height={1000} />
-              <Image data-id="integration" className="fit-contain focus-left" src="/assets/images/site/handwork-detail.jpg" alt="Final hand assembly detail on a cooling unit" width={1500} height={1000} />
+              <Image className="active" data-id="fabrication" src={motion.item1_image} alt={motion.item1_image_alt} width={1500} height={1000} />
+              <Image data-id="machinery" src={motion.item2_image} alt={motion.item2_image_alt} width={1500} height={1000} />
+              <Image data-id="integration" className="fit-contain focus-left" src={motion.item3_image} alt={motion.item3_image_alt} width={1500} height={1000} />
             </figure>
             <div className="wow-copy">
               <article className="wow-item active" data-id="fabrication" tabIndex={0}>
-                <h3>Fabrication Precision</h3>
-                <p>Controlled welding and joining quality on heat-critical assemblies.</p>
+                <h3>{motion.item1_title}</h3>
+                <p>{motion.item1_text}</p>
               </article>
               <article className="wow-item" data-id="machinery" tabIndex={0}>
-                <h3>Advanced Machinery</h3>
-                <p>Bending and laser operations designed for repeatable industrial throughput.</p>
+                <h3>{motion.item2_title}</h3>
+                <p>{motion.item2_text}</p>
               </article>
               <article className="wow-item" data-id="integration" tabIndex={0}>
-                <h3>Hands-on Quality</h3>
-                <p>Hand-finished detail work on every cooling unit before it leaves the line.</p>
+                <h3>{motion.item3_title}</h3>
+                <p>{motion.item3_text}</p>
               </article>
             </div>
           </div>
@@ -155,17 +155,15 @@ export default function HomePage() {
       </section>
 
       <section className="section cta reveal">
-        <p className="kicker">BUILD WITH ENFRIO</p>
-        <h2>Need an execution partner that engineers and delivers with ownership?</h2>
-        <p>
-          We design, validate and industrialize cooling systems with clear governance and measurable delivery milestones.
-        </p>
+        <p className="kicker">{cta.kicker}</p>
+        <h2>{cta.title}</h2>
+        <p>{cta.text}</p>
         <div className="btn-row" style={{ justifyContent: "center" }}>
           <Link className="btn solid magnetic" href="/contact">
-            Open strategic conversation
+            {cta.cta_primary}
           </Link>
           <Link className="btn ghost" href="/projects">
-            View project evidence
+            {cta.cta_secondary}
           </Link>
         </div>
       </section>

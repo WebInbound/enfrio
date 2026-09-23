@@ -1,43 +1,83 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
-import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
-import MTowerSizer from "@/components/MTowerSizer";
+import MTowerSizer, { type SizerCoefficients } from "@/components/MTowerSizer";
 import MTowerStage from "@/components/MTowerStage";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import DeploySwitcher from "@/components/DeploySwitcher";
+import Stat from "@/components/Stat";
+import { getContent } from "@/lib/kiwi";
+import { toNumber } from "@/lib/content-format";
+import { getGlobal, pageSeo } from "@/lib/site-content";
+import { SIZER, TOWER_M } from "@/content/tower-m";
+import type { Content } from "@/content/types";
 
-export const metadata: Metadata = pageMetadata({
-  path: "/tower-m",
-  title: "M Tower | Modular cooling that scales with your power | Enfrio",
-  description:
-    "Enfrio M Tower is a modular heat-rejection platform: 1500 kW per unit, scaling from standalone gensets to 12 MW datacenter halls. Real engineering, ATEX-ready, sea-water proof.",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getContent(TOWER_M);
+  return pageSeo("/tower-m", seo);
+}
 
-export default function TowerMPage() {
+/** Coefficients typed in the panel → numbers, each range-checked (bad input → default). */
+function sizerCoefficients(c: Content<typeof SIZER>["coefficients"]): SizerCoefficients {
+  const d = SIZER.sections.coefficients.blocks;
+  const num = (key: keyof typeof d, min: number, max: number) =>
+    toNumber(c[key], Number(d[key].default), { min, max });
+  return {
+    unitKw: num("unit_kw", 100, 100000),
+    footprintM2: num("footprint_m2", 0.1, 1000),
+    waterLpm: num("water_lpm", 1, 100000),
+    weightT: num("weight_t", 0.01, 1000),
+    electricalKva: num("electrical_kva", 0.1, 100000),
+    factor: {
+      diesel: num("factor_diesel", 0.05, 2),
+      gas: num("factor_gas", 0.05, 2),
+      datacenter: num("factor_datacenter", 0.05, 2),
+      custom: num("factor_custom", 0.05, 2),
+    },
+    doubleCircuit: num("double_circuit", 1, 2),
+    ambientDerate: {
+      30: num("derate_30c", 0.1, 1.5),
+      40: num("derate_40c", 0.1, 1.5),
+      50: num("derate_50c", 0.1, 1.5),
+    },
+    altitudeDerate: {
+      low: num("derate_alt_low", 0.1, 1.5),
+      med: num("derate_alt_med", 0.1, 1.5),
+      high: num("derate_alt_high", 0.1, 1.5),
+    },
+  };
+}
+
+export default async function TowerMPage() {
+  const [c, sizer, g] = await Promise.all([getContent(TOWER_M), getContent(SIZER), getGlobal()]);
+  const { craft, why, scale, sizer_intro, deploy, outro } = c;
+  const render = g.images.mtower_render;
+  const datasheetUrl = g.documents.mtower_datasheet_url;
+  const tierLabels = [scale.tier1_label, scale.tier2_label, scale.tier3_label, scale.tier4_label];
+
   return (
     <SiteShell active="tower-m">
-      <MTowerStage />
+      <MTowerStage content={{ stage: c.stage, explore: c.explore }} />
 
       {/* PLAY 7 — Engineering Detail macro crops */}
       <section className="section mtower-craft">
         <div className="section-head reveal">
-          <p className="kicker">ENGINEERING DETAIL</p>
-          <h2>Built from the inside out.</h2>
+          <p className="kicker">{craft.kicker}</p>
+          <h2>{craft.title}</h2>
         </div>
         <div className="mtower-craft-stack">
           <figure className="craft-crop reveal">
-            <img src="/assets/images/site/rad-vertical.jpg" alt="Cu/Al finned coil close-up" />
-            <figcaption>Cu/Al finned coil. 0.12 mm fin pitch.</figcaption>
+            <img src={craft.crop1_image} alt={craft.crop1_image_alt} />
+            <figcaption>{craft.crop1_caption}</figcaption>
           </figure>
           <figure className="craft-crop reveal">
-            <img src="/assets/images/site/prod-welding.jpg" alt="Hot-dip galvanized weld detail" />
-            <figcaption>Hot-dip galvanized DIN EN ISO 1461.</figcaption>
+            <img src={craft.crop2_image} alt={craft.crop2_image_alt} />
+            <figcaption>{craft.crop2_caption}</figcaption>
           </figure>
           <figure className="craft-crop reveal">
-            <img src="/assets/images/site/mach-laser-b.jpg" alt="EC fan motor detail" />
-            <figcaption>EC fans. IE5 efficiency class.</figcaption>
+            <img src={craft.crop3_image} alt={craft.crop3_image_alt} />
+            <figcaption>{craft.crop3_caption}</figcaption>
           </figure>
         </div>
       </section>
@@ -45,8 +85,8 @@ export default function TowerMPage() {
       {/* PLAY 3 — Why modular: SVG stat cards */}
       <section className="section dark-block">
         <div className="section-head reveal">
-          <p className="kicker">WHY MODULAR MATTERS</p>
-          <h2>Three reasons engineers pick M Tower over fixed-size cooling.</h2>
+          <p className="kicker">{why.kicker}</p>
+          <h2>{why.title}</h2>
         </div>
         <div className="grid-3">
           <article className="stat reveal mtower-why-mod-card">
@@ -73,10 +113,10 @@ export default function TowerMPage() {
               })}
             </svg>
             <h3>
-              <AnimatedNumber value={-42} suffix="% CAPEX" />
+              <Stat text={why.card1_value} />
             </h3>
-            <p className="kicker">CAPEX</p>
-            <p>Pay for capacity you actually use. Buy what today&apos;s load needs. Add modules later when the plant grows. No oversized installation depreciating from day one.</p>
+            <p className="kicker">{why.card1_tag}</p>
+            <p>{why.card1_text}</p>
           </article>
 
           <article className="stat reveal mtower-why-mod-card">
@@ -107,10 +147,10 @@ export default function TowerMPage() {
               })}
             </svg>
             <h3>
-              <AnimatedNumber value={100} suffix="% UPTIME" />
+              <Stat text={why.card2_value} />
             </h3>
-            <p className="kicker">UPTIME</p>
-            <p>N+1 redundancy comes for free. Add one extra module to every bank and you have hot-swap redundancy. A failed unit doesn&apos;t take production down.</p>
+            <p className="kicker">{why.card2_tag}</p>
+            <p>{why.card2_text}</p>
           </article>
 
           <article className="stat reveal mtower-why-mod-card">
@@ -148,10 +188,10 @@ export default function TowerMPage() {
               ))}
             </svg>
             <h3>
-              <AnimatedNumber value={90} suffix=" DAYS" />
+              <Stat text={why.card3_value} />
             </h3>
-            <p className="kicker">LOGISTICS</p>
-            <p>Container-fit, container-shipped. Each module fits standard freight envelopes. From port to slab in days, not weeks. Field assembly on a single bolt pattern.</p>
+            <p className="kicker">{why.card3_tag}</p>
+            <p>{why.card3_text}</p>
           </article>
         </div>
       </section>
@@ -159,16 +199,16 @@ export default function TowerMPage() {
       {/* PLAY 5 — Modular scale band */}
       <section className="section mtower-scale">
         <div className="section-head reveal">
-          <p className="kicker">MODULAR SCALES WITH YOU</p>
-          <h2>From one unit to twelve megawatts.</h2>
-          <p>One bolt pattern, one spare-parts library — and a capacity envelope that follows the project from a single genset to a full hyperscale hall.</p>
+          <p className="kicker">{scale.kicker}</p>
+          <h2>{scale.title}</h2>
+          <p>{scale.text}</p>
         </div>
         <div className="grid-4 mtower-scale-grid">
           {[
-            { n: 1, mw: 1.5, label: "Single genset", bg: "container" },
-            { n: 2, mw: 3, label: "Backup bank", bg: "substation" },
-            { n: 4, mw: 6, label: "Datacenter row", bg: "serverhall" },
-            { n: 8, mw: 12, label: "Hyperscale hall", bg: "plant" },
+            { n: 1, mw: 1.5, label: tierLabels[0], bg: "container" },
+            { n: 2, mw: 3, label: tierLabels[1], bg: "substation" },
+            { n: 4, mw: 6, label: tierLabels[2], bg: "serverhall" },
+            { n: 8, mw: 12, label: tierLabels[3], bg: "plant" },
           ].map((tier) => (
             <article
               key={tier.n}
@@ -245,7 +285,7 @@ export default function TowerMPage() {
               </svg>
 
               <p className="mtower-scale-count">
-                {tier.n} {tier.n === 1 ? "module" : "modules"}
+                {tier.n} {tier.n === 1 ? scale.module_one : scale.module_many}
               </p>
               <p className="mtower-scale-mw">
                 <AnimatedNumber value={tier.mw} suffix=" MW" format="float" />
@@ -258,70 +298,79 @@ export default function TowerMPage() {
 
       <section className="section dark-block" id="mtower-sizer">
         <div className="section-head reveal">
-          <p className="kicker">SIZING SIMULATOR</p>
-          <h2>How many M Tower modules does your project need?</h2>
-          <p>
-            Type your engine power, pick the application, choose redundancy. The simulator
-            returns a baseline configuration on the spot. Final sizing is confirmed by
-            Enfrio engineering on real platform data.
-          </p>
+          <p className="kicker">{sizer_intro.kicker}</p>
+          <h2>{sizer_intro.title}</h2>
+          <p>{sizer_intro.text}</p>
         </div>
-        <MTowerSizer />
+        <MTowerSizer
+          text={{ ...sizer.inputs, ...sizer.readout }}
+          coefficients={sizerCoefficients(sizer.coefficients)}
+          moduleImg={render}
+        />
       </section>
 
       {/* PLAY 6 — Deployment Contexts: tabbed switcher */}
       <section className="section">
         <div className="section-head reveal">
-          <p className="kicker">DEPLOYMENT CONTEXTS</p>
-          <h2>One platform, four worlds.</h2>
-          <p>The M Tower envelope adapts to ambient, fluid and certification rules across the industries we serve. Switch contexts to compare the spec deltas.</p>
+          <p className="kicker">{deploy.kicker}</p>
+          <h2>{deploy.title}</h2>
+          <p>{deploy.text}</p>
         </div>
-        <DeploySwitcher />
+        <DeploySwitcher
+          content={{
+            contexts: [c.deploy_dc, c.deploy_petro, c.deploy_power, c.deploy_hvac],
+            unitAlt: deploy.unit_alt,
+            renderSrc: render,
+          }}
+        />
       </section>
 
       {/* PLAY 8 — Closing outro recap */}
       <section className="mtower-outro section dark-block">
         <div className="mtower-outro-grid">
           <div className="mtower-outro-media mtower-spotlight-media--render reveal">
-            <img src="/assets/images/site/mtower-render.png" alt="M Tower modular cooling unit" />
+            <img src={render} alt={outro.image_alt} />
           </div>
           <div className="mtower-outro-content reveal">
-            <p className="kicker">READY TO SCALE WITH YOU</p>
-            <h2>From brief to bolted-down in 90 days.</h2>
+            <p className="kicker">{outro.kicker}</p>
+            <h2>{outro.title}</h2>
             <div className="mtower-outro-strip">
-              <span className="mtower-outro-strip-num">1500 kW</span>
+              <span className="mtower-outro-strip-num">{outro.strip1}</span>
               <span className="mtower-outro-strip-dot">&middot;</span>
-              <span className="mtower-outro-strip-num">12 MW</span>
+              <span className="mtower-outro-strip-num">{outro.strip2}</span>
               <span className="mtower-outro-strip-dot">&middot;</span>
-              <span className="mtower-outro-strip-num">N+1</span>
+              <span className="mtower-outro-strip-num">{outro.strip3}</span>
             </div>
             <ol className="timeline mtower-outro-timeline">
               <li>
-                <span className="step">Brief</span>
-                <span>Engine card, ambient, redundancy target — we read the project on a single page.</span>
+                <span className="step">{outro.step1_label}</span>
+                <span>{outro.step1_text}</span>
               </li>
               <li>
-                <span className="step">Engineer</span>
-                <span>Sized on real platform data, validated against the operating envelope before steel is cut.</span>
+                <span className="step">{outro.step2_label}</span>
+                <span>{outro.step2_text}</span>
               </li>
               <li>
-                <span className="step">Build</span>
-                <span>Laser, bend, weld, galvanize, assemble — all in-house at Ponderano (BI), Italy.</span>
+                <span className="step">{outro.step3_label}</span>
+                <span>{outro.step3_text}</span>
               </li>
               <li>
-                <span className="step">Commission</span>
-                <span>Container shipped, bolted down, hot-tested on site. Handover signed by Enfrio engineering.</span>
+                <span className="step">{outro.step4_label}</span>
+                <span>{outro.step4_text}</span>
               </li>
             </ol>
             <div className="btn-row">
               <Link className="btn solid magnetic" href="/contact?subject=M+Tower+Inquiry">
-                Talk to the M Tower team
+                {outro.cta}
               </Link>
-              {/* Disabled until the asset exists — was href="#", which just
-                  jumped to the top of the page. TODO: swap for
-                  <a href="/assets/datasheet-mtower.pdf" download> once the
-                  final datasheet is signed off by Engineering. */}
-              <button type="button" className="btn ghost" disabled aria-disabled="true" title="Datasheet available on request — contact the M Tower team">Download datasheet</button>
+              {/* Datasheet PDF link is set in the Kiwi panel ("Globale ›
+                  Documenti"). Until then the button stays disabled (it was
+                  href="#", which just jumped to the top of the page). */}
+              {datasheetUrl ? (
+                <a className="btn ghost" href={datasheetUrl} target="_blank" rel="noopener noreferrer">{outro.datasheet}</a>
+              ) : (
+                <button type="button" className="btn ghost" disabled aria-disabled="true" title={outro.datasheet_missing}>{outro.datasheet}</button>
+              )}
             </div>
           </div>
         </div>

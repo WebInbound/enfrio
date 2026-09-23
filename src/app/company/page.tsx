@@ -1,66 +1,69 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
+import { getContent } from "@/lib/kiwi";
+import { pageSeo } from "@/lib/site-content";
+import { COMPANY } from "@/content/company";
 
-export const metadata: Metadata = pageMetadata({
-  path: "/company",
-  title: "Enfrio Company | Team and Industrial Culture",
-  description: "Enfrio company profile: people, expertise and production culture behind cooling solutions.",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getContent(COMPANY);
+  return pageSeo("/company", seo);
+}
 
-export default function CompanyPage() {
+export default async function CompanyPage() {
+  const { hero, values, method, photos, cta } = await getContent(COMPANY);
+
   return (
     <SiteShell active="company">
       <section className="page-hero split">
         <div className="page-hero-text reveal">
-          <p className="kicker">ABOUT ENFRIO</p>
-          <h1>Real team, real factory, real execution accountability.</h1>
-          <p>Enfrio combines engineering leadership with production discipline to deliver cooling systems that work reliably in real operating conditions.</p>
+          <p className="kicker">{hero.kicker}</p>
+          <h1>{hero.title}</h1>
+          <p>{hero.lead}</p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image priority src="/assets/images/site/prod-bench.jpg" alt="Enfrio operator assembling a cooling unit at the production bench" width={2000} height={1333} />
+          <Image priority src={hero.image} alt={hero.image_alt} width={2000} height={1333} />
         </figure>
       </section>
 
       <section className="section">
         <div className="grid-3">
-          <article className="card reveal"><h3>Engineering DNA</h3><p>Technical depth across thermal design, packaging and manufacturability decisions.</p></article>
-          <article className="card reveal"><h3>Factory Mindset</h3><p>Hands-on production culture where process quality is treated as a product itself.</p></article>
-          <article className="card reveal"><h3>Partner Behavior</h3><p>Transparent communication, fast problem solving and ownership of outcomes.</p></article>
+          <article className="card reveal"><h3>{values.card1_title}</h3><p>{values.card1_text}</p></article>
+          <article className="card reveal"><h3>{values.card2_title}</h3><p>{values.card2_text}</p></article>
+          <article className="card reveal"><h3>{values.card3_title}</h3><p>{values.card3_text}</p></article>
         </div>
       </section>
 
       <section className="section dark-block">
         <div className="section-head reveal">
-          <p className="kicker">WORKING METHOD</p>
-          <h2>Execution principles that keep complex programs under control.</h2>
+          <p className="kicker">{method.kicker}</p>
+          <h2>{method.title}</h2>
         </div>
         <ol className="timeline">
-          <li className="reveal"><span className="step">01</span><p>Align objectives, constraints and measurable performance targets with customer teams.</p></li>
-          <li className="reveal"><span className="step">02</span><p>Engineer robust thermal architecture balancing performance, footprint and serviceability.</p></li>
-          <li className="reveal"><span className="step">03</span><p>Industrialize through process controls, supplier alignment and quality checkpoints.</p></li>
-          <li className="reveal"><span className="step">04</span><p>Support transfer, ramp-up and stabilization with direct accountability on delivery.</p></li>
+          <li className="reveal"><span className="step">01</span><p>{method.step1}</p></li>
+          <li className="reveal"><span className="step">02</span><p>{method.step2}</p></li>
+          <li className="reveal"><span className="step">03</span><p>{method.step3}</p></li>
+          <li className="reveal"><span className="step">04</span><p>{method.step4}</p></li>
         </ol>
       </section>
 
       <section className="section">
         <div className="dominant-cluster reveal">
-          <Image className="dominant" src="/assets/images/site/prod-assembly-b.jpg" alt="Factory assembly operation" width={1400} height={900} />
+          <Image className="dominant" src={photos.photo_main} alt={photos.photo_main_alt} width={1400} height={900} />
           <div className="support">
-            <Image src="/assets/images/site/welder-action.jpg" alt="Welder finishing a radiator core in front of the Enfrio logo" width={1500} height={1000} />
-            <Image src="/assets/images/site/assembly-worker.jpg" alt="Operator preparing components at the assembly station" width={1500} height={1000} />
-            <Image src="/assets/images/site/handwork-detail.jpg" alt="Hand-finishing detail on a cooling unit" width={1500} height={1000} />
+            <Image src={photos.photo_2} alt={photos.photo_2_alt} width={1500} height={1000} />
+            <Image src={photos.photo_3} alt={photos.photo_3_alt} width={1500} height={1000} />
+            <Image src={photos.photo_4} alt={photos.photo_4_alt} width={1500} height={1000} />
           </div>
         </div>
       </section>
 
       <section className="section cta reveal">
-        <p className="kicker">COLLABORATE</p>
-        <h2>Looking for a team that owns outcomes, not only tasks?</h2>
+        <p className="kicker">{cta.kicker}</p>
+        <h2>{cta.title}</h2>
         <div className="btn-row" style={{ justifyContent: "center" }}>
-          <Link className="btn solid" href="/contact">Book leadership intro</Link>
+          <Link className="btn solid" href="/contact">{cta.button}</Link>
         </div>
       </section>
     </SiteShell>

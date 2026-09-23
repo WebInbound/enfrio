@@ -1,85 +1,74 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
+import { getContent } from "@/lib/kiwi";
+import { getGlobal, getList, pageSeo } from "@/lib/site-content";
+import { PROJECTS_PAGE } from "@/content/projects";
+import { PROJECTS, PROJECT_SNAPSHOTS } from "@/content/collections";
 
-export const metadata: Metadata = pageMetadata({
-  path: "/projects",
-  title: "Enfrio Projects | Applied Industrial Credibility",
-  description: "Selected Enfrio projects and references demonstrating technical delivery in real contexts.",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getContent(PROJECTS_PAGE);
+  return pageSeo("/projects", seo);
+}
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const [{ hero, platform, flow, snapshots, closing }, g, references, gallery] = await Promise.all([
+    getContent(PROJECTS_PAGE),
+    getGlobal(),
+    getList(PROJECTS),
+    getList(PROJECT_SNAPSHOTS),
+  ]);
+
   return (
     <SiteShell active="projects">
       <section className="page-hero split">
         <div className="page-hero-text reveal">
-          <p className="kicker">PROJECT EVIDENCE</p>
-          <h1>Applied credibility from real manufacturing and deployment contexts.</h1>
-          <p>
-            These selected references show how Enfrio translates thermal complexity into execution-ready industrial
-            solutions.
-          </p>
+          <p className="kicker">{hero.kicker}</p>
+          <h1>{hero.title}</h1>
+          <p>{hero.lead}</p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image priority className="focus-left" src="/assets/images/site/installed-baudouin-canopy.jpg" alt="Genset with Enfrio cooling installed inside an open canopy enclosure" width={1200} height={900} />
+          <Image priority className="focus-left" src={hero.image} alt={hero.image_alt} width={1200} height={900} />
         </figure>
       </section>
 
       <section className="section">
         <div className="grid-3">
-          <article className="panel reveal media">
-            <Image className="fit-contain focus-left" src="/assets/images/site/rad-40ng.jpg" alt="40HC container package" width={1200} height={900} />
-            <h3>40HC Container Package</h3>
-            <p>
-              Cooling package engineered for compact container fit with high-efficiency cores, low fan power and
-              low-noise behavior.
-            </p>
-          </article>
-          <article className="panel reveal media">
-            <Image className="fit-contain focus-left" src="/assets/images/site/rad-remote-mtu.jpg" alt="MTU remote installation radiator" width={1200} height={900} />
-            <h3>Remote MTU Customization</h3>
-            <p>
-              Customized radiator for remote installations, with container-ready dimensions and robust field-oriented
-              architecture.
-            </p>
-          </article>
-          <article className="panel reveal media">
-            <Image className="fit-contain focus-left" src="/assets/images/site/waste-madrid-03.jpg" alt="Enfrio Madrid waste truck cooling product" width={1200} height={900} />
-            <h3>Madrid Waste Truck Product (Enfrio Development)</h3>
-            <p>
-              Proprietary Enfrio solution for Madrid waste collection vehicles, engineered around severe packaging
-              constraints with custom radiator/CAC architecture.
-            </p>
-          </article>
+          {references.map((p, i) => (
+            <article key={i} className="panel reveal media">
+              <Image className="fit-contain focus-left" src={p.image} alt={p.alt} width={1200} height={900} />
+              <h3>{p.title}</h3>
+              <p>{p.body}</p>
+            </article>
+          ))}
         </div>
       </section>
 
       <section className="section dark-block">
         <div className="section-head reveal">
-          <p className="kicker">SPECIAL PLATFORM</p>
-          <h2>M Tower modular capacity for large-scale heat rejection.</h2>
+          <p className="kicker">{platform.kicker}</p>
+          <h2>{platform.title}</h2>
         </div>
         <div className="grid-2">
           <article className="panel reveal">
-            <h3>Performance Envelope</h3>
+            <h3>{platform.perf_title}</h3>
             <ul className="checks">
-              <li>1 unit: 1500 kW heat rejection</li>
-              <li>4 units: 6000 kW heat rejection</li>
-              <li>8 units: 12000 kW heat rejection</li>
+              <li>{platform.perf_item1}</li>
+              <li>{platform.perf_item2}</li>
+              <li>{platform.perf_item3}</li>
             </ul>
           </article>
           <article className="panel reveal">
-            <h3>Configuration Options</h3>
+            <h3>{platform.options_title}</h3>
             <ul className="checks">
-              <li>Vertical or horizontal installation</li>
-              <li>Variable cooling with inverter logic</li>
-              <li>Sea-water corrosion resistance and ATEX options</li>
+              <li>{platform.options_item1}</li>
+              <li>{platform.options_item2}</li>
+              <li>{platform.options_item3}</li>
             </ul>
             <div className="btn-row">
               <Link className="btn solid" href="/tower-m">
-                Open M Tower page
+                {platform.options_button}
               </Link>
             </div>
           </article>
@@ -88,29 +77,29 @@ export default function ProjectsPage() {
 
       <section className="section dark-block">
         <div className="section-head reveal">
-          <p className="kicker">PROJECT FLOW</p>
-          <h2>Applied credibility shown in an auto-advancing sequence.</h2>
+          <p className="kicker">{flow.kicker}</p>
+          <h2>{flow.title}</h2>
         </div>
 
         <div className="wow-showcase reveal" data-wow>
           <div className="wow-grid">
             <figure className="wow-media">
-              <Image className="active" data-id="expo" src="/assets/images/site/fair-dubai-2.jpg" alt="Enfrio exhibition stand with cooling units on display at an energy trade show in Dubai" width={1400} height={900} />
-              <Image data-id="installed" className="fit-contain" src="/assets/images/site/installed-baudouin-canopy.jpg" alt="Enfrio cooling package installed in finished canopy" width={1400} height={900} />
-              <Image data-id="delivery" className="focus-right" src="/assets/images/site/rad-truck-load.jpg" alt="Enfrio cooling unit being loaded onto a delivery truck" width={1400} height={1050} />
+              <Image className="active" data-id="expo" src={flow.item1_image} alt={flow.item1_image_alt} width={1400} height={900} />
+              <Image data-id="installed" className="fit-contain" src={flow.item2_image} alt={flow.item2_image_alt} width={1400} height={900} />
+              <Image data-id="delivery" className="focus-right" src={flow.item3_image} alt={flow.item3_image_alt} width={1400} height={1050} />
             </figure>
             <div className="wow-copy">
               <article className="wow-item active" data-id="expo">
-                <h3>Market Visibility</h3>
-                <p>International presence that reinforces partner trust and technical positioning.</p>
+                <h3>{flow.item1_title}</h3>
+                <p>{flow.item1_text}</p>
               </article>
               <article className="wow-item" data-id="installed">
-                <h3>Installed Reality</h3>
-                <p>Configured systems adapted to real-world space and duty-cycle constraints.</p>
+                <h3>{flow.item2_title}</h3>
+                <p>{flow.item2_text}</p>
               </article>
               <article className="wow-item" data-id="delivery">
-                <h3>Execution Closure</h3>
-                <p>Factory output translated into disciplined logistics and on-time dispatch.</p>
+                <h3>{flow.item3_title}</h3>
+                <p>{flow.item3_text}</p>
               </article>
             </div>
           </div>
@@ -119,52 +108,24 @@ export default function ProjectsPage() {
 
       <section className="section">
         <div className="section-head reveal">
-          <p className="kicker">PROJECT SNAPSHOTS</p>
-          <h2>Supporting visuals from fairs, delivery contexts and installed families.</h2>
+          <p className="kicker">{snapshots.kicker}</p>
+          <h2>{snapshots.title}</h2>
         </div>
         <div className="editorial-rail auto-lux-wrap reveal" aria-label="Project snapshots auto gallery">
           <div className="auto-lux-track">
-            <figure className="auto-lux-card">
-              <Image src="/assets/images/site/rad-40ng.jpg" alt="40HC container-fit cooling package" width={1200} height={900} />
-              <figcaption>Container-fit packages engineered for fast deployment.</figcaption>
-            </figure>
-            <figure className="auto-lux-card">
-              <Image src="/assets/images/site/installed-v20-integrated.jpg" alt="V20 engine with integrated Enfrio cooling package" width={1200} height={900} />
-              <figcaption>Engine + cooling integrated as a single hand-off platform.</figcaption>
-            </figure>
-            <figure className="auto-lux-card">
-              <Image src="/assets/images/site/rad-warehouse-stock.jpg" alt="Finished cooling units staged in the warehouse" width={1200} height={900} />
-              <figcaption>Production continuity and staged delivery readiness.</figcaption>
-            </figure>
-            <figure className="auto-lux-card">
-              <Image src="/assets/images/site/rad-double.jpg" alt="Dual-circuit Enfrio radiator" width={1200} height={900} />
-              <figcaption>Variant architecture for differentiated project needs.</figcaption>
-            </figure>
-            <figure className="auto-lux-card">
-              <Image src="/assets/images/site/rad-truck-load.jpg" alt="Cooling unit loaded onto a delivery truck" width={1200} height={900} />
-              <figcaption>Execution closes with logistics discipline.</figcaption>
-            </figure>
+            {gallery.map((s, i) => (
+              <figure key={`s-${i}`} className="auto-lux-card">
+                <Image src={s.image} alt={s.alt} width={1200} height={900} />
+                <figcaption>{s.title}</figcaption>
+              </figure>
+            ))}
 
-            <figure className="auto-lux-card" aria-hidden="true">
-              <Image src="/assets/images/site/rad-40ng.jpg" alt="" width={1200} height={900} />
-              <figcaption>Container-fit packages engineered for fast deployment.</figcaption>
-            </figure>
-            <figure className="auto-lux-card" aria-hidden="true">
-              <Image src="/assets/images/site/installed-v20-integrated.jpg" alt="" width={1200} height={900} />
-              <figcaption>Engine + cooling integrated as a single hand-off platform.</figcaption>
-            </figure>
-            <figure className="auto-lux-card" aria-hidden="true">
-              <Image src="/assets/images/site/rad-warehouse-stock.jpg" alt="" width={1200} height={900} />
-              <figcaption>Production continuity and staged delivery readiness.</figcaption>
-            </figure>
-            <figure className="auto-lux-card" aria-hidden="true">
-              <Image src="/assets/images/site/rad-double.jpg" alt="" width={1200} height={900} />
-              <figcaption>Variant architecture for differentiated project needs.</figcaption>
-            </figure>
-            <figure className="auto-lux-card" aria-hidden="true">
-              <Image src="/assets/images/site/rad-truck-load.jpg" alt="" width={1200} height={900} />
-              <figcaption>Execution closes with logistics discipline.</figcaption>
-            </figure>
+            {gallery.map((s, i) => (
+              <figure key={`s2-${i}`} className="auto-lux-card" aria-hidden="true">
+                <Image src={s.image} alt="" width={1200} height={900} />
+                <figcaption>{s.title}</figcaption>
+              </figure>
+            ))}
           </div>
         </div>
       </section>
@@ -172,22 +133,22 @@ export default function ProjectsPage() {
       <section className="section">
         <div className="grid-2">
           <article className="info reveal">
-            <p className="kicker">QUALITY PROOF</p>
-            <h3>ISO Certification</h3>
-            <p>Official certification is available for vendor qualification and procurement processes.</p>
+            <p className="kicker">{closing.iso_kicker}</p>
+            <h3>{closing.iso_title}</h3>
+            <p>{closing.iso_text}</p>
             <div className="btn-row">
-              <a className="btn solid" href="/assets/certificazioneiso.pdf" target="_blank" rel="noopener noreferrer">
-                Open ISO Certificate
+              <a className="btn solid" href={g.documents.iso_certificate_url} target="_blank" rel="noopener noreferrer">
+                {closing.iso_button}
               </a>
             </div>
           </article>
           <article className="info reveal">
-            <p className="kicker">COMMERCIAL NEXT</p>
-            <h3>Discuss your program</h3>
-            <p>Share your constraints and timeline to evaluate feasibility, risk and deployment options.</p>
+            <p className="kicker">{closing.contact_kicker}</p>
+            <h3>{closing.contact_title}</h3>
+            <p>{closing.contact_text}</p>
             <div className="btn-row">
               <Link className="btn ghost" href="/contact">
-                Start project review
+                {closing.contact_button}
               </Link>
             </div>
           </article>

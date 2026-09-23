@@ -1,33 +1,36 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
+import { getContent } from "@/lib/kiwi";
+import { NOT_FOUND } from "@/content/global";
 
-export const metadata: Metadata = {
-  title: "Page not found | Enfrio",
-  description: "The page you were looking for doesn't exist on enfrio.it.",
-  robots: { index: false, follow: true },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { main } = await getContent(NOT_FOUND);
+  return {
+    title: main.seo_title,
+    description: main.seo_description,
+    robots: { index: false, follow: true },
+  };
+}
 
-export default function NotFound() {
+export default async function NotFound() {
+  const { main } = await getContent(NOT_FOUND);
+
   return (
     <SiteShell active="home">
       <section className="section cta reveal">
-        <p className="kicker">404</p>
-        <h1>We couldn&apos;t find that page.</h1>
-        <p>
-          The link may be outdated, or the page may have moved. From here you
-          can head back to the home page, explore our flagship M Tower
-          platform, or get in touch with the Enfrio team.
-        </p>
+        <p className="kicker">{main.kicker}</p>
+        <h1>{main.title}</h1>
+        <p>{main.text}</p>
         <div className="btn-row" style={{ justifyContent: "center" }}>
           <Link className="btn solid" href="/">
-            Back to home
+            {main.cta_home}
           </Link>
           <Link className="btn ghost" href="/tower-m">
-            Explore M Tower
+            {main.cta_mtower}
           </Link>
           <Link className="btn ghost" href="/contact">
-            Talk to us
+            {main.cta_contact}
           </Link>
         </div>
       </section>

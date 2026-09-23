@@ -1,64 +1,72 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
 import { Suspense } from "react";
 import Image from "next/image";
 import SiteShell from "@/components/SiteShell";
 import ContactForm from "@/components/ContactForm";
+import { getContent } from "@/lib/kiwi";
+import { companyInfo, getGlobal, pageSeo } from "@/lib/site-content";
+import { CONTACT, CONTACT_FORM } from "@/content/contact";
 
-export const metadata: Metadata = pageMetadata({
-  path: "/contact",
-  title: "Contact Enfrio | Start Your Cooling Project",
-  description: "Contact Enfrio to discuss engine cooling projects, technical requirements and production transfer plans.",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getContent(CONTACT);
+  return pageSeo("/contact", seo);
+}
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const [{ hero, inquiry, side }, form, g] = await Promise.all([
+    getContent(CONTACT),
+    getContent(CONTACT_FORM),
+    getGlobal(),
+  ]);
+  const co = companyInfo(g);
+
   return (
     <SiteShell active="contact">
       <section className="page-hero split">
         <div className="page-hero-text reveal">
-          <p className="kicker">CONTACT</p>
-          <h1>Turn your cooling challenge into an execution-ready plan.</h1>
-          <p>Share platform data, thermal targets and timeline. Enfrio can support from concept engineering to full production transfer.</p>
+          <p className="kicker">{hero.kicker}</p>
+          <h1>{hero.title}</h1>
+          <p>{hero.lead}</p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image priority className="focus-right" src="/assets/images/site/quality-hexagon-b.jpg" alt="Quality check detail" width={1200} height={900} />
+          <Image priority className="focus-right" src={hero.image} alt={hero.image_alt} width={1200} height={900} />
         </figure>
       </section>
 
       <section className="section">
         <div className="contact-layout">
           <div className="contact-form-wrap reveal">
-            <p className="kicker">PROJECT INQUIRY</p>
-            <h2>Tell us about your platform.</h2>
-            <p>Fill in the form and an Enfrio engineer will reply within one business day. For procurement documentation requests please mention it in the message field.</p>
-            <Suspense fallback={<p className="micro-note">Loading form...</p>}>
-              <ContactForm />
+            <p className="kicker">{inquiry.kicker}</p>
+            <h2>{inquiry.title}</h2>
+            <p>{inquiry.text}</p>
+            <Suspense fallback={<p className="micro-note">{inquiry.loading}</p>}>
+              <ContactForm labels={form.fields} />
             </Suspense>
           </div>
           <aside className="contact-side reveal">
             <article className="contact-side-card">
-              <h3>Direct contact</h3>
-              <p>Prefer to write to us directly?</p>
-              <p><a href="mailto:info@enfrio.eu" aria-label="Send email to info@enfrio.eu">info@enfrio.eu</a></p>
+              <h3>{side.direct_title}</h3>
+              <p>{side.direct_text}</p>
+              <p><a href={`mailto:${co.email}`} aria-label={`Send email to ${co.email}`}>{co.email}</a></p>
             </article>
             <article className="contact-side-card">
-              <h3>Headquarters</h3>
-              <p>Via Cascina Nuova 27<br />13875 Ponderano (BI), Italy</p>
-              <p>VAT: IT02553940020</p>
+              <h3>{side.hq_title}</h3>
+              <p>{co.street}<br />{co.cityLine}</p>
+              <p>{`${g.company.vat_label} ${co.vat}`}</p>
             </article>
             <article className="contact-side-card">
-              <h3>What to share</h3>
+              <h3>{side.share_title}</h3>
               <ul className="checks">
-                <li>Engine model and power class</li>
-                <li>Heat rejection target (kW)</li>
-                <li>Installation context and constraints</li>
-                <li>Prototype / start-of-production milestones</li>
+                <li>{side.share_item1}</li>
+                <li>{side.share_item2}</li>
+                <li>{side.share_item3}</li>
+                <li>{side.share_item4}</li>
               </ul>
             </article>
             <article className="contact-side-card">
-              <h3>Quality credentials</h3>
-              <p>Certification document for vendor qualification:</p>
-              <p><a className="btn solid" href="/assets/certificazioneiso.pdf" target="_blank" rel="noopener noreferrer">Download ISO Certificate</a></p>
+              <h3>{side.quality_title}</h3>
+              <p>{side.quality_text}</p>
+              <p><a className="btn solid" href={g.documents.iso_certificate_url} target="_blank" rel="noopener noreferrer">{side.quality_button}</a></p>
             </article>
           </aside>
         </div>

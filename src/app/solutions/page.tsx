@@ -1,72 +1,69 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
+import { getContent } from "@/lib/kiwi";
+import { pageSeo } from "@/lib/site-content";
+import { SOLUTIONS } from "@/content/solutions";
 
-export const metadata: Metadata = pageMetadata({
-  path: "/solutions",
-  title: "Enfrio Solutions | 5P Execution and Cooling Systems",
-  description:
-    "Enfrio business solutions across project management, engineering, process definition, procurement and production transfer.",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getContent(SOLUTIONS);
+  return pageSeo("/solutions", seo);
+}
 
-export default function SolutionsPage() {
+export default async function SolutionsPage() {
+  const { hero, offer, execution, variants, cta } = await getContent(SOLUTIONS);
+
   return (
     <SiteShell active="solutions">
       <section className="page-hero split">
         <div className="page-hero-text reveal">
-          <p className="kicker">SOLUTIONS</p>
-          <h1>Commercial clarity with industrial execution depth.</h1>
-          <p>
-            Enfrio combines engineering consulting, technology, and process outsourcing in one scalable delivery model for
-            cooling-intensive platforms.
-          </p>
+          <p className="kicker">{hero.kicker}</p>
+          <h1>{hero.title}</h1>
+          <p>{hero.lead}</p>
         </div>
         <figure className="page-hero-media reveal">
-          <Image priority className="focus-left" src="/assets/images/site/installed-v20-integrated.jpg" alt="Integrated Enfrio cooling package mounted on a finished engine" width={1600} height={1200} />
+          <Image priority className="focus-left" src={hero.image} alt={hero.image_alt} width={1600} height={1200} />
         </figure>
       </section>
 
       <section className="section">
         <div className="grid-3">
           <article className="card reveal">
-            <h3>Industrial Cooling Systems</h3>
-            <p>Water radiators, oil coolers, fuel coolers and charge air coolers configured for application-specific duty cycles.</p>
+            <h3>{offer.card1_title}</h3>
+            <p>{offer.card1_text}</p>
           </article>
           <article className="card reveal">
-            <h3>OEM Cooling Solutions</h3>
-            <p>
-              Custom architecture engineered for footprint constraints, serviceability, and repeatable manufacturing performance.
-            </p>
+            <h3>{offer.card2_title}</h3>
+            <p>{offer.card2_text}</p>
           </article>
           <article className="card reveal">
-            <h3>Energy-Efficient Thermal Packages</h3>
-            <p>High-efficiency cores, optimized fan power and low-noise integration for cost-effective operation.</p>
+            <h3>{offer.card3_title}</h3>
+            <p>{offer.card3_text}</p>
           </article>
         </div>
       </section>
 
       <section className="section dark-block">
         <div className="section-head reveal">
-          <p className="kicker">5P EXECUTION</p>
-          <h2>One integrated model from project governance to production transfer.</h2>
+          <p className="kicker">{execution.kicker}</p>
+          <h2>{execution.title}</h2>
         </div>
         <div className="grid-2">
           <article className="panel reveal">
-            <h3>Project + Product</h3>
+            <h3>{execution.panel1_title}</h3>
             <ul className="checks">
-              <li>Program governance and phase-gate control</li>
-              <li>Thermal sizing and packaging engineering</li>
-              <li>Design aligned to manufacturability</li>
+              <li>{execution.panel1_item1}</li>
+              <li>{execution.panel1_item2}</li>
+              <li>{execution.panel1_item3}</li>
             </ul>
           </article>
           <article className="panel reveal">
-            <h3>Process + Procurement + Transfer</h3>
+            <h3>{execution.panel2_title}</h3>
             <ul className="checks">
-              <li>Industrial process definition and validation loops</li>
-              <li>Supplier coordination on critical components</li>
-              <li>Controlled ramp-up and production stabilization</li>
+              <li>{execution.panel2_item1}</li>
+              <li>{execution.panel2_item2}</li>
+              <li>{execution.panel2_item3}</li>
             </ul>
           </article>
         </div>
@@ -74,26 +71,26 @@ export default function SolutionsPage() {
 
       <section className="section">
         <div className="section-head reveal">
-          <p className="kicker">SOLUTION VARIANTS</p>
-          <h2>One main architecture, adapted to multiple installation contexts.</h2>
+          <p className="kicker">{variants.kicker}</p>
+          <h2>{variants.title}</h2>
         </div>
         <div className="dominant-cluster reveal">
-          <Image className="dominant focus-left motor-up" src="/assets/images/site/installed-v20-integrated.jpg" alt="V20 engine with integrated Enfrio cooling package" width={1500} height={950} />
+          <Image className="dominant focus-left motor-up" src={variants.photo_main} alt={variants.photo_main_alt} width={1500} height={950} />
           <div className="support">
-            <Image className="focus-left" src="/assets/images/site/installed-baudouin-canopy.jpg" alt="Cooling unit installed in a genset open canopy" width={1000} height={650} />
-            <Image className="focus-left" src="/assets/images/site/rad-40ng.jpg" alt="Genset with Enfrio container-fit cooling package" width={1000} height={650} />
-            <Image className="focus-right" src="/assets/images/site/rad-warehouse-stock.jpg" alt="Finished Enfrio cooling units staged on warehouse racks" width={1000} height={650} />
+            <Image className="focus-left" src={variants.photo_2} alt={variants.photo_2_alt} width={1000} height={650} />
+            <Image className="focus-left" src={variants.photo_3} alt={variants.photo_3_alt} width={1000} height={650} />
+            <Image className="focus-right" src={variants.photo_4} alt={variants.photo_4_alt} width={1000} height={650} />
           </div>
         </div>
       </section>
 
       <section className="section cta reveal">
-        <p className="kicker">COMMERCIAL NEXT STEP</p>
-        <h2>Share your requirements and receive a practical execution scope.</h2>
-        <p>We can start from concept notes or existing technical data and build a phased delivery roadmap.</p>
+        <p className="kicker">{cta.kicker}</p>
+        <h2>{cta.title}</h2>
+        <p>{cta.text}</p>
         <div className="btn-row" style={{ justifyContent: "center" }}>
           <Link className="btn solid" href="/contact">
-            Start solution scoping
+            {cta.button}
           </Link>
         </div>
       </section>

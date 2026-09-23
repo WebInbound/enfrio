@@ -1,6 +1,10 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { getContent, sendKiwiContact } from "@/lib/kiwi";
+import { fill } from "@/lib/content-format";
+import { CONTACT_FORM } from "@/content/contact";
+import { GLOBAL } from "@/content/global";
 
 export type ContactFormState = {
   status: "idle" | "success" | "error";
@@ -8,6 +12,10 @@ export type ContactFormState = {
   fieldErrors?: Partial<Record<"name" | "email" | "company" | "message" | "consent", string>>;
 };
 
+// Leads are delivered twice, independently: stored in the Kiwi panel
+// ("Messaggi") AND emailed to the company inbox through FormSubmit, as
+// before the integration. The visitor sees success if at least one of the
+// two worked, so a lead is never lost because one channel is down.
 const TARGET_INBOX = process.env.CONTACT_TO ?? "info@enfrio.eu";
 // FormSubmit ties a form to its referring domain and rejects server-side
 // calls that don't look like they came from it. Must match the live origin.
@@ -21,6 +29,9 @@ const SITE_ORIGIN = process.env.SITE_URL ?? "https://www.enfrio.it";
 const RATE_LIMIT_SECONDS = 30;
 const RATE_LIMIT_COOKIE = "enfrio_contact_sent";
 
+// Only the company data section of the global blocks (same slugs).
+const COMPANY_DATA = { id: GLOBAL.id, sections: { company: GLOBAL.sections.company } };
+
 function isValidEmail(email: string): boolean {
   // Require at least a 2-letter TLD so we don't accept "a@b.c". Still
   // intentionally permissive — formsubmit.co does the real validation.
@@ -32,15 +43,16 @@ export async function submitContactForm(
   formData: FormData,
 ): Promise<ContactFormState> {
   const cookieJar = await cookies();
+  const [{ messages: m }, { company: companyData }] = await Promise.all([
+    getContent(CONTACT_FORM),
+    getContent(COMPANY_DATA),
+  ]);
+  const withEmail = (text: string) => fill(text, { email: companyData.email });
 
   // Reject same-browser resubmits inside the rate window. We return
   // success-shape so a bot/spammer can't probe the cookie state.
   if (cookieJar.get(RATE_LIMIT_COOKIE)?.value === "1") {
-    return {
-      status: "success",
-      message:
-        "Thanks — your previous message is on its way. Please wait a moment before sending another one.",
-    };
+    return { status: "success", message: m.repeat };
   }
 
   const name = String(formData.get("name") ?? "").trim();
@@ -54,21 +66,21 @@ export async function submitContactForm(
   const honeypot = String(formData.get("company_url") ?? "").trim();
 
   if (honeypot) {
-    return { status: "success", message: "Thank you. We will be in touch shortly." };
+    return { status: "success", message: m.spam_success };
   }
 
   const fieldErrors: ContactFormState["fieldErrors"] = {};
-  if (!name) fieldErrors.name = "Name is required.";
-  if (!email) fieldErrors.email = "Email is required.";
-  else if (!isValidEmail(email)) fieldErrors.email = "Enter a valid email address.";
-  if (!company) fieldErrors.company = "Company is required.";
-  if (!message || message.length < 20) fieldErrors.message = "Tell us a bit more about your project (at least 20 characters).";
-  if (!consent) fieldErrors.consent = "We need your consent to process this request.";
+  if (!name) fieldErrors.name = m.name_required;
+  if (!email) fieldErrors.email = m.email_required;
+  else if (!isValidEmail(email)) fieldErrors.email = m.email_invalid;
+  if (!company) fieldErrors.company = m.company_required;
+  if (!message || message.length < 20) fieldErrors.message = m.message_short;
+  if (!consent) fieldErrors.consent = m.consent_required;
 
   if (Object.keys(fieldErrors).length > 0) {
     return {
       status: "error",
-      message: "Please review the highlighted fields and try again.",
+      message: m.review,
       fieldErrors,
     };
   }
@@ -77,8 +89,6 @@ export async function submitContactForm(
   // First send to a given inbox triggers a one-time confirmation email
   // that the inbox owner must approve. After that every submission is
   // forwarded to the inbox.
-  const endpoint = `https://formsubmit.co/ajax/${encodeURIComponent(TARGET_INBOX)}`;
-
   const payload = {
     _subject: `Enfrio website inquiry — ${company}`,
     _replyto: email,
@@ -93,9 +103,64 @@ export async function submitContactForm(
     message,
   };
 
+  // Same lead for the Kiwi panel: the extra fields go in the message body
+  // (the panel shows name / email / phone / message) and in metadata.
+  const kiwiMessage = [
+    `Company: ${company}`,
+    `Project scope: ${projectScope || "—"}`,
+    `Timeline: ${timeline || "—"}`,
+    "",
+    message,
+  ].join("\n");
+
+  try {
+    const [storedInKiwi, emailed] = await Promise.all([
+      sendKiwiContact({
+        name,
+        email,
+        phone: phone || undefined,
+        message: kiwiMessage,
+        source: "enfrio.it/contact",
+        metadata: { company, projectScope, timeline, consent: true },
+      }),
+      sendFormSubmit(payload),
+    ]);
+
+    if (!storedInKiwi && !emailed) {
+      return { status: "error", message: withEmail(m.not_delivered) };
+    }
+    if (!emailed) {
+      console.error("[contact] lead stored ONLY in the Kiwi panel — email to", TARGET_INBOX, "not delivered");
+    } else if (!storedInKiwi) {
+      console.warn("[contact] lead emailed but NOT stored in the Kiwi panel");
+    }
+
+    // Drop a short-lived cookie so the same browser can't pound the
+    // endpoint. The cookie is HttpOnly so client JS can't flush it.
+    cookieJar.set({
+      name: RATE_LIMIT_COOKIE,
+      value: "1",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: RATE_LIMIT_SECONDS,
+      path: "/",
+    });
+
+    return { status: "success", message: m.success };
+  } catch (error) {
+    console.error("[contact] unexpected error", error);
+    return { status: "error", message: withEmail(m.unexpected) };
+  }
+}
+
+/** Email the lead to the company inbox through FormSubmit. Never throws. */
+async function sendFormSubmit(payload: Record<string, string>): Promise<boolean> {
+  const endpoint = `https://formsubmit.co/ajax/${encodeURIComponent(TARGET_INBOX)}`;
   try {
     const response = await fetch(endpoint, {
       method: "POST",
+      signal: AbortSignal.timeout(10_000),
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
@@ -126,35 +191,10 @@ export async function submitContactForm(
         response.status,
         result?.message ?? "<no body>",
       );
-      return {
-        status: "error",
-        message:
-          "We couldn't deliver your message right now. Please retry shortly or email info@enfrio.eu directly.",
-      };
     }
-
-    // Drop a short-lived cookie so the same browser can't pound the
-    // endpoint. The cookie is HttpOnly so client JS can't flush it.
-    cookieJar.set({
-      name: RATE_LIMIT_COOKIE,
-      value: "1",
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: RATE_LIMIT_SECONDS,
-      path: "/",
-    });
-
-    return {
-      status: "success",
-      message: "Thank you. Your inquiry was sent to the Enfrio team — we will reply within one business day.",
-    };
+    return delivered;
   } catch (error) {
-    console.error("[contact] unexpected error", error);
-    return {
-      status: "error",
-      message:
-        "Something went wrong sending the message. Please retry shortly or email info@enfrio.eu directly.",
-    };
+    console.error("[contact] FormSubmit unreachable", error instanceof Error ? error.name : error);
+    return false;
   }
 }

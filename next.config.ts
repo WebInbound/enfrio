@@ -11,6 +11,14 @@ const nextConfig: NextConfig = {
     // .focus-* / cluster classes. Pre-bake the breakpoints.
     deviceSizes: [640, 750, 828, 1080, 1200, 1536, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Images replaced from the Kiwi panel live in the Kiwi Supabase storage.
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "qvswzthlruowjjlxioas.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
   },
   // Strict mode catches double-effects and cleanup bugs during dev.
   reactStrictMode: true,

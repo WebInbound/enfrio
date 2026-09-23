@@ -4,42 +4,131 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AnimatedNumber from "./AnimatedNumber";
 
-const UNIT_KW = 1500;
-const MODULE_IMG = "/assets/images/site/mtower-render.png";
+/**
+ * Calculation coefficients, editable in the Kiwi panel ("M Tower ›
+ * Configuratore — coefficienti"). PLACEHOLDER values pending confirmation
+ * by Enfrio engineering; the tower-m page parses and range-checks them.
+ */
+export type SizerCoefficients = {
+  unitKw: number;
+  footprintM2: number;
+  waterLpm: number;
+  weightT: number;
+  electricalKva: number;
+  factor: { diesel: number; gas: number; datacenter: number; custom: number };
+  doubleCircuit: number;
+  ambientDerate: { 30: number; 40: number; 50: number };
+  altitudeDerate: { low: number; med: number; high: number };
+};
 
-const APPLICATIONS = [
-  { value: "diesel", label: "Diesel genset", factor: 0.85 },
-  { value: "gas", label: "Gas engine", factor: 0.75 },
-  { value: "datacenter", label: "Datacenter IT load", factor: 1.0 },
-  { value: "custom", label: "Custom (1:1)", factor: 1.0 },
-] as const;
-type ApplicationValue = (typeof APPLICATIONS)[number]["value"];
+/** Interface texts of the simulator, from the Kiwi panel. */
+export type SizerText = {
+  power: string;
+  application: string;
+  app_diesel: string;
+  app_gas: string;
+  app_datacenter: string;
+  app_custom: string;
+  circuit: string;
+  circuit_single: string;
+  circuit_double: string;
+  ambient: string;
+  altitude: string;
+  alt_low: string;
+  alt_med: string;
+  alt_high: string;
+  redundancy: string;
+  redundancy_hint: string;
+  hud_title: string;
+  hud_footprint: string;
+  hud_water: string;
+  hud_weight: string;
+  hud_electrical: string;
+  card_kicker: string;
+  card_heat: string;
+  card_footprint: string;
+  card_circuits_value: string;
+  card_circuits: string;
+  tag1: string;
+  tag2: string;
+  tag3: string;
+  tag4: string;
+  build_kicker: string;
+  module_one: string;
+  module_many: string;
+  config_1: string;
+  config_4: string;
+  config_8: string;
+  config_more: string;
+  footprint_word: string;
+  status_online: string;
+  status_module: string;
+  status_modules: string;
+  status_redundant: string;
+  status_base: string;
+  metric_heat: string;
+  metric_capacity: string;
+  metric_derated: string;
+  metric_headroom: string;
+  note: string;
+  cta: string;
+  share: string;
+  share_copied: string;
+  share_error: string;
+};
 
-const AMBIENT_TEMPS = [
-  { value: 30, label: "30 °C", derate: 1.0 },
-  { value: 40, label: "40 °C", derate: 0.95 },
-  { value: 50, label: "50 °C", derate: 0.88 },
-];
+const APPLICATION_VALUES = ["diesel", "gas", "datacenter", "custom"] as const;
+type ApplicationValue = (typeof APPLICATION_VALUES)[number];
 
-const ALTITUDES = [
-  { value: "low", label: "< 1 km", derate: 1.0 },
-  { value: "med", label: "1 – 2 km", derate: 0.96 },
-  { value: "high", label: "> 2 km", derate: 0.92 },
-] as const;
-type AltitudeValue = (typeof ALTITUDES)[number]["value"];
+const AMBIENT_VALUES = [30, 40, 50] as const;
 
-function configFor(units: number): string {
-  if (units <= 1) return "Standalone unit";
-  if (units <= 4) return "Vertical bank";
-  if (units <= 8) return "Dual-bank array";
-  return "Custom large array";
-}
+const ALTITUDE_VALUES = ["low", "med", "high"] as const;
+type AltitudeValue = (typeof ALTITUDE_VALUES)[number];
 
-function footprintFor(units: number): string {
-  return `${(units * 12).toLocaleString("en-US")} m²`;
-}
+type SizerProps = {
+  text: SizerText;
+  coefficients: SizerCoefficients;
+  /** Canonical M Tower render used for the module cards. */
+  moduleImg: string;
+};
 
-export default function MTowerSizer() {
+export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODULE_IMG }: SizerProps) {
+  const UNIT_KW = k.unitKw;
+
+  const APPLICATIONS = useMemo(
+    () => [
+      { value: "diesel" as const, label: t.app_diesel, factor: k.factor.diesel },
+      { value: "gas" as const, label: t.app_gas, factor: k.factor.gas },
+      { value: "datacenter" as const, label: t.app_datacenter, factor: k.factor.datacenter },
+      { value: "custom" as const, label: t.app_custom, factor: k.factor.custom },
+    ],
+    [t, k],
+  );
+
+  const AMBIENT_TEMPS = useMemo(
+    () => AMBIENT_VALUES.map((value) => ({ value, label: `${value} °C`, derate: k.ambientDerate[value] })),
+    [k],
+  );
+
+  const ALTITUDES = useMemo(
+    () => [
+      { value: "low" as const, label: t.alt_low, derate: k.altitudeDerate.low },
+      { value: "med" as const, label: t.alt_med, derate: k.altitudeDerate.med },
+      { value: "high" as const, label: t.alt_high, derate: k.altitudeDerate.high },
+    ],
+    [t, k],
+  );
+
+  const configFor = (units: number): string => {
+    if (units <= 1) return t.config_1;
+    if (units <= 4) return t.config_4;
+    if (units <= 8) return t.config_8;
+    return t.config_more;
+  };
+
+  const footprintFor = (units: number): string =>
+    `${(units * k.footprintM2).toLocaleString("en-US")} m²`;
+
   const [power, setPower] = useState(3000);
   const [application, setApplication] = useState<ApplicationValue>("diesel");
   const [circuit, setCircuit] = useState<"single" | "double">("single");
@@ -57,14 +146,14 @@ export default function MTowerSizer() {
     const p = Number(params.get("power"));
     if (Number.isFinite(p) && p >= 100 && p <= 100000) setPower(p);
     const a = params.get("application");
-    if (APPLICATIONS.some((opt) => opt.value === a))
+    if (APPLICATION_VALUES.some((v) => v === a))
       setApplication(a as ApplicationValue);
     const c = params.get("circuit");
     if (c === "single" || c === "double") setCircuit(c);
     const amb = Number(params.get("ambient"));
-    if (AMBIENT_TEMPS.some((t) => t.value === amb)) setAmbient(amb);
+    if (AMBIENT_VALUES.some((v) => v === amb)) setAmbient(amb);
     const alt = params.get("altitude");
-    if (ALTITUDES.some((opt) => opt.value === alt))
+    if (ALTITUDE_VALUES.some((v) => v === alt))
       setAltitude(alt as AltitudeValue);
     if (params.get("redundancy") === "1") setRedundancy(true);
   }, []);
@@ -120,7 +209,7 @@ export default function MTowerSizer() {
     const appFactor = APPLICATIONS.find((a) => a.value === application)?.factor ?? 1;
     const ambientDerate = AMBIENT_TEMPS.find((a) => a.value === ambient)?.derate ?? 1;
     const altDerate = ALTITUDES.find((a) => a.value === altitude)?.derate ?? 1;
-    const circuitMul = circuit === "double" ? 1.05 : 1;
+    const circuitMul = circuit === "double" ? k.doubleCircuit : 1;
     const heat = Math.round(Math.max(0, power) * appFactor * circuitMul);
     const effectiveUnitKw = Math.round(UNIT_KW * ambientDerate * altDerate);
     const baseUnits = Math.max(1, Math.ceil(heat / effectiveUnitKw));
@@ -129,7 +218,7 @@ export default function MTowerSizer() {
     const headroom = capacity - heat;
     const headroomPct = heat > 0 ? Math.round((headroom / heat) * 100) : 0;
     return { heat, units, baseUnits, effectiveUnitKw, capacity, headroom, headroomPct };
-  }, [power, application, circuit, ambient, altitude, redundancy]);
+  }, [power, application, circuit, ambient, altitude, redundancy, APPLICATIONS, AMBIENT_TEMPS, ALTITUDES, UNIT_KW, k.doubleCircuit]);
 
   const ctaHref = useMemo(() => {
     const summary =
@@ -162,7 +251,7 @@ export default function MTowerSizer() {
       message: summary,
     });
     return `/contact?${params.toString()}#contact-form`;
-  }, [power, application, circuit, ambient, altitude, redundancy, result]);
+  }, [power, application, circuit, ambient, altitude, redundancy, result, APPLICATIONS, ALTITUDES]);
 
   const totalUnits = result.units;
   const spareIndex = redundancy ? totalUnits - 1 : -1;
@@ -172,42 +261,43 @@ export default function MTowerSizer() {
   // flashes lime for 200ms and the <AnimatedNumber> re-tweens to the new
   // value (see AnimatedNumber: it watches its `value` prop and re-animates
   // on every change once it has entered the viewport).
-  // TODO: Confirm coefficients with Enfrio engineering (footprint m²,
-  // water flow L/min, weight t, electrical draw kVA are placeholders).
+  // Coefficients (footprint m², water flow L/min, weight t, electrical
+  // draw kVA) come from the Kiwi panel: placeholders until Enfrio
+  // engineering confirms them there.
   const hudRows = useMemo(
     () => [
       {
         key: "thermal",
         label: "Thermal capacity",
-        value: result.units * 1500,
+        value: result.units * UNIT_KW,
         suffix: " kW",
         format: "int" as const,
       },
       {
         key: "footprint",
-        label: "Footprint",
-        value: result.units * 12,
+        label: t.hud_footprint,
+        value: result.units * k.footprintM2,
         suffix: " m²",
         format: "float" as const,
       },
       {
         key: "water",
-        label: "Water flow",
-        value: result.units * 240,
+        label: t.hud_water,
+        value: result.units * k.waterLpm,
         suffix: " L/min",
         format: "int" as const,
       },
       {
         key: "weight",
-        label: "Weight",
-        value: result.units * 1.85,
+        label: t.hud_weight,
+        value: result.units * k.weightT,
         suffix: " t",
         format: "float" as const,
       },
       {
         key: "electrical",
-        label: "Electrical draw",
-        value: result.units * 18,
+        label: t.hud_electrical,
+        value: result.units * k.electricalKva,
         suffix: " kVA",
         format: "int" as const,
       },
@@ -219,7 +309,7 @@ export default function MTowerSizer() {
         format: "int" as const,
       },
     ],
-    [result.units, redundancy],
+    [result.units, redundancy, t, k, UNIT_KW],
   );
 
   // Per-row 200ms lime flash whenever the row's underlying value changes.
@@ -262,7 +352,7 @@ export default function MTowerSizer() {
       <div className="cfg-input">
         <div className="cfg-power">
           <div className="cfg-power-head">
-            <span className="cfg-label">Engine power</span>
+            <span className="cfg-label">{t.power}</span>
             <span className="cfg-power-value">
               <strong>{power.toLocaleString("en-US")}</strong>
               <span> kW</span>
@@ -299,7 +389,7 @@ export default function MTowerSizer() {
         </div>
 
         <fieldset className="cfg-segmented">
-          <legend className="cfg-label">Application</legend>
+          <legend className="cfg-label">{t.application}</legend>
           <div className="cfg-segmented-row">
             {APPLICATIONS.map((a) => (
               <button
@@ -316,7 +406,7 @@ export default function MTowerSizer() {
         </fieldset>
 
         <fieldset className="cfg-segmented">
-          <legend className="cfg-label">Circuit</legend>
+          <legend className="cfg-label">{t.circuit}</legend>
           <div className="cfg-segmented-row two">
             <button
               type="button"
@@ -324,7 +414,7 @@ export default function MTowerSizer() {
               onClick={() => setCircuit("single")}
               aria-pressed={circuit === "single"}
             >
-              Single (HT)
+              {t.circuit_single}
             </button>
             <button
               type="button"
@@ -332,31 +422,31 @@ export default function MTowerSizer() {
               onClick={() => setCircuit("double")}
               aria-pressed={circuit === "double"}
             >
-              Double (HT + LT)
+              {t.circuit_double}
             </button>
           </div>
         </fieldset>
 
         <div className="cfg-row">
           <fieldset className="cfg-segmented">
-            <legend className="cfg-label">Ambient temperature</legend>
+            <legend className="cfg-label">{t.ambient}</legend>
             <div className="cfg-segmented-row">
-              {AMBIENT_TEMPS.map((t) => (
+              {AMBIENT_TEMPS.map((opt) => (
                 <button
-                  key={t.value}
+                  key={opt.value}
                   type="button"
-                  className={`cfg-seg ${ambient === t.value ? "active" : ""}`}
-                  onClick={() => setAmbient(t.value)}
-                  aria-pressed={ambient === t.value}
+                  className={`cfg-seg ${ambient === opt.value ? "active" : ""}`}
+                  onClick={() => setAmbient(opt.value)}
+                  aria-pressed={ambient === opt.value}
                 >
-                  {t.label}
+                  {opt.label}
                 </button>
               ))}
             </div>
           </fieldset>
 
           <fieldset className="cfg-segmented">
-            <legend className="cfg-label">Altitude</legend>
+            <legend className="cfg-label">{t.altitude}</legend>
             <div className="cfg-segmented-row">
               {ALTITUDES.map((a) => (
                 <button
@@ -381,8 +471,8 @@ export default function MTowerSizer() {
           />
           <span className="cfg-toggle-slider" aria-hidden="true" />
           <span className="cfg-toggle-label">
-            <strong>N+1 redundancy</strong>
-            <em>Add one spare module for hot-swap continuity</em>
+            <strong>{t.redundancy}</strong>
+            <em>{t.redundancy_hint}</em>
           </span>
         </label>
 
@@ -392,7 +482,7 @@ export default function MTowerSizer() {
         <aside className="cfg-hud" aria-label="Live build specifications">
           <header className="cfg-hud-head">
             <span className="cfg-hud-led" aria-hidden="true" />
-            <p className="cfg-hud-title">LIVE BUILD READOUT</p>
+            <p className="cfg-hud-title">{t.hud_title}</p>
           </header>
           <div className="cfg-hud-grid">
             {hudRows
@@ -417,17 +507,17 @@ export default function MTowerSizer() {
         </aside>
 
         <div className="cfg-product-card">
-          <p className="kicker">SINGLE M TOWER MODULE</p>
+          <p className="kicker">{t.card_kicker}</p>
           <ul className="cfg-product-specs">
-            <li><strong>1,500 kW</strong><span>heat rejection</span></li>
-            <li><strong>~12 m²</strong><span>footprint</span></li>
-            <li><strong>HT / HT+LT</strong><span>circuits</span></li>
+            <li><strong>{`${UNIT_KW.toLocaleString("en-US")} kW`}</strong><span>{t.card_heat}</span></li>
+            <li><strong>{`~${k.footprintM2.toLocaleString("en-US")} m²`}</strong><span>{t.card_footprint}</span></li>
+            <li><strong>{t.card_circuits_value}</strong><span>{t.card_circuits}</span></li>
           </ul>
           <p className="cfg-product-tags">
-            <span>Container-fit</span>
-            <span>Sea-water</span>
-            <span>ATEX-ready</span>
-            <span>Inverter-ready</span>
+            <span>{t.tag1}</span>
+            <span>{t.tag2}</span>
+            <span>{t.tag3}</span>
+            <span>{t.tag4}</span>
           </p>
         </div>
       </div>
@@ -435,13 +525,13 @@ export default function MTowerSizer() {
       {/* === OUTPUT PANEL: photoreal build === */}
       <div className="cfg-output" aria-live="polite">
         <div className="cfg-headline">
-          <p className="kicker">YOUR M TOWER BUILD</p>
+          <p className="kicker">{t.build_kicker}</p>
           <p className="cfg-headline-main">
             <strong>{result.units}</strong>
-            <span>{result.units === 1 ? "module" : "modules"}</span>
+            <span>{result.units === 1 ? t.module_one : t.module_many}</span>
           </p>
           <p className="cfg-headline-sub">
-            {configFor(result.units)} · {footprintFor(result.units)} footprint
+            {configFor(result.units)} · {footprintFor(result.units)} {t.footprint_word}
           </p>
         </div>
 
@@ -523,10 +613,10 @@ export default function MTowerSizer() {
                   state at a glance. Lime LED + monospaced segments. */}
               <div className="cfg-stage-status" aria-hidden="true">
                 <span className="cfg-stage-status-led" />
-                <span className="cfg-stage-status-seg">BANK ONLINE</span>
+                <span className="cfg-stage-status-seg">{t.status_online}</span>
                 <span className="cfg-stage-status-sep">·</span>
                 <span className="cfg-stage-status-seg">
-                  {totalUnits} {totalUnits === 1 ? "MODULE" : "MODULES"}
+                  {totalUnits} {totalUnits === 1 ? t.status_module : t.status_modules}
                 </span>
                 <span className="cfg-stage-status-sep">·</span>
                 <span className="cfg-stage-status-seg">
@@ -534,7 +624,7 @@ export default function MTowerSizer() {
                 </span>
                 <span className="cfg-stage-status-sep">·</span>
                 <span className="cfg-stage-status-seg">
-                  {redundancy ? "N+1 READY" : "BASELOAD"}
+                  {redundancy ? t.status_redundant : t.status_base}
                 </span>
               </div>
 
@@ -552,25 +642,25 @@ export default function MTowerSizer() {
 
         <div className="cfg-metrics">
           <article className="cfg-metric">
-            <span className="cfg-metric-label">Estimated heat load</span>
+            <span className="cfg-metric-label">{t.metric_heat}</span>
             <span className="cfg-metric-value">
               {result.heat.toLocaleString("en-US")} <small>kW</small>
             </span>
           </article>
           <article className="cfg-metric">
-            <span className="cfg-metric-label">Effective capacity</span>
+            <span className="cfg-metric-label">{t.metric_capacity}</span>
             <span className="cfg-metric-value">
               {result.capacity.toLocaleString("en-US")} <small>kW</small>
             </span>
           </article>
           <article className="cfg-metric">
-            <span className="cfg-metric-label">Per-module derated</span>
+            <span className="cfg-metric-label">{t.metric_derated}</span>
             <span className="cfg-metric-value">
               {result.effectiveUnitKw.toLocaleString("en-US")} <small>kW</small>
             </span>
           </article>
           <article className="cfg-metric">
-            <span className="cfg-metric-label">Headroom</span>
+            <span className="cfg-metric-label">{t.metric_headroom}</span>
             <span className="cfg-metric-value">
               +{Math.max(0, result.headroomPct)}
               <small>%</small>
@@ -578,15 +668,11 @@ export default function MTowerSizer() {
           </article>
         </div>
 
-        <p className="cfg-note">
-          Indicative figures. Derate factors: ambient +10 °C ≈ −5 to −7%,
-          altitude &gt; 2000 m ≈ −8%. Final sizing is confirmed by Enfrio
-          engineering on actual platform data.
-        </p>
+        <p className="cfg-note">{t.note}</p>
 
         <div className="cfg-cta">
           <Link className="btn solid magnetic" href={ctaHref}>
-            Send this configuration to Enfrio engineering →
+            {t.cta}
           </Link>
           <button
             type="button"
@@ -595,10 +681,10 @@ export default function MTowerSizer() {
             aria-live="polite"
           >
             {shareStatus === "copied"
-              ? "✓ Link copied"
+              ? t.share_copied
               : shareStatus === "error"
-                ? "Copy failed — try again"
-                : "Save & share configuration"}
+                ? t.share_error
+                : t.share}
           </button>
         </div>
       </div>

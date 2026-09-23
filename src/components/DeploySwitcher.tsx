@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ReactElement } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 
 type ContextKey = "data-center" | "petrochemical" | "power-gen" | "hvac";
 
@@ -25,6 +25,28 @@ type IconKey =
   | "control";
 
 type Spec = { label: string; value: string; icon: IconKey };
+
+/** Texts of one context tab, from the Kiwi panel (tower-m page). */
+export type DeployContextContent = {
+  tab: string;
+  blurb: string;
+  spec1_label: string;
+  spec1_value: string;
+  spec2_label: string;
+  spec2_value: string;
+  spec3_label: string;
+  spec3_value: string;
+  spec4_label: string;
+  spec4_value: string;
+};
+
+export type DeploySwitcherContent = {
+  /** Same order as CONTEXTS: data center, petrochemical, power gen, HVAC. */
+  contexts: [DeployContextContent, DeployContextContent, DeployContextContent, DeployContextContent];
+  unitAlt: string;
+  /** Canonical M Tower render (shown on the data center tab). */
+  renderSrc: string;
+};
 
 type ContextDef = {
   key: ContextKey;
@@ -151,60 +173,32 @@ const DistrictPlant = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const CONTEXTS: ContextDef[] = [
+/* Structure of each context (icons, silhouette, render angle). The texts
+   come from the Kiwi panel through props and are merged in below. */
+type ContextShape = Omit<ContextDef, "label" | "blurb" | "specs"> & { icons: IconKey[] };
+
+const CONTEXTS: ContextShape[] = [
   {
     key: "data-center",
-    label: "Data Center",
-    blurb:
-      "High-density compute halls. Glycol loop tuned for IT-load profiles, N+1 from day one, ready for liquid-cooled rack expansion.",
-    specs: [
-      { label: "Design ambient", value: "32 °C", icon: "thermometer" },
-      { label: "Glycol mix", value: "30%", icon: "droplet" },
-      { label: "Fans", value: "EC only", icon: "fan" },
-      { label: "Redundancy", value: "N+1 standard", icon: "shield" },
-    ],
+    icons: ["thermometer", "droplet", "fan", "shield"],
     silhouette: ServerHall,
-    unitSrc: "/assets/images/site/mtower-render.png", // canonical clean PNG, hero portrait
+    unitSrc: "/assets/images/site/mtower-render.png", // canonical clean PNG, hero portrait (overridden by the panel's render)
   },
   {
     key: "petrochemical",
-    label: "Petrochemical",
-    blurb:
-      "ATEX zone-rated cooling. Sea-water-proof galvanizing, gas-tight enclosures, fan motors certified for hazardous duty.",
-    specs: [
-      { label: "Zoning", value: "ATEX II 3G", icon: "zone" },
-      { label: "Coating", value: "Hot-dip Zn", icon: "coating" },
-      { label: "Fans", value: "Ex-d rated", icon: "fan" },
-      { label: "Coil", value: "Cu / epoxy", icon: "coil" },
-    ],
+    icons: ["zone", "coating", "fan", "coil"],
     silhouette: Refinery,
     unitSrc: frame(8), // slight rotation toward side
   },
   {
     key: "power-gen",
-    label: "Power Generation",
-    blurb:
-      "One M Tower per genset, bank up as the site grows. Tracks engine jacket-water load with proportional fan staging.",
-    specs: [
-      { label: "Engine pair", value: "1.5 MW", icon: "engine" },
-      { label: "Bank max", value: "12 MW", icon: "stack" },
-      { label: "Staging", value: "Proportional", icon: "staging" },
-      { label: "Footprint", value: "Bolt pattern", icon: "footprint" },
-    ],
+    icons: ["engine", "stack", "staging", "footprint"],
     silhouette: GensetRow,
     unitSrc: frame(18), // more side view (inverter cabinet visible)
   },
   {
     key: "hvac",
-    label: "HVAC District",
-    blurb:
-      "District heating and cooling loops. Wide-delta-T trim, low-noise fan curve, ready for variable secondary distribution.",
-    specs: [
-      { label: "Loop delta-T", value: "12 K", icon: "loop" },
-      { label: "Sound", value: "Low-noise", icon: "sound" },
-      { label: "Control", value: "BMS / Modbus", icon: "control" },
-      { label: "Glycol", value: "0 – 40%", icon: "droplet" },
-    ],
+    icons: ["loop", "sound", "control", "droplet"],
     silhouette: DistrictPlant,
     unitSrc: frame(28), // side-back, manifold visible (HVAC piping vibe)
   },
@@ -336,8 +330,30 @@ function SpecIcon({ name, className }: { name: IconKey; className?: string }) {
   }
 }
 
-export default function DeploySwitcher() {
+export default function DeploySwitcher({ content }: { content: DeploySwitcherContent }) {
   const [active, setActive] = useState<ContextKey>("data-center");
+
+  const contexts: ContextDef[] = useMemo(
+    () =>
+      CONTEXTS.map((ctx, i) => {
+        const t = content.contexts[i];
+        const specText = [
+          [t.spec1_label, t.spec1_value],
+          [t.spec2_label, t.spec2_value],
+          [t.spec3_label, t.spec3_value],
+          [t.spec4_label, t.spec4_value],
+        ];
+        return {
+          key: ctx.key,
+          silhouette: ctx.silhouette,
+          unitSrc: i === 0 ? content.renderSrc : ctx.unitSrc,
+          label: t.tab,
+          blurb: t.blurb,
+          specs: ctx.icons.map((icon, j) => ({ icon, label: specText[j][0], value: specText[j][1] })),
+        };
+      }),
+    [content],
+  );
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const setActiveByIndex = useCallback((i: number) => {
@@ -368,7 +384,7 @@ export default function DeploySwitcher() {
     [setActiveByIndex]
   );
 
-  const current = CONTEXTS.find((c) => c.key === active) ?? CONTEXTS[0];
+  const current = contexts.find((c) => c.key === active) ?? contexts[0];
 
   useEffect(() => {
     // no-op placeholder for future analytics hooks
@@ -381,7 +397,7 @@ export default function DeploySwitcher() {
         role="tablist"
         aria-label="Deployment contexts"
       >
-        {CONTEXTS.map((ctx, i) => {
+        {contexts.map((ctx, i) => {
           const selected = ctx.key === active;
           return (
             <button
@@ -411,7 +427,7 @@ export default function DeploySwitcher() {
         aria-labelledby={`deploy-tab-${current.key}`}
       >
         <div className="deploy-switcher-silhouettes" aria-hidden="true">
-          {CONTEXTS.map((ctx) => {
+          {contexts.map((ctx) => {
             const Sil = ctx.silhouette;
             return (
               <Sil
@@ -429,7 +445,7 @@ export default function DeploySwitcher() {
             new perspective, not pops. Keyed on `current.unitSrc` so React
             re-mounts the visible img and replays the fade-in. */}
         <div className="deploy-switcher-unit-wrap" aria-hidden="false">
-          {CONTEXTS.map((ctx) => (
+          {contexts.map((ctx) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={ctx.key}
@@ -437,7 +453,7 @@ export default function DeploySwitcher() {
                 ctx.key === active ? " is-active" : ""
               }`}
               src={ctx.unitSrc}
-              alt={ctx.key === active ? "M Tower modular cooling unit" : ""}
+              alt={ctx.key === active ? content.unitAlt : ""}
               loading="lazy"
               draggable={false}
             />
@@ -448,8 +464,8 @@ export default function DeploySwitcher() {
       <p className="deploy-switcher-blurb">{current.blurb}</p>
 
       <ul className="deploy-switcher-specs">
-        {current.specs.map((spec) => (
-          <li key={spec.label} className="deploy-switcher-spec">
+        {current.specs.map((spec, j) => (
+          <li key={j} className="deploy-switcher-spec">
             <span className="deploy-switcher-spec-icon">
               <SpecIcon name={spec.icon} />
             </span>
