@@ -41,18 +41,16 @@ periodica legge solo la cache dati (nessuna chiamata a Kiwi) salvo i blocchi mai
   risposta al visitatore in 3 ms). Un blocco mai letto con successo mostra il default.
   Nei log compaiono righe `revalidating cache with key: ...` (di Next, una per blocco): innocue.
 - **Kiwi non configurato** (`KIWI_COMPANY_ID` assente, es. build locale) → tutti i default.
-- **Rate limit Kiwi** (`/api/site/block`: 120 richieste/min per IP+company, in memoria): 666
-  blocchi non si leggono in un colpo. Il primo 429 apre il breaker, i blocchi restanti usano
-  l'ultimo valore buono o il default, e la rigenerazione successiva (dopo 60 s, alla prima visita)
-  completa il resto. Dopo una pubblicazione la pagina M Tower (~260 blocchi con menu e footer) può
-  impiegare qualche minuto ad aggiornarsi del tutto; le altre pagine pochi secondi.
-  **La cura vera è `GET /api/site/blocks`** (un altro agente lo sta aggiungendo a kiwi-network): il sito
-  lo usa già appena risponde 200 — provato con un finto Kiwi locale: 1 richiesta per worker di build,
-  i blocchi assenti dalla risposta letti uno per uno. Finché risponde 404 il sito non lo richiede per 10 min.
-- **CDN di Kiwi**: `/api/site/block` e `/api/site/collections` rispondono `public, s-maxage=30,
-  stale-while-revalidate=60`, quindi per ~90 s dopo una modifica il CDN restituisce il valore vecchio (visto
-  in preview). Il sito aggiunge un parametro `_kv` diverso a ogni lettura per andare sempre all'origine:
-  la cache la fa già il sito.
+- **Lettura in blocco, verificata in produzione il 23 set 2026**: `GET /api/site/blocks` (kiwi-network
+  PR #245/#246) risponde 200 con tutti i 666 blocchi in ~0,3-0,8 s. Prova: webhook di revalidate + visita
+  delle 10 pagine → nei log di kiwi-network 1-2 richieste a `/api/site/blocks` e **zero** a
+  `/api/site/block` (la cache dati è condivisa fra le pagine: una lettura serve tutta la rigenerazione).
+  Le letture singole restano solo come ripiego (endpoint in blocco assente → non lo richiede per 10 min,
+  o slug mancante nella risposta). Rate limit: 60/min sulla lettura in blocco, 120/min su quella singola.
+- **Kiwi dal 23 set**: `/api/site/block` e `/api/site/collections` sono `no-store` e rispondono **503**
+  quando il loro DB non risponde (prima: 200 col default). Il sito tratta 503/429 come "Kiwi giù"
+  (breaker, ultimo valore buono); l'euristica sull'header che serviva prima è stata tolta. Il parametro
+  `_kv` resta (Kiwi lo ignora).
 - **Build cache Vercel**: `next build` usa la cache dati di `.next/cache` ripristinata dal deploy precedente,
   che non sa nulla delle pubblicazioni successive. Un deploy può quindi partire con testi vecchi per la
   prima rigenerazione (≤ 60 s + la visita successiva). Con l'endpoint in blocco si può leggere tutto fresco
@@ -78,6 +76,7 @@ su prod e preview: stessi moduli, metriche, barra di stato e link verso Contatti
 `KIWI_COMPANY_ID`, `KIWI_API_BASE` (= `https://app.kiwienterprise.it`), `KIWI_REVALIDATE_SECRET`
 (sensitive, uguale a `companies.site_revalidate_secret`). Nessuna `NEXT_PUBLIC_*`: il form scrive
 lato server. Già presenti prima: nessuna (`SITE_URL` e `CONTACT_TO` hanno default nel codice).
+**Da aggiungere** per l'editor: `KIWI_EDIT_SHARED_SECRET` (vedi "Cosa manca" sotto).
 
 ## Aggiungere o cambiare un testo
 
@@ -90,51 +89,109 @@ lato server. Già presenti prima: nessuna (`SITE_URL` e `CONTACT_TO` hanno defau
    Il seed non tocca i valori già modificati dal cliente; un blocco mai toccato segue il nuovo default.
 4. Cambiare solo il default nel codice non cambia il sito: vince il valore nel database.
 
-## Cosa manca per l'editing da parte del cliente
+## Editor Kiwi: modifica cliccando sul sito (dal 23 set 2026)
 
-Oggi il pannello Kiwi modifica i blocchi **solo** con l'editor iframe (clic sul testo del sito
-vero, `products/kiwiweb/editor/[projectId]`). Per Enfrio servono ancora:
+In `main` dal 23 set 2026 (commit `59ba6fd` + `108bbd7`). Il pannello Kiwi modifica i blocchi con
+l'editor iframe (`products/kiwiweb/editor/[projectId]`): carica il sito vero e il cliente clicca sul testo.
 
-1. una riga `web_projects` per la company con `site_url = https://www.enfrio.it` ed
-   `editor_settings.iframe_edit_enabled = true`;
-2. `KIWI_EDIT_SHARED_SECRET` su Vercel (stesso valore di kiwi-network) e
-   `KIWI_EDIT_PARENT_ORIGIN=https://app.kiwienterprise.it`;
-3. l'overlay edit-in-place nel sito (skill `kiwiweb-site-integration`, `examples/edit-mode/`).
-   **Da non copiare così com'è**: `isEditMode()` legge i cookie nel layout e rende dinamico tutto
-   il sito (è ciò che fa apicoltura). Qui va fatto con `draftMode()` (le pagine restano statiche per
-   i visitatori) e il wrapper `<Editable>` va messo nel punto unico dove i blocchi vengono letti.
-   Tutti gli slug, le etichette e i tipi sono già nel registro.
+**Come funziona**
 
-Le collection si vedono nell'editor ("Elenchi"), ma il link per modificarle porta a
-`/workspace/admin/kiwiweb/<company>/items/<slug>`, pagina che in kiwi-network **non esiste**.
+1. L'editor apre `https://www.enfrio.it/<pagina>?kiwi_edit=1&token=<JWT>` (HS256, 5 min, rinnovato
+   ogni ~4 min). `src/proxy.ts` gira **solo** sugli URL con `kiwi_edit` (matcher con `has: query`,
+   nessuna chiamata di rete): passa il token a `/api/kiwi-edit/init`.
+2. `init` verifica firma (`KIWI_EDIT_SHARED_SECRET`), scadenza e company (= `KIWI_COMPANY_ID`), poi
+   accende `draftMode()` e mette il cookie `kiwi_edit_token`: entrambi `SameSite=None; Secure;
+   HttpOnly; Partitioned` (dentro l'iframe cross-site funzionano anche coi cookie di terze parti
+   bloccati, e non vengono mai mandati a chi apre www.enfrio.it direttamente). Redirect alla pagina
+   pulita, senza token nell'URL.
+3. In draft mode la pagina si genera a ogni richiesta con i valori freschi e `isEditing()` è vero:
+   gli elementi portano `data-kiwi-block/type/label/group` + `data-kiwi-no-drag="1"`, il layout
+   monta l'overlay e SiteShell il pannello "Altri testi della pagina".
+4. Uscita dall'editor (`KIWI_TERMINATE`, chiusura scheda): `/api/kiwi-edit/logout` spegne tutto.
+
+**Cosa può fare il cliente**: cliccare un testo e riscriverlo (anche i pulsanti, i link del footer, le
+etichette del form e del configuratore, i testi delle schede Data Center/Petrochemical/...); cliccare
+una foto e sceglierne un'altra dalla libreria; usare la barra degli stili dell'editor (salvati come
+`style_overrides` e applicati anche ai visitatori, con whitelist). I link del menu navigano fra le pagine,
+schede e configuratore restano interattivi. **Non può spostare o ridimensionare nulla** (scelta: il
+layout è disegnato al pixel). Tutto ciò che non ha un elemento cliccabile — SEO, testi alternativi,
+messaggi del form, coefficienti del configuratore, numeri animati, testi composti (indirizzo, copyright
+con `{year}`), le schede non visibili — sta nel pannello flottante in basso a sinistra, che mostra solo
+i blocchi della pagina non già cliccabili (con ricerca e "mostra tutti").
+
+**Per i visitatori non cambia nulla**: pagine statiche (○ in build), HTML identico a prod su tutte le
+10 pagine + 404, nessun chunk dell'editor scaricato (overlay 55 KB e pannello sono chunk separati
+caricati solo in modifica), risposte dal CDN (`X-Vercel-Cache: HIT`) con la stessa latenza di prima; su
+Vercel il middleware risulta invocato solo per le richieste con `kiwi_edit`.
+
+**Verificato in locale** con un JWT firmato da un segreto di prova e una finta pagina "editor" su
+un'altra origine (Chrome headless, protocollo postMessage vero): `KIWI_EDIT_READY` con 175 blocchi e le 8
+pagine; clic sul titolo → `KIWI_BLOCK_SELECTED` col valore del DB, digitazione → `KIWI_BLOCK_DIRTY`;
+pulsanti con testo maiuscolo via CSS letti col testo originale; clic su foto → libreria, nessuno
+spostamento; `KIWI_BLOCK_UPDATE` di testo e foto applicato; campo del pannello modificabile; navigazione
+dal menu e `KIWI_NAVIGATE`; schede e configuratore cliccabili; rinnovo token; `KIWI_TERMINATE` → pagina
+di nuovo pubblica; stesso browser, visita diretta → nessun attributo. Token sbagliato / di un'altra
+company → 401, nessun cookie; `next=//evil.com` → redirect a `/`.
+
+**Letture da Kiwi nell'editor**: in draft mode `unstable_cache` non legge né scrive la cache. Una lettura
+in blocco per rendering (non una per prefetch: le letture della stessa istanza sono condivise per 2 s),
+blocchi deduplicati per rendering, e se Kiwi rifiuta (429/5xx) resta l'ultima risposta buona invece dei
+testi di ripiego.
+
+**File**: `src/lib/kiwi-edit.ts` (verifica JWT, `isEditing`, `getEdit`/`getEditForClient`/`getEditorFields`,
+whitelist stili), `src/lib/kiwi-edit-session.ts`, `src/proxy.ts`, `src/app/api/kiwi-edit/{init,logout}`,
+`src/components/KiwiEditOverlay.tsx` (template della piattaforma + patch `ENFRIO:`, vedi intestazione),
+`KiwiEditMount.tsx`, `KiwiHiddenFields.tsx` (+ `Mount`), `EditSpan.tsx`.
+
+## Cosa manca perché il cliente modifichi davvero
+
+1. **`KIWI_EDIT_SHARED_SECRET` sul progetto Vercel `enfrio`** (Preview + Production, sensitive), stesso
+   valore di kiwi-network, poi un redeploy. Non è una shared env var del team (in kiwi-network è una
+   variabile di progetto, id `SfeM6oeBRUZXx5OG`, niente `sharedEnvVarId`): non si può collegare senza
+   leggerla, quindi va copiata a mano da chi ha accesso. Finché manca, la modalità modifica è spenta
+   (init non mette cookie, nessun attributo): no-op sicuro. `NEXT_PUBLIC_KIWI_EDIT_PARENT_ORIGIN` non serve
+   (default: app./www./kiwienterprise.it).
+2. **Un utente del cliente**: l'editor è aperto a owner/manager/editor della company o super_admin.
+   Enfrio oggi non ha membri: Christopher può già usarlo come super_admin; per il cliente serve un invito.
+3. Riga `web_projects` **fatta**: `02ffe84b-a4e2-4060-a75e-6a101edfb626` (company Enfrio,
+   `site_url = https://www.enfrio.it`, `editor_settings.iframe_edit_enabled = true`, stato `maintenance`,
+   modellata su quella di LSG).
+
+Le **collection** (gallerie e referenze progetti) non si modificano dall'editor: non sono blocchi, e il
+link "Elenchi" dell'editor porta a `/workspace/admin/kiwiweb/<company>/items/<slug>`, pagina che in
+kiwi-network **non esiste**. Per ora si cambiano dal database.
 
 ## Problemi della piattaforma trovati (kiwi-network, non toccato)
 
-1. **Manca una lettura in blocco**: serve `GET /api/site/blocks?company_id=` (una query, tutti i
-   blocchi con valore e tipo). Con 120 req/min per IP+company un sito con centinaia di testi non
-   può rileggerli in una rigenerazione. Quando esiste, `src/lib/kiwi.ts` diventa una richiesta sola.
-2. `src/app/api/site/block/route.ts` risponde **200 con il default** quando la sua lettura dal DB
-   fallisce (e anche se l'insert fallisce o si supera il tetto): il sito non distingue il valore vero
-   da quello di ripiego. Qui lo si riconosce dall'header (`no-store` / `max-age=0`) e lo si tratta
-   come errore; meglio che Kiwi risponda 503.
+1. ~~Manca una lettura in blocco~~ — **risolto** il 23 set (PR #245/#246), in uso in produzione.
+2. ~~`/api/site/block` risponde 200 col default se il DB fallisce~~ — **risolto** (ora 503, `no-store`).
 3. `/api/site/contact` ha il rate limit per IP del chiamante: col form lato server l'IP è quello
    della function Vercel, quindi il limite (5/min) vale per tutto il sito, non per visitatore.
    Per un sito B2B basta; da sapere.
 4. `/api/site/contact` manda l'email solo al membro `owner` della company: Enfrio non ha membri,
    quindi oggi Kiwi salva ma non avvisa nessuno. La mail arriva comunque da FormSubmit.
 5. Link "Elenchi" dell'editor verso una pagina admin inesistente (vedi sopra).
-6. `/api/site/block` e `/api/site/collections/[slug]` mandano `s-maxage=30, stale-while-revalidate=60`:
-   il CDN di Vercel serve il valore precedente fino a ~90 s dopo una modifica, proprio quando il webhook
-   di pubblicazione fa rileggere il sito. Il sito aggira con un parametro anti-cache; gli altri siti
-   clienti no.
-7. Tetto `MAX_AUTO_BLOCKS = 500`: Enfrio ha 666 blocchi, tutti inseriti via SQL (verificati: 666/666
-   presenti, md5 identico al registro), quindi nessuno dipende dall'auto-registrazione.
+6. ~~CDN 30-90 s su `/api/site/block` e `/api/site/collections`~~ — **risolto** (ora `no-store`).
+7. Tetto `MAX_AUTO_BLOCKS = 500` (in salita a 2000 secondo il coordinatore): Enfrio ha 666 blocchi, tutti
+   inseriti via SQL (verificati: 666/666 presenti, md5 identico al registro), quindi nessuno dipende
+   dall'auto-registrazione.
+8. **Il template dell'overlay non compila così com'è** (`public/skill-templates/edit-mode/KiwiEditOverlay.tsx`,
+   v2.11.1): riga 23 del commento iniziale contiene `src/app/**/page.tsx`, e quel `*/` chiude il commento;
+   dentro il `<style jsx global>` (dalla riga ~2199, "cosi\` non interferisce") i commenti CSS usano il
+   backtick come accento e chiudono il template literal. Qui corretto nella copia (patch `ENFRIO:` 11-12);
+   chi copia il template in un altro sito si trova lo stesso errore di build.
+9. Il template legge il testo con `innerText`, che applica `text-transform` del CSS: su un occhiello o un
+   pulsante in maiuscolo via CSS, un semplice clic + blur salverebbe il testo tutto maiuscolo. Qui corretto
+   (`readRawText`); da portare nel template.
 
 ## Da sapere
 
 - Test del form: una sola richiesta finta mandata direttamente a Kiwi (niente FormSubmit, nessuna
   email): `web_contact_submissions.id = 7654f029-8f15-40f0-9707-64d62df4f1e9`, nome
-  "TEST KIWI - ignorare". È ancora lì: la può cancellare Christopher dal pannello.
+  "TEST KIWI - ignorare". Il 23 set è stata messa in `status = archived` ma **non cancellata** (la
+  cancellazione definitiva di dati non la fa l'agente): la può cancellare Christopher dal pannello.
+- Controllo di parità fra due siti live: `PARITY_COOKIE="_vercel_jwt=..." node scripts/parity-check.mjs
+  <preview> https://www.enfrio.it` (il cookie si ottiene aprendo il link di condivisione della preview).
 - Privacy: il form ora conserva i dati anche su Kiwi (Kiwi Network SRL + Supabase/Vercel). La pagina
   privacy elenca Vercel e FormSubmit: va deciso se aggiungere Kiwi. C'è già il blocco facoltativo
   `legal_recipients_processor_4` (vuoto = non mostrato), così non serve toccare il codice.
