@@ -219,21 +219,12 @@ const cachedAllBlocks = unstable_cache(fetchAllBlocks.bind(null), ["kiwi-blocks-
   revalidate: false,
 });
 
-// `next build` reads the data cache restored from the previous deploy's build
-// cache (.next/cache), which never sees the panel's publishes. Pages catch up
-// at their first regeneration, but the 404 page is a static file that no
-// regeneration touches: it would keep the first snapshot ever cached, deploy
-// after deploy. So each deploy's build reads Kiwi once more, under a key of
-// its own (runtime keeps the stable key above); Kiwi down → last snapshot.
-const DEPLOY_ID = IS_BUILD
-  ? (process.env.VERCEL_DEPLOYMENT_ID ?? process.env.VERCEL_GIT_COMMIT_SHA ?? "").trim()
-  : "";
-const cachedAllBlocksThisDeploy = DEPLOY_ID
-  ? unstable_cache(fetchAllBlocks.bind(null), ["kiwi-blocks-all-v2", `build-${DEPLOY_ID}`], {
-      tags: [KIWI_TAG],
-      revalidate: false,
-    })
-  : null;
+// No fresh read of Kiwi per build or per deploy, on purpose: the Kiwi editor
+// saves drafts straight into the block value before "Pubblica", so any read
+// outside the publish webhook would put every saved draft online. Builds and
+// regenerations use the stable key above only; new values arrive when the
+// webhook marks the `kiwi` tag stale. (The 404 is a static file: it shows what
+// that cache holds when the deploy is built.)
 
 // Draft mode (Kiwi editor) skips unstable_cache: every render, and every
 // router prefetch of the menu links, would read Kiwi again (the bulk endpoint
@@ -253,17 +244,7 @@ async function inDraftMode(): Promise<boolean> {
 }
 
 async function readAllBlocks(): Promise<BulkBlocks> {
-  if (!(await inDraftMode())) {
-    if (cachedAllBlocksThisDeploy) {
-      try {
-        return await cachedAllBlocksThisDeploy(COMPANY_ID);
-      } catch (err) {
-        if (err instanceof BulkUnsupportedError) throw err;
-        // Kiwi down during the build: the last snapshot, below.
-      }
-    }
-    return cachedAllBlocks(COMPANY_ID);
-  }
+  if (!(await inDraftMode())) return cachedAllBlocks(COMPANY_ID);
   if (!editRead || Date.now() - editRead.at > EDIT_SHARE_MS) {
     // Short timeout: the editor is waiting (the cache is skipped in draft mode).
     editRead = { at: Date.now(), promise: cachedAllBlocks(COMPANY_ID, EDIT_TIMEOUT_MS) };

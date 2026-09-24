@@ -56,16 +56,15 @@ periodica legge solo la cache dati (nessuna chiamata a Kiwi) salvo i blocchi mai
   quando il loro DB non risponde (prima: 200 col default). Il sito tratta 503/429 come "Kiwi giù"
   (breaker, ultimo valore buono); l'euristica sull'header che serviva prima è stata tolta. Il parametro
   `_kv` resta (Kiwi lo ignora).
-- **Build cache Vercel**: `next build` usa la cache dati di `.next/cache` ripristinata dal deploy precedente,
-  che non sa nulla delle pubblicazioni successive. Dal 24 set la build rilegge i blocchi in blocco **una volta
-  per deploy** (chiave con `VERCEL_DEPLOYMENT_ID`, ripiego su `VERCEL_GIT_COMMIT_SHA`); se Kiwi è giù in quel
-  momento usa l'ultima fotografia della cache. Le collection restano sulla cache (le pagine le rileggono alla
-  prima rigenerazione). In locale non c'è l'id del deploy: per una build locale fresca cancellare
-  `.next/cache/fetch-cache`.
+- **Build e deploy non rileggono Kiwi**: `next build` legge i blocchi dalla cache dati con la stessa chiave
+  stabile del runtime, mai freschi. L'editor Kiwi salva le bozze direttamente nel valore del blocco prima di
+  "Pubblica": una lettura fuori dal webhook metterebbe online tutte le bozze salvate fin lì. La revisione del
+  24 set aveva aggiunto una rilettura per deploy (chiave con `VERCEL_DEPLOYMENT_ID`): **tolta** nel merge con
+  main per questo motivo. Non rimetterla. I valori nuovi arrivano solo col webhook.
 - **La pagina 404 è un file statico** (Vercel la serve come `/404` fuori dall'ISR): nessuna pubblicazione e
-  nessuna rigenerazione la aggiornano, **solo il deploy successivo** (che ora legge Kiwi fresco, vedi sopra).
-  Vale per i testi del gruppo "Pagina 404 (online solo dal prossimo aggiornamento del sito)" e anche per
-  menu, footer e dati aziendali mostrati sulla 404. Per portarla online subito: un redeploy da Vercel.
+  nessuna rigenerazione la aggiornano; mostra quello che la cache dati contiene quando si costruisce il
+  deploy. Vale per i testi del gruppo "Pagina 404 (online solo dal prossimo aggiornamento del sito)" e anche
+  per menu, footer e dati aziendali mostrati sulla 404.
 
 ## Parità verificata
 

@@ -165,8 +165,10 @@ The site is connected to the Kiwi Network panel (company **Enfrio Srl**
   regenerates, through `unstable_cache` (tag `kiwi`, no time expiry), 8 s timeout (2.5 s in the
   editor, where someone waits), ≤4 requests in flight, circuit breaker. Kiwi slow/down → last good
   value, else the registry default. Never call `cookies()`/`headers()` or a no-store fetch in a page
-  render: it would make the site dynamic. The build reads the bulk blocks fresh once per deploy
-  (key with `VERCEL_DEPLOYMENT_ID`): the restored build cache never sees publishes.
+  render: it would make the site dynamic. **Never read Kiwi fresh in a build, per deploy or on a
+  timer**: the editor saves drafts straight into the block value before "Pubblica", so such a read
+  publishes every saved draft. New values arrive only through the webhook (a per-deploy
+  `VERCEL_DEPLOYMENT_ID` key was tried on 2026-09-24 and removed for this reason).
 - **The 404 page is a static file**: no publish or regeneration refreshes it, only the next deploy
   (panel group "Pagina 404 (online solo dal prossimo aggiornamento del sito)"; same for the footer /
   company data shown on it).
