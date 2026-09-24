@@ -168,7 +168,10 @@ The site is connected to the Kiwi Network panel (company **Enfrio Srl**
   render: it would make the site dynamic. **Never read Kiwi fresh in a build, per deploy or on a
   timer**: the editor saves drafts straight into the block value before "Pubblica", so such a read
   publishes every saved draft. New values arrive only through the webhook (a per-deploy
-  `VERCEL_DEPLOYMENT_ID` key was tried on 2026-09-24 and removed for this reason).
+  `VERCEL_DEPLOYMENT_ID` key was tried on 2026-09-24 and removed for this reason). **Open problem**
+  (tested in production 2026-09-24): the Vercel build doesn't find the stable key in its cache and
+  reads the DB, drafts included, so each deploy shows drafts on the first visit of each page and on
+  the 404 for the deploy's lifetime. Real fix is platform-side (separate draft and published values).
 - **The 404 page is a static file**: no publish or regeneration refreshes it, only the next deploy
   (panel group "Pagina 404 (online solo dal prossimo aggiornamento del sito)"; same for the footer /
   company data shown on it).

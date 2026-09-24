@@ -223,8 +223,9 @@ const cachedAllBlocks = unstable_cache(fetchAllBlocks.bind(null), ["kiwi-blocks-
 // saves drafts straight into the block value before "Pubblica", so any read
 // outside the publish webhook would put every saved draft online. Builds and
 // regenerations use the stable key above only; new values arrive when the
-// webhook marks the `kiwi` tag stale. (The 404 is a static file: it shows what
-// that cache holds when the deploy is built.)
+// webhook marks the `kiwi` tag stale. Known gap (HANDOFF-kiwi-panel.md): the
+// Vercel build doesn't find this key in its cache and reads the DB, so a
+// deploy's prerender (and the static 404) can carry drafts until regenerated.
 
 // Draft mode (Kiwi editor) skips unstable_cache: every render, and every
 // router prefetch of the menu links, would read Kiwi again (the bulk endpoint

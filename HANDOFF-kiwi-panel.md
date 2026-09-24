@@ -56,14 +56,21 @@ periodica legge solo la cache dati (nessuna chiamata a Kiwi) salvo i blocchi mai
   quando il loro DB non risponde (prima: 200 col default). Il sito tratta 503/429 come "Kiwi giù"
   (breaker, ultimo valore buono); l'euristica sull'header che serviva prima è stata tolta. Il parametro
   `_kv` resta (Kiwi lo ignora).
-- **Build e deploy non rileggono Kiwi**: `next build` legge i blocchi dalla cache dati con la stessa chiave
-  stabile del runtime, mai freschi. L'editor Kiwi salva le bozze direttamente nel valore del blocco prima di
-  "Pubblica": una lettura fuori dal webhook metterebbe online tutte le bozze salvate fin lì. La revisione del
-  24 set aveva aggiunto una rilettura per deploy (chiave con `VERCEL_DEPLOYMENT_ID`): **tolta** nel merge con
-  main per questo motivo. Non rimetterla. I valori nuovi arrivano solo col webhook.
+- **Nessuna rilettura voluta per deploy**: l'editor Kiwi salva le bozze direttamente nel valore del blocco
+  prima di "Pubblica", quindi ogni lettura fuori dal webhook mette online le bozze salvate fin lì. La revisione
+  del 24 set aveva aggiunto una rilettura per deploy (chiave con `VERCEL_DEPLOYMENT_ID`): **tolta** nel merge
+  con main. Non rimetterla. Build e runtime usano la stessa chiave stabile.
+- **⚠️ Problema aperto, provato in produzione il 24 set 2026 (c'era già su main)**: la build su Vercel **non
+  trova** la chiave stabile nella sua cache e legge Kiwi, cioè il DB del momento, bozze comprese. Prova: blocco
+  `qhse_hero_kicker` cambiato nel DB senza webhook alle 11:07 UTC, deploy di `7639276` alle 11:11: la prima
+  visita a /qhse (`x-vercel-cache: PRERENDER`) mostrava il valore nuovo, la rigenerazione subito dopo (`HIT`)
+  quello vecchio preso dalla cache del runtime; dopo il webhook il nuovo, poi ripristinato. Effetto: a ogni
+  deploy le bozze sono online **per la prima visita di ogni pagina** (secondi) e **sulla 404 per tutta la vita
+  del deploy**. La soluzione giusta è nella piattaforma: Kiwi deve tenere separati bozza e valore pubblicato
+  (l'editor scrive la bozza, "Pubblica" la copia) e far leggere ai siti solo il pubblicato.
 - **La pagina 404 è un file statico** (Vercel la serve come `/404` fuori dall'ISR): nessuna pubblicazione e
-  nessuna rigenerazione la aggiornano; mostra quello che la cache dati contiene quando si costruisce il
-  deploy. Vale per i testi del gruppo "Pagina 404 (online solo dal prossimo aggiornamento del sito)" e anche
+  nessuna rigenerazione la aggiornano, solo il deploy successivo, che oggi prende il DB del momento (vedi
+  sopra). Vale per i testi del gruppo "Pagina 404 (online solo dal prossimo aggiornamento del sito)" e anche
   per menu, footer e dati aziendali mostrati sulla 404.
 
 ## Parità verificata
