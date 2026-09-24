@@ -228,3 +228,15 @@ kiwi-network **non esiste**. Per ora si cambiano dal database.
   (prima verificare che il piano Vercel del team faccia il deploy da un repo privato dell'org). Dettaglio del
   rischio nel repo privato kiwi-network, `docs/siti-clienti-blocchi-in-blocco.md` ("Rischi noti").
 - `vercel.json` porta le function a `dub1` (Dublino, vicino al database Kiwi).
+
+## Account Kiwi e abbonamento (S6, 25 set 2026)
+
+- Abbonamento KiwiWeb **Starter** assegnato nel pannello, pagato con **bonifico annuale** (nessuno Stripe): periodo
+  25 set 2026 → 25 set 2027, rinnovo manuale al bonifico. Il briefing delle 9:00 avvisa 30 giorni prima.
+  Come funziona e come si rinnova: `kiwi-network/docs/abbonamenti-a-bonifico.md` (repo privato, PR #254).
+- Invito **owner** per `info@enfrio.eu` creato, valido fino al 24 ott 2026, **da mandare** (testo nella cartella cliente,
+  fuori da questo repo). Il cliente entra come proprietario anche registrandosi direttamente con quell'email.
+- Guida di una pagina per il cliente: `GUIDA-MODIFICHE.md` / `.pdf` nella cartella cliente (editor, Elenchi,
+  chat Telegram `@KiwiAssist_bot`, cosa è incluso nel piano).
+- Resta per chiudere S6: il cliente fa login, apre l'editor e pubblica una modifica di prova; poi si collega
+  al bot da KiwiWeb → Chat (serve la ricarica dei crediti Anthropic).

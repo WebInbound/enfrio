@@ -4859,3 +4859,16 @@ dialog.mq.is-closing .mq-panel {
   }
 }
 /* === /LANG SWITCH === */
+
+/* === ITALIAN TYPOGRAPHY === */
+/* Italian words run longer than English ones: a big heading in a narrow
+   column (home M Tower spotlight on phones) could overflow. Hyphenate the
+   headings of the Italian pages only; English pages are untouched. */
+html[lang="it"] h1,
+html[lang="it"] h2,
+html[lang="it"] h3 {
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: break-word;
+}
+/* === /ITALIAN TYPOGRAPHY === */
