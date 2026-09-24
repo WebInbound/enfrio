@@ -36,6 +36,11 @@ periodica legge solo la cache dati (nessuna chiamata a Kiwi) salvo i blocchi mai
 - **Pubblica dal pannello** → Kiwi chiama `/api/revalidate` → tag `kiwi` "stale". Il visitatore
   successivo vede ancora la versione precedente (istantanea) mentre la pagina si rigenera; dal
   secondo in poi vede il testo nuovo. Provato in locale: 10-15 s per la home.
+- **Bozze dell'editor fuori dal sito (provato in produzione il 24 set 2026)**: la rigenerazione ogni
+  60 s legge da `unstable_cache` (`revalidate: false`, tag `kiwi`) e non chiama Kiwi; in draftMode Next
+  salta la cache e non la scrive. Prova: blocco cambiato nel DB senza webhook, due rigenerazioni in 2+ min
+  col valore vecchio, dopo il webhook il nuovo, poi ripristinato. Nessuna modifica al codice. Resta, come
+  nel kit v2.11.3, la lettura a cache vuota (Kiwi giù al giro prima, chiave nuova): prende il DB del momento.
 - **Kiwi lento o giù** durante una rigenerazione → `unstable_cache` restituisce l'ultimo valore
   buono (provato: pagina rigenerata con Kiwi irraggiungibile = testo modificato conservato,
   risposta al visitatore in 3 ms). Un blocco mai letto con successo mostra il default.
