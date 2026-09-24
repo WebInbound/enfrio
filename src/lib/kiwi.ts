@@ -509,8 +509,9 @@ export async function sendKiwiContact(contact: KiwiContact, visitor?: KiwiVisito
     const res = await fetch(`${API_BASE}/api/site/contact`, {
       method: "POST",
       cache: "no-store",
-      // Kiwi sends the requester's copy before answering: allow for the email.
-      signal: AbortSignal.timeout(requesterCopy ? 12_000 : 6000),
+      // Kiwi sends the requester's copy (up to 2 MB) before answering: allow
+      // for the email, or the visitor would read "not sent" after it went out.
+      signal: AbortSignal.timeout(requesterCopy ? 20_000 : 6000),
       headers: {
         "content-type": "application/json",
         accept: "application/json",

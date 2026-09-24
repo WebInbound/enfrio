@@ -449,6 +449,11 @@ export const QUOTE = {
           default: "We will reply to {email}. Download the PDF summary of your configuration here.",
           type: "textarea",
         },
+        no_pdf: {
+          label: "Testo se il PDF non si è potuto creare ({email})",
+          default: "We will reply to {email}.",
+          type: "textarea",
+        },
         download: { label: "Pulsante scarica PDF", default: "Download PDF summary" },
         back: { label: "Pulsante torna al configuratore", default: "Back to the configurator" },
       },

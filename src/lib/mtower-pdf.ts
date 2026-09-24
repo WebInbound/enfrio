@@ -215,7 +215,13 @@ export async function buildQuotePdf(d: QuotePdfData): Promise<Uint8Array> {
     imageBytes(d.logo, "/assets/images/logo-enfrio.png"),
     imageBytes(d.render, "/assets/images/site/mtower-render.png"),
   ]);
-  const [logoJpg, renderJpg] = await Promise.all([flat(logoRaw, "#ffffff", 180), flat(renderRaw, NAVY_HEX, 520)]);
+  // An image from the panel that sharp can't read (HEIC, corrupt) → the default file.
+  const flatOr = (raw: Buffer, fallback: string, bg: string, h: number) =>
+    flat(raw, bg, h).catch(async () => flat(await readFile(path.join(PUBLIC, fallback)), bg, h));
+  const [logoJpg, renderJpg] = await Promise.all([
+    flatOr(logoRaw, "/assets/images/logo-enfrio.png", "#ffffff", 180),
+    flatOr(renderRaw, "/assets/images/site/mtower-render.png", NAVY_HEX, 520),
+  ]);
 
   const f: Fonts = {
     head: await doc.embedFont(semi, { subset: true }),

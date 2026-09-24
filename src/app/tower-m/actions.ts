@@ -50,8 +50,26 @@ export type QuoteFormState = {
 
 // No rate-limit cookie here (the contact form has one): setting a cookie in a
 // server action makes Next refresh the route, and the page behind the drawer
-// jumped to the top. After a send the form is gone from the drawer; Kiwi keeps
-// its per-visitor limit (5 a minute) and FormSubmit its own.
+// jumped to the top. Instead a per-IP limit in memory (per server instance),
+// checked before the PDF and FormSubmit, so a script can't flood Enfrio's
+// inbox (FormSubmit also serves the contact form). Kiwi keeps its own limits.
+const IP_LIMIT = 3;
+const IP_WINDOW_MS = 10 * 60_000;
+const recentByIp = new Map<string, number[]>();
+
+function allowIp(ip: string): boolean {
+  const now = Date.now();
+  if (recentByIp.size > 5000) recentByIp.clear();
+  const key = ip || "unknown";
+  const times = (recentByIp.get(key) ?? []).filter((t) => now - t < IP_WINDOW_MS);
+  if (times.length >= IP_LIMIT) {
+    recentByIp.set(key, times);
+    return false;
+  }
+  times.push(now);
+  recentByIp.set(key, times);
+  return true;
+}
 const KIWI_MAX_MESSAGE = 10_000;
 const TIMELINES = ["under-3m", "3-6m", "6-12m", "exploring"] as const;
 const SITE_URL = "https://www.enfrio.it";
@@ -111,6 +129,15 @@ export async function submitQuoteRequest(_prev: QuoteFormState, formData: FormDa
 
   const inputs = parseSizerInputs((key) => field(formData, key, 20));
   if (!inputs) return { status: "error", message: q.drawer.config_invalid, values };
+
+  const requestHeaders = await headers();
+  const visitor = {
+    ip:
+      (requestHeaders.get("x-forwarded-for") ?? "").split(",")[0].trim() ||
+      (requestHeaders.get("x-real-ip") ?? "").trim(),
+    userAgent: requestHeaders.get("user-agent") ?? "",
+  };
+  if (!allowIp(visitor.ip)) return { status: "error", message: m.repeat, values };
 
   const k = sizerCoefficients(sizer.coefficients);
   const r = sizeBuild(inputs, k);
@@ -175,7 +202,9 @@ export async function submitQuoteRequest(_prev: QuoteFormState, formData: FormDa
     configLink,
   ].join("\n");
 
-  let pdf: Uint8Array;
+  // A PDF that can't be built (e.g. an unreadable image in the panel) must
+  // not lose the request: it still reaches Enfrio, without the summary.
+  let pdf: Uint8Array | null = null;
   try {
     pdf = await buildQuotePdf({
       title: q.pdf.title,
@@ -201,10 +230,9 @@ export async function submitQuoteRequest(_prev: QuoteFormState, formData: FormDa
       render: g.images.mtower_render,
     });
   } catch (error) {
-    console.error("[quote] PDF not built", error);
-    return { status: "error", message: withEmail(m.unexpected), values };
+    console.error("[quote]", ref, "PDF not built — request sent without it", error);
   }
-  const pdfBase64 = Buffer.from(pdf).toString("base64");
+  const pdfBase64 = pdf ? Buffer.from(pdf).toString("base64") : null;
   const filename = `${(q.pdf.filename.replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "Enfrio-M-Tower").slice(0, 60)}-${ref}.pdf`;
 
   const kiwiMessage = [
@@ -217,14 +245,6 @@ export async function submitQuoteRequest(_prev: QuoteFormState, formData: FormDa
   ]
     .join("\n")
     .slice(0, KIWI_MAX_MESSAGE);
-
-  const requestHeaders = await headers();
-  const visitor = {
-    ip:
-      (requestHeaders.get("x-forwarded-for") ?? "").split(",")[0].trim() ||
-      (requestHeaders.get("x-real-ip") ?? "").trim(),
-    userAgent: requestHeaders.get("user-agent") ?? "",
-  };
 
   const kiwiLead = {
     name: values.name,
@@ -267,7 +287,7 @@ export async function submitQuoteRequest(_prev: QuoteFormState, formData: FormDa
       "/tower-m",
     );
     const kiwi = await sendKiwiContact(
-      emailed
+      emailed && pdfBase64
         ? {
             ...kiwiLead,
             requesterCopy: {
@@ -296,7 +316,7 @@ export async function submitQuoteRequest(_prev: QuoteFormState, formData: FormDa
       ref,
       email: values.email,
       emailed: kiwi.requesterCopy === "sent",
-      pdf: { filename, base64: pdfBase64 },
+      ...(pdfBase64 ? { pdf: { filename, base64: pdfBase64 } } : {}),
     };
   } catch (error) {
     console.error("[quote] unexpected error", error);

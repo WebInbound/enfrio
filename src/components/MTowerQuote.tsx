@@ -31,6 +31,7 @@ export type QuoteTexts = {
     ref_label: string;
     emailed: string;
     not_emailed: string;
+    no_pdf: string;
     download: string;
     back: string;
   };
@@ -226,7 +227,7 @@ export default function MTowerQuote({ texts, edit, inputs, result, specs, metric
                   <strong>{state.ref}</strong>
                 </p>
                 <p className="mq-done-text">
-                  {fill(state.emailed ? done.emailed : done.not_emailed, { email: state.email ?? "" })}
+                  {fill(state.emailed ? done.emailed : state.pdf ? done.not_emailed : done.no_pdf, { email: state.email ?? "" })}
                 </p>
                 <div className="mq-done-actions">
                   {pdfUrl && state.pdf ? (
