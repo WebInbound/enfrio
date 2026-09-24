@@ -4871,4 +4871,9 @@ html[lang="it"] h3 {
   -webkit-hyphens: auto;
   overflow-wrap: break-word;
 }
+/* Longer Italian labels in the quote drawer wrap instead of being cut. */
+html[lang="it"] .mq-specs dt {
+  white-space: normal;
+  overflow: visible;
+}
 /* === /ITALIAN TYPOGRAPHY === */
