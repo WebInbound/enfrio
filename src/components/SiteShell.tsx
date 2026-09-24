@@ -63,9 +63,10 @@ export default async function SiteShell({
   const fields = editing ? await getEditorFields([...(blocks ?? PAGE_BLOCKS[active]), GLOBAL], lang) : null;
 
   // Language menu only once the Italian version is public (panel "Globale ›
-  // Lingue"): until then the English pages are exactly as before.
+  // Lingue"): until then the English pages are exactly as before. Inside the
+  // Kiwi editor it is always there, so the Italian texts can be proofread.
   const path = PAGE_PATH[active];
-  const languages: ShellLanguages | null = italianPublished(g)
+  const languages: ShellLanguages | null = italianPublished(g) || editing
     ? {
         label: g.i18n.switch_label,
         items: [

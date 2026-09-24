@@ -370,7 +370,7 @@ export default function SiteShellClient({ lang, languages, active, content, edit
                   lang={item.lang}
                   className={item.lang === lang ? "active" : undefined}
                   aria-current={item.lang === lang ? "true" : undefined}
-                  {...(item.lang === "en" ? edit?.i18n.switch_en : edit?.i18n.switch_it)}
+                  {...(editing ? { "data-kiwi-page": `lang-${item.lang}`, "data-kiwi-page-title": item.label } : {})}
                 >
                   {item.label}
                 </a>
