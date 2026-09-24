@@ -143,6 +143,22 @@ his partner ("il socio") generates AI images from another machine and pushes the
   (`global_documents_mtower_datasheet_url`; empty = button stays `disabled`),
   JSON-LD `sameAs` (social URLs) + `telephone`/contactPoint.
 
+## Structure since 2026-09-25 (S3: quote request + Italian) — read HANDOFF-sezione-A.md
+- Pages live in `src/views/*Page.tsx` and take `lang`; routes are thin files in `src/app/(en)/…` (English, URLs
+  at the root) and `src/app/(it)/it/…` (Italian): two root layouts, one document `src/components/RootDocument.tsx`.
+- **404 = `src/app/global-not-found.tsx`** (`experimental.globalNotFound`). Never call `notFound()` from a page:
+  with two root layouts Next 16 answers with an empty error shell (`<html id="__next_error__">`).
+- Italian texts: `src/content/it/<page>.ts` (key = English slug) → panel block `it_<slug>`, group "Italiano › …".
+  No entry = shared with English (images, links, numbers, company data). Server: pass `lang` explicitly
+  (`getContent(PAGE, lang)`, `getEdit`, `getList`, `pageSeo`, `localePath(lang, "/x")`). Client: `useI18n()`.
+- Italian public only when panel "Globale › Lingue › Versione italiana online" = 1 (language menu, hreflang,
+  sitemap, indexing); previews always show it. Until then /it is noindex and reachable by link + in the editor.
+- Quote request: `src/actions/quote.ts`, `src/lib/mtower-pdf.ts`, `src/lib/mtower-sizing.ts` (shared maths),
+  `src/components/MTowerQuote.tsx`. FormSubmit only sends from production (`src/lib/formsubmit.ts`).
+- Parity for English: build, `npx next start -p 3107`, `node scripts/parity-check.mjs http://localhost:3107 https://www.enfrio.it`.
+- The Write tool can turn "\u2028"-style escapes in source into raw characters: check regexes with escapes
+  byte by byte after writing (it broke `scriptSafeJson` once more on 2026-09-25).
+
 ## Kiwi integration (panel) — since 2026-09-23
 
 The site is connected to the Kiwi Network panel (company **Enfrio Srl**

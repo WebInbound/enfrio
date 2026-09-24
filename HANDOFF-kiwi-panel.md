@@ -1,5 +1,9 @@
 # HANDOFF — Enfrio collegato al pannello Kiwi (23 set 2026)
 
+> **Dal 24-25 set (S3)**: richiesta d'offerta dal configuratore, versione italiana `/it` e stato della Sezione A
+> della proposta KW-2026-002 in `HANDOFF-sezione-A.md`. Le pagine ora stanno in `src/views/`, le route in
+> `src/app/(en)` e `src/app/(it)/it`; il resto di questo documento vale ancora.
+
 **In produzione dal 23 set 2026** (merge fast-forward di `feat/kiwi-panel` su `main`, commit `3be7849`,
 deploy `dpl_2ABuYJpYwngA66ZvwV5GDpTwZwKp`, regione `dub1`). Obiettivo: il cliente modifica testi, immagini
 principali e dati dal pannello Kiwi e riceve lì i contatti, **senza che il sito cambi di un pixel**.
