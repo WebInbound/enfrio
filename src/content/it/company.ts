@@ -6,9 +6,9 @@ export const IT_COMPANY: Record<string, string> = {
     "Il profilo aziendale di Enfrio: le persone, le competenze e la cultura produttiva dietro le soluzioni di raffreddamento.",
 
   company_hero_kicker: "CHI SIAMO",
-  company_hero_title: "Un team reale, uno stabilimento reale, una responsabilità reale sull'esecuzione.",
+  company_hero_title: "Team reale, stabilimento reale, responsabilità reale.",
   company_hero_lead:
-    "Enfrio unisce leadership ingegneristica e disciplina produttiva per realizzare sistemi di raffreddamento che funzionano in modo affidabile nelle condizioni operative reali.",
+    "Enfrio unisce leadership ingegneristica e disciplina produttiva: sistemi di raffreddamento affidabili nelle condizioni operative reali.",
   company_hero_image_alt: "Operatore Enfrio assembla un'unità di raffreddamento al banco di produzione",
 
   company_values_card1_title: "DNA ingegneristico",
@@ -38,6 +38,6 @@ export const IT_COMPANY: Record<string, string> = {
   company_photos_photo_4_alt: "Dettaglio della finitura manuale di un'unità di raffreddamento",
 
   company_cta_kicker: "COLLABORIAMO",
-  company_cta_title: "Cercate un team che si assuma la responsabilità dei risultati, non solo dei compiti?",
+  company_cta_title: "Un team che risponde dei risultati, non solo dei compiti?",
   company_cta_button: "Incontrate la direzione",
 };

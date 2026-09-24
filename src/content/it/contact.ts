@@ -7,9 +7,9 @@ export const IT_CONTACT: Record<string, string> = {
     "Contattate Enfrio per parlare di progetti di raffreddamento motori, requisiti tecnici e piani di trasferimento in produzione.",
 
   contact_hero_kicker: "CONTATTI",
-  contact_hero_title: "Trasformate la vostra sfida termica in un piano pronto per l'esecuzione.",
+  contact_hero_title: "Dalla sfida termica a un piano pronto da eseguire.",
   contact_hero_lead:
-    "Condividete dati della piattaforma, obiettivi termici e tempistiche. Enfrio può affiancarvi dall'ingegneria di concept fino al trasferimento completo in produzione.",
+    "Condividete dati della piattaforma, obiettivi termici e tempi. Enfrio vi affianca dall'ingegneria di concept al trasferimento in produzione.",
   contact_hero_image_alt: "Dettaglio di un controllo qualità",
 
   contact_inquiry_kicker: "RICHIESTA DI PROGETTO",

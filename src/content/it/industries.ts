@@ -6,7 +6,7 @@ export const IT_INDUSTRIES: Record<string, string> = {
     "Le applicazioni delle soluzioni Enfrio per il raffreddamento motori nei settori della generazione di energia e dei data center.",
 
   industries_hero_kicker: "SETTORI",
-  industries_hero_title: "Piattaforme di raffreddamento su misura per settori in cui un fermo costa caro.",
+  industries_hero_title: "Raffreddamento su misura per settori dove un fermo costa caro.",
   industries_hero_lead:
     "Enfrio opera nei mercati in cui affidabilità termica, vincoli di ingombro e continuità operativa sono commercialmente critici.",
   industries_hero_image_alt: "Motore V20 con pacchetto di raffreddamento Enfrio integrato",
@@ -31,7 +31,7 @@ export const IT_INDUSTRIES: Record<string, string> = {
   industries_scope_item4_text: "Scambiatori per unità di climatizzazione, con attenzione a corrosione e ciclo di vita.",
 
   industries_madrid_kicker: "SVILUPPO ORIGINALE ENFRIO",
-  industries_madrid_title: "Il raffreddamento dei camion per la raccolta rifiuti di Madrid, progettato da Enfrio.",
+  industries_madrid_title: "I camion rifiuti di Madrid: raffreddamento progettato da Enfrio.",
   industries_madrid_why_title: "Perché è importante",
   industries_madrid_why_text:
     "Enfrio ha sviluppato questa soluzione per un'installazione con forti vincoli, in cui un radiatore con layout standard non sarebbe rientrato nell'architettura del veicolo.",

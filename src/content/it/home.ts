@@ -6,15 +6,15 @@ export const IT_HOME: Record<string, string> = {
     "Enfrio progetta prodotti, processi e test per il raffreddamento dei motori, con supporto end-to-end di ingegneria e produzione.",
 
   home_hero_kicker: "LEADER IN INGEGNERIA",
-  home_hero_title: "Mettiamo al sicuro le prestazioni termiche dei motori mission-critical.",
+  home_hero_title: "Prestazioni termiche sicure per motori mission-critical.",
   home_hero_lead:
-    "Dalla fase di offerta al trasferimento in produzione, Enfrio gestisce l'intera catena di esecuzione perché i vostri team rispettino finestre di lancio, obiettivi di costo e affidabilità sul campo.",
+    "Dall'offerta al trasferimento in produzione, Enfrio gestisce tutta l'esecuzione: i vostri team rispettano lanci, costi e affidabilità sul campo.",
   home_hero_cta_primary: "Parlate con la direzione",
   home_hero_cta_secondary: "Scoprite le soluzioni 5P",
   home_hero_image_alt: "Tecnico Enfrio durante la saldatura di un radiatore",
 
   home_model_kicker: "MODELLO END-TO-END",
-  home_model_title: "Un unico partner responsabile, dal concept freeze a una produzione di serie stabile.",
+  home_model_title: "Un solo partner responsabile, dal concept freeze alla produzione di serie.",
   home_model_stat1_text:
     "Project management, progettazione di prodotto, definizione di processo, procurement, trasferimento in produzione.",
   home_model_stat2_text:
@@ -29,7 +29,7 @@ export const IT_HOME: Record<string, string> = {
   home_inside_photo_4_alt: "Unità di raffreddamento integrata con il motore",
 
   home_domain_kicker: "RAFFREDDAMENTO",
-  home_domain_title: "Architetture di raffreddamento ad alte prestazioni per piattaforme industriali critiche.",
+  home_domain_title: "Raffreddamento ad alte prestazioni per piattaforme industriali critiche.",
   home_domain_card1_title: "Raffreddamento motori",
   home_domain_card1_text: "Radiatori in alluminio con elevato smaltimento del calore e lunga durata sul campo.",
   home_domain_card2_title: "Sottosistemi termici",
@@ -40,7 +40,7 @@ export const IT_HOME: Record<string, string> = {
     "Soluzioni di packaging per vincoli da container, ambienti remoti e ingombri di installazione OEM.",
 
   home_spotlight_kicker: "PRODOTTO DI PUNTA",
-  home_spotlight_title: "M Tower: il raffreddamento che cresce con la vostra potenza.",
+  home_spotlight_title: "M Tower: il raffreddamento che cresce con la potenza.",
   home_spotlight_text_start: "Moduli di smaltimento del calore da",
   home_spotlight_text_middle:
     "ciascuno. Si parte con uno e se ne aggiungono altri quando l'impianto cresce. Da un gruppo elettrogeno da 1,5 MW a una sala data center da",
@@ -67,7 +67,7 @@ export const IT_HOME: Record<string, string> = {
   home_motion_item3_image_alt: "Dettaglio dell'assemblaggio manuale finale di un'unità di raffreddamento",
 
   home_cta_kicker: "COSTRUIRE CON ENFRIO",
-  home_cta_title: "Cercate un partner di esecuzione che progetti e consegni assumendosene la responsabilità?",
+  home_cta_title: "Cercate un partner che progetti e consegni, rispondendo dei risultati?",
   home_cta_text:
     "Progettiamo, validiamo e industrializziamo sistemi di raffreddamento con una governance chiara e milestone di consegna misurabili.",
   home_cta_cta_primary: "Avviate un confronto strategico",

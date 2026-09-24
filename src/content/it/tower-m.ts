@@ -7,10 +7,10 @@ export const IT_TOWER_M: Record<string, string> = {
     "Enfrio M Tower è una piattaforma modulare per lo smaltimento del calore: 1500 kW per unità, dai gruppi elettrogeni singoli alle sale data center da 12 MW. Ingegneria reale, ATEX-ready, resistente all'acqua di mare.",
 
   towerm_stage_kicker: "PIATTAFORMA DI PUNTA",
-  towerm_stage_title_accent: "Il raffreddamento che cresce",
-  towerm_stage_title_end: "con la vostra potenza.",
+  towerm_stage_title_accent: "Raffreddamento",
+  towerm_stage_title_end: "che cresce con voi.",
   towerm_stage_lead:
-    "Moduli di smaltimento del calore da 1500 kW ciascuno. Si parte con uno e se ne aggiungono altri man mano che l'impianto cresce. Dai gruppi elettrogeni singoli alle sale data center da 12 MW — stesso nucleo collaudato.",
+    "Moduli da 1500 kW l'uno: si parte con uno e si aggiunge quando l'impianto cresce. Dal gruppo elettrogeno singolo alla sala data center da 12 MW, stesso nucleo collaudato.",
   towerm_stage_spec1_label: "PER MODULO",
   towerm_stage_spec2_label: "BATTERIA MAX",
   towerm_stage_spec3_label: "RIDONDANZA",
@@ -29,7 +29,7 @@ export const IT_TOWER_M: Record<string, string> = {
   towerm_stage_chip4_spec: "Acciaio zincato a caldo",
 
   towerm_explore_kicker: "L'UNITÀ NEL DETTAGLIO",
-  towerm_explore_title: "Progettata al millimetro, costruita per essere spedita.",
+  towerm_explore_title: "Progettata al millimetro, pronta da spedire.",
   towerm_explore_text:
     "I fasci tubieri in acciaio inox, le alette in alluminio a feritoie, il quadro inverter a lato, il telaio isolato dalle vibrazioni — ogni dettaglio è progettato per il ciclo di lavoro dello smaltimento del calore mission-critical. Ruotate il render qui sopra per esaminarne ogni lato.",
   towerm_explore_mech_title: "Meccanica",
@@ -44,7 +44,7 @@ export const IT_TOWER_M: Record<string, string> = {
   towerm_explore_integ_4: "Supporti antivibranti in gomma alla base",
 
   towerm_craft_kicker: "DETTAGLIO COSTRUTTIVO",
-  towerm_craft_title: "Costruita dall'interno verso l'esterno.",
+  towerm_craft_title: "Costruita dall'interno.",
   towerm_craft_crop1_image_alt: "Primo piano della batteria alettata Cu/Al",
   towerm_craft_crop1_caption: "Batteria alettata Cu/Al. Passo alette 0,12 mm.",
   towerm_craft_crop2_image_alt: "Dettaglio di una saldatura zincata a caldo",
@@ -53,7 +53,7 @@ export const IT_TOWER_M: Record<string, string> = {
   towerm_craft_crop3_caption: "Ventilatori EC. Classe di efficienza IE5.",
 
   towerm_why_kicker: "PERCHÉ IL MODULARE CONVIENE",
-  towerm_why_title: "Tre motivi per cui gli ingegneri scelgono M Tower invece di un raffreddamento a taglia fissa.",
+  towerm_why_title: "Perché gli ingegneri scelgono M Tower e non una taglia fissa.",
   towerm_why_card1_text:
     "Pagate solo la capacità che usate davvero. Acquistate ciò che serve al carico di oggi. Aggiungete moduli quando l'impianto cresce. Nessun impianto sovradimensionato che si svaluta dal primo giorno.",
   towerm_why_card2_text:
@@ -195,7 +195,7 @@ export const IT_TOWER_M: Record<string, string> = {
 
   // QUOTE
   quote_drawer_kicker: "RICHIESTA D'OFFERTA",
-  quote_drawer_title: "Inviate questa configurazione all'ufficio tecnico Enfrio",
+  quote_drawer_title: "Inviate la configurazione all'ufficio tecnico",
   quote_drawer_lead:
     "La vostra configurazione viaggia con la richiesta. I nostri ingegneri la verificano sui dati reali della piattaforma e rispondono con un'offerta dimensionata.",
   quote_drawer_build_label: "LA VOSTRA CONFIGURAZIONE",
@@ -211,7 +211,7 @@ export const IT_TOWER_M: Record<string, string> = {
   quote_drawer_config_invalid: "Questa configurazione non può essere inviata. Ricaricate la pagina e riprovate.",
 
   quote_done_kicker: "RICHIESTA INVIATA",
-  quote_done_title: "La vostra configurazione è arrivata all'ufficio tecnico Enfrio.",
+  quote_done_title: "La configurazione è all'ufficio tecnico Enfrio.",
   quote_done_ref_label: "Riferimento",
   quote_done_emailed: "Un riepilogo PDF è in arrivo a {email}. Risponderemo allo stesso indirizzo.",
   quote_done_not_emailed: "Risponderemo a {email}. Scaricate qui il riepilogo PDF della vostra configurazione.",
@@ -223,7 +223,7 @@ export const IT_TOWER_M: Record<string, string> = {
   quote_pdf_ref_label: "Riferimento",
   quote_pdf_date_label: "Data",
   quote_pdf_inputs_title: "Dati di progetto",
-  quote_pdf_results_title: "Configurazione dimensionata",
+  quote_pdf_results_title: "Dimensionamento",
   quote_pdf_units_label: "moduli M Tower",
   quote_pdf_spare: "incl. 1 modulo di riserva",
   quote_pdf_disclaimer:

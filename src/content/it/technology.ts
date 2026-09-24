@@ -34,7 +34,7 @@ export const IT_TECHNOLOGY: Record<string, string> = {
   technology_machinery_title: "Una selezione di immagini dalle linee di processo attive.",
 
   technology_cta_kicker: "APPROFONDIMENTO TECNICO",
-  technology_cta_title: "Volete allineare le nostre capacità di processo alla vostra piattaforma?",
+  technology_cta_title: "Volete allineare i nostri processi alla vostra piattaforma?",
   technology_cta_text:
     "Prenotate una call di approfondimento per esaminare tolleranze di curvatura, parametri laser e procedure di qualità sulla vostra applicazione.",
   technology_cta_button: "Fissate un incontro tecnico",

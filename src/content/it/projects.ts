@@ -12,7 +12,7 @@ export const IT_PROJECTS: Record<string, string> = {
   projects_hero_image_alt: "Gruppo elettrogeno con raffreddamento Enfrio installato in una cofanatura aperta",
 
   projects_platform_kicker: "PIATTAFORMA SPECIALE",
-  projects_platform_title: "La capacità modulare di M Tower per lo smaltimento del calore su larga scala.",
+  projects_platform_title: "M Tower: capacità modulare per smaltire calore su larga scala.",
   projects_platform_perf_title: "Campo di prestazioni",
   projects_platform_perf_item1: "1 unità: 1500 kW di potenza termica smaltita",
   projects_platform_perf_item2: "4 unità: 6000 kW di potenza termica smaltita",
@@ -47,7 +47,7 @@ export const IT_PROJECTS: Record<string, string> = {
     "La certificazione ufficiale è disponibile per i processi di qualifica fornitori e di acquisto.",
   projects_closing_iso_button: "Consultate il certificato ISO",
   projects_closing_contact_kicker: "PROSSIMO PASSO",
-  projects_closing_contact_title: "Parliamo del vostro programma",
+  projects_closing_contact_title: "Parliamo del programma",
   projects_closing_contact_text:
     "Condividete vincoli e tempistiche per valutare fattibilità, rischi e opzioni di installazione.",
   projects_closing_contact_button: "Analizziamo il progetto",
