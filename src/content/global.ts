@@ -125,6 +125,40 @@ export const GLOBAL = {
         },
       },
     },
+    i18n: {
+      group: "Globale › Lingue",
+      blocks: {
+        it_published: {
+          label:
+            "Versione italiana online: 1 = sì (menu delle lingue, Google, sitemap); 0 = no (le pagine /it si aprono solo col link, per la rilettura, e Google non le indicizza)",
+          default: "0",
+        },
+        switch_label: { label: "Selettore lingua — testo per gli screen reader", default: "Language" },
+        switch_en: { label: "Selettore lingua — inglese", default: "EN" },
+        switch_it: { label: "Selettore lingua — italiano", default: "IT" },
+      },
+    },
+    a11y: {
+      // Texts read by screen readers only (aria-label / title), never on screen.
+      group: "Globale › Testi per gli screen reader",
+      blocks: {
+        home_link: { label: "Logo: link alla home", default: "Enfrio home" },
+        menu_open: { label: "Pulsante menu (telefono): apri", default: "Open menu" },
+        menu_close: { label: "Pulsante menu (telefono): chiudi", default: "Close menu" },
+        back_to_top: { label: "Pulsante torna su", default: "Back to top" },
+        send_email: { label: "Link email ({email} = indirizzo)", default: "Send email to {email}" },
+        kiwi_credit: { label: "Link Powered by Kiwi Network", default: "KiwiNetwork — site by Kiwi Enterprise" },
+        mtower_3d: { label: "M Tower 3D in apertura", default: "Enfrio M Tower 3D render — drag or scroll to rotate" },
+        power_slider: { label: "Configuratore: cursore potenza", default: "Engine power in kilowatts" },
+        power_input: { label: "Configuratore: campo potenza", default: "Engine power numeric input" },
+        build_readout: { label: "Configuratore: pannello dati", default: "Live build specifications" },
+        build_stage: { label: "Configuratore: disegno dei moduli ({n} = numero)", default: "Visualisation of {n} M Tower modules" },
+        deploy_contexts: { label: "M Tower: schede dei settori", default: "Deployment contexts" },
+        machinery_gallery: { label: "Technology: galleria macchinari", default: "Machinery detail auto gallery" },
+        madrid_gallery: { label: "Industries: galleria Madrid", default: "Madrid waste truck project gallery" },
+        snapshots_gallery: { label: "Projects: galleria progetti", default: "Project snapshots auto gallery" },
+      },
+    },
   },
 } satisfies PageDef;
 

@@ -5,6 +5,8 @@ import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { draftMode } from "next/headers";
 import type { BlockDef, Content, PageDef } from "@/content/types";
+import { IT_TEXTS } from "@/content/it";
+import { IT_GROUP_PREFIX, IT_SLUG_PREFIX, type Lang } from "@/lib/i18n";
 
 /**
  * Kiwi Network headless CMS — read side.
@@ -350,16 +352,31 @@ export function blockSlug(page: PageDef, section: string, key: string): string {
   return `${page.id}_${section}_${key}`;
 }
 
+/**
+ * A block as read in `lang`. Italian: its own block (slug "it_…", panel group
+ * "Italiano › …", the Italian translation of src/content/it/ as default) when
+ * the text has a translation; images, links, numbers and company data have
+ * none and are shared with English.
+ */
+export function localizedBlock(slug: string, group: string, def: BlockDef, lang: Lang) {
+  if (lang === "en") return { slug, group, def };
+  const it = IT_TEXTS[slug];
+  if (it === undefined) return { slug, group, def };
+  return { slug: IT_SLUG_PREFIX + slug, group: IT_GROUP_PREFIX + group, def: { ...def, default: it } };
+}
+
 async function mapPage<P extends PageDef, T>(
   page: P,
   fn: (slug: string, group: string, def: BlockDef) => Promise<T>,
+  lang: Lang,
 ): Promise<Record<string, Record<string, T>>> {
   const sections = await Promise.all(
     Object.entries(page.sections).map(async ([sectionKey, section]) => {
       const values = await Promise.all(
-        Object.entries(section.blocks).map(
-          async ([key, def]) => [key, await fn(blockSlug(page, sectionKey, key), section.group, def)] as const,
-        ),
+        Object.entries(section.blocks).map(async ([key, def]) => {
+          const b = localizedBlock(blockSlug(page, sectionKey, key), section.group, def, lang);
+          return [key, await fn(b.slug, b.group, b.def)] as const;
+        }),
       );
       return [sectionKey, Object.fromEntries(values)] as const;
     }),
@@ -367,21 +384,22 @@ async function mapPage<P extends PageDef, T>(
   return Object.fromEntries(sections);
 }
 
-/** Load every block of a page definition. Never throws. */
-export async function getContent<P extends PageDef>(page: P): Promise<Content<P>> {
-  return (await mapPage(page, async (slug, group, def) => (await readBlockEntry(slug, group, def)).value)) as Content<P>;
+/** Load every block of a page definition, in `lang`. Never throws. */
+export async function getContent<P extends PageDef>(page: P, lang: Lang = "en"): Promise<Content<P>> {
+  return (await mapPage(page, async (slug, group, def) => (await readBlockEntry(slug, group, def)).value, lang)) as Content<P>;
 }
 
 /** Same as getContent, with each block's editor style (null when none). */
 export async function getEntries<P extends PageDef>(
   page: P,
+  lang: Lang = "en",
 ): Promise<{ [S in keyof P["sections"]]: { [B in keyof P["sections"][S]["blocks"]]: BlockEntry & { slug: string; group: string; def: BlockDef } } }> {
   return (await mapPage(page, async (slug, group, def) => ({
     ...(await readBlockEntry(slug, group, def)),
     slug,
     group,
     def,
-  }))) as never;
+  }), lang)) as never;
 }
 
 /* ---------------------------------------------------------------- */
@@ -466,7 +484,7 @@ export type KiwiContact = {
    * to `email`, only when the call carries the signed visitor IP, i.e. comes
    * from this server. Texts come from the panel, never from the visitor.
    */
-  requesterCopy?: { subject: string; text: string; filename: string; pdfBase64: string };
+  requesterCopy?: { subject: string; text: string; filename: string; pdfBase64: string; lang?: "en" | "it" };
 };
 
 /**
@@ -527,6 +545,7 @@ export async function sendKiwiContact(contact: KiwiContact, visitor?: KiwiVisito
                 text: requesterCopy.text,
                 filename: requesterCopy.filename,
                 pdf_base64: requesterCopy.pdfBase64,
+                lang: requesterCopy.lang ?? "en",
               },
             }
           : {}),

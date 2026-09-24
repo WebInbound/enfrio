@@ -6,6 +6,7 @@ import type { TOWER_M } from "@/content/tower-m";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Stat from "@/components/Stat";
+import { useI18n } from "./I18nProvider";
 
 /* WebGL canvas with the 120-frame texture billboard. Dynamically imported
    so three.js (~200 KB) only loads client-side and never blocks SSR. */
@@ -175,6 +176,7 @@ export default function MTowerStage({
   edit?: Pick<EditMap<typeof TOWER_M>, "stage" | "explore">;
 }) {
   const { stage: t, explore } = content;
+  const { a11y } = useI18n();
   const chipText = [
     { label: t.chip1_label, spec: t.chip1_spec },
     { label: t.chip2_label, spec: t.chip2_spec },
@@ -320,7 +322,7 @@ export default function MTowerStage({
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
             role="img"
-            aria-label="Enfrio M Tower 3D render — drag or scroll to rotate"
+            aria-label={a11y.mtower_3d}
           >
             <MTowerCanvas frame={frame} />
 

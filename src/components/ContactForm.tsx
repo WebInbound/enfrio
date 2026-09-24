@@ -3,7 +3,9 @@
 import { useActionState, useEffect, useLayoutEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useSearchParams } from "next/navigation";
-import { submitContactForm, type ContactFormState } from "@/app/contact/actions";
+import { submitContactForm, type ContactFormState } from "@/actions/contact";
+import { localePath } from "@/lib/i18n";
+import { useI18n } from "./I18nProvider";
 import EditSpan from "@/components/EditSpan";
 import type { EditAttrs } from "@/lib/kiwi-edit";
 
@@ -63,6 +65,7 @@ export default function ContactForm({
   edit?: Partial<Record<keyof ContactFormLabels, EditAttrs>>;
 }) {
   const [state, formAction] = useActionState(submitContactForm, initialState);
+  const { lang } = useI18n();
   const errors = state.fieldErrors ?? {};
   // After an error the action hands back what was typed: React resets an
   // action <form> after every submission, to these defaults (empty on success).
@@ -129,6 +132,8 @@ export default function ContactForm({
           <p {...ed?.prefill}>{t.prefill}</p>
         </div>
       ) : null}
+
+      <input type="hidden" name="lang" value={lang} />
 
       {/* Honeypot: bots fill it, humans don't see it */}
       <div className="hp-field" aria-hidden="true">
@@ -204,7 +209,7 @@ export default function ContactForm({
         <input type="checkbox" name="consent" required defaultChecked={typed?.consent} aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? "err-consent" : undefined} />
         <span>
           <EditSpan a={ed?.consent}>{t.consent}</EditSpan>{" "}
-          <a href="/legal" {...ed?.consent_link}>{t.consent_link}</a><EditSpan a={ed?.consent_end}>{t.consent_end}</EditSpan>
+          <a href={localePath(lang, "/legal")} {...ed?.consent_link}>{t.consent_link}</a><EditSpan a={ed?.consent_end}>{t.consent_end}</EditSpan>
         </span>
       </label>
       {errors.consent ? <em className="form-error" id="err-consent" role="alert">{errors.consent}</em> : null}

@@ -2,6 +2,7 @@
 
 import type { EditAttrs } from "@/lib/kiwi-edit";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
+import { useI18n } from "./I18nProvider";
 
 type ContextKey = "data-center" | "petrochemical" | "power-gen" | "hvac";
 
@@ -346,6 +347,7 @@ export default function DeploySwitcher({
   /** Inside the Kiwi editor the tabs keep switching (the overlay lets them through). */
   editing?: boolean;
 }) {
+  const { a11y } = useI18n();
   const [active, setActive] = useState<ContextKey>("data-center");
 
   const contexts: ContextDef[] = useMemo(
@@ -418,7 +420,7 @@ export default function DeploySwitcher({
       <div
         className="deploy-switcher-tabs"
         role="tablist"
-        aria-label="Deployment contexts"
+        aria-label={a11y.deploy_contexts}
       >
         {contexts.map((ctx, i) => {
           const selected = ctx.key === active;

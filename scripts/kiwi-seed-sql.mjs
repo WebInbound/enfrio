@@ -12,6 +12,13 @@
 // Every row is scoped to the Enfrio company_id.
 //
 //   node scripts/kiwi-seed-sql.mjs --part 1           (one statement group per call)
+//   node scripts/kiwi-seed-sql.mjs --page quote       (only the blocks of one registry id, no collections)
+//   node scripts/kiwi-seed-sql.mjs --lang it          (only the Italian copies: "it_" blocks + lists)
+//   node scripts/kiwi-seed-sql.mjs --lang en          (only the English ones)
+//
+// Italian (A.6): every block with a translation in src/content/it/ gets its
+// own row "it_<slug>" in the group "Italiano › <group>", default = the
+// translation; each list its copy "it_<slug>" with the translated captions.
 
 import { GLOBAL, NOT_FOUND } from "../src/content/global.ts";
 import { HOME } from "../src/content/home.ts";
@@ -25,6 +32,29 @@ import { QHSE } from "../src/content/qhse.ts";
 import { LEGAL } from "../src/content/legal.ts";
 import { TOWER_M, SIZER, QUOTE } from "../src/content/tower-m.ts";
 import { COLLECTIONS } from "../src/content/collections.ts";
+import { IT_COLLECTIONS } from "../src/content/it/collections.ts";
+import { IT_COMPANY } from "../src/content/it/company.ts";
+import { IT_CONTACT } from "../src/content/it/contact.ts";
+import { IT_GLOBAL } from "../src/content/it/global.ts";
+import { IT_HOME } from "../src/content/it/home.ts";
+import { IT_INDUSTRIES } from "../src/content/it/industries.ts";
+import { IT_LEGAL } from "../src/content/it/legal.ts";
+import { IT_PROJECTS } from "../src/content/it/projects.ts";
+import { IT_QHSE } from "../src/content/it/qhse.ts";
+import { IT_SOLUTIONS } from "../src/content/it/solutions.ts";
+import { IT_TECHNOLOGY } from "../src/content/it/technology.ts";
+import { IT_TOWER_M } from "../src/content/it/tower-m.ts";
+
+// Same rules as src/lib/i18n.ts and src/content/it/index.ts.
+const IT_SLUG_PREFIX = "it_";
+const IT_GROUP_PREFIX = "Italiano " + String.fromCharCode(0x203a) + " ";
+const IT_TEXTS = {
+  ...IT_GLOBAL, ...IT_HOME, ...IT_SOLUTIONS, ...IT_TECHNOLOGY, ...IT_INDUSTRIES, ...IT_PROJECTS,
+  ...IT_COMPANY, ...IT_CONTACT, ...IT_QHSE, ...IT_LEGAL, ...IT_TOWER_M,
+};
+const langArg = process.argv.indexOf("--lang");
+const onlyLang = langArg > 0 ? process.argv[langArg + 1] : null;
+if (onlyLang && onlyLang !== "en" && onlyLang !== "it") throw new Error("--lang en|it");
 
 const COMPANY_ID = "9f5b766d-d5f6-4f0d-8195-da13dd435aac"; // Enfrio Srl
 const SITE = "https://www.enfrio.it";
@@ -63,8 +93,11 @@ for (const page of PAGES) {
       if (slugs.has(slug)) throw new Error(`duplicate slug: ${slug}`);
       slugs.add(slug);
       const type = def.type ?? "text";
-      const value = abs(type, def.default);
-      rows.push({ slug, type, value, label: def.label, group: section.group });
+      if (onlyLang !== "it") rows.push({ slug, type, value: abs(type, def.default), label: def.label, group: section.group });
+      const it = IT_TEXTS[slug];
+      if (it !== undefined && onlyLang !== "en") {
+        rows.push({ slug: IT_SLUG_PREFIX + slug, type, value: abs(type, it), label: def.label, group: IT_GROUP_PREFIX + section.group });
+      }
     }
   }
 }
@@ -116,7 +149,20 @@ on conflict (company_id, slug) do update set
 }
 
 const collectionSql = [];
-COLLECTIONS.forEach((c, idx) => {
+// Italian copies of the lists: same photos, translated captions and alts.
+const LISTS = [
+  ...(onlyLang === "it" ? [] : COLLECTIONS),
+  ...(onlyLang === "en"
+    ? []
+    : COLLECTIONS.map((c) => ({
+        ...c,
+        slug: IT_SLUG_PREFIX + c.slug,
+        label: `${c.label} (IT)`,
+        sitePath: `/it${c.sitePath}`,
+        items: c.items.map((it, i) => ({ ...it, ...(IT_COLLECTIONS[c.slug]?.[i] ?? {}) })),
+      }))),
+];
+LISTS.forEach((c, idx) => {
   collectionSql.push(`insert into public.web_content_collections (company_id, slug, label, singular_label, site_path, display_order, active)
 values (${q(COMPANY_ID)}, ${q(c.slug)}, ${q(c.label)}, ${q(c.singular)}, ${q(c.sitePath)}, ${idx + 1}, true)
 on conflict (company_id, slug) do update set label = excluded.label, singular_label = excluded.singular_label, site_path = excluded.site_path;`);

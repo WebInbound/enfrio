@@ -18,6 +18,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AnimatedNumber from "./AnimatedNumber";
 import type { QuoteEdit, QuoteTexts } from "./MTowerQuote";
+import { useI18n } from "./I18nProvider";
+import { fill } from "@/lib/content-format";
+import { localePath } from "@/lib/i18n";
 
 // The quote drawer (form + PDF download) is loaded on the first click only.
 const loadQuote = () => import("./MTowerQuote");
@@ -93,6 +96,7 @@ type SizerProps = {
 };
 
 export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODULE_IMG, edit: ed, editing, quote }: SizerProps) {
+  const { lang, locale: L, a11y } = useI18n();
   const UNIT_KW = k.unitKw;
 
   const APPLICATIONS = useMemo(
@@ -127,7 +131,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
   };
 
   const footprintFor = (units: number): string =>
-    `${(units * k.footprintM2).toLocaleString("en-US")} m²`;
+    `${(units * k.footprintM2).toLocaleString(L)} m²`;
 
   const [power, setPower] = useState(3000);
   // Numeric field: the text being typed ("", "3", "30"…), null when it shows
@@ -225,7 +229,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
     const summary =
       `M Tower configuration request\n` +
       `\n` +
-      `Engine power: ${power.toLocaleString("en-US")} kW\n` +
+      `Engine power: ${power.toLocaleString(L)} kW\n` +
       `Application: ${APPLICATIONS.find((a) => a.value === application)?.label ?? application}\n` +
       `Circuit: ${circuit === "double" ? "Double (HT + LT)" : "Single (HT)"}\n` +
       `Ambient: ${ambient} °C\n` +
@@ -233,9 +237,9 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
       `Redundancy: ${redundancy ? "N+1 (spare module)" : "N"}\n` +
       `\n` +
       `Sized build: ${result.units} × M Tower modules\n` +
-      `Effective capacity: ${result.capacity.toLocaleString("en-US")} kW\n` +
-      `Estimated heat rejection: ${result.heat.toLocaleString("en-US")} kW\n` +
-      `Per-module derated: ${result.effectiveUnitKw.toLocaleString("en-US")} kW\n` +
+      `Effective capacity: ${result.capacity.toLocaleString(L)} kW\n` +
+      `Estimated heat rejection: ${result.heat.toLocaleString(L)} kW\n` +
+      `Per-module derated: ${result.effectiveUnitKw.toLocaleString(L)} kW\n` +
       `Headroom: +${Math.max(0, result.headroomPct)}%\n`;
 
     const params = new URLSearchParams({
@@ -251,8 +255,8 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
       capacity: String(result.capacity),
       message: summary,
     });
-    return `/contact?${params.toString()}#contact-form`;
-  }, [power, application, circuit, ambient, altitude, redundancy, result, APPLICATIONS, ALTITUDES]);
+    return localePath(lang, `/contact?${params.toString()}#contact-form`);
+  }, [power, application, circuit, ambient, altitude, redundancy, result, APPLICATIONS, ALTITUDES, L, lang]);
 
   // Quote request drawer. The CTA keeps its /contact link (no JavaScript,
   // new tab, middle click); a plain click opens the drawer instead. Inside the
@@ -368,7 +372,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
           <div className="cfg-power-head">
             <span className="cfg-label" {...ed?.power}>{t.power}</span>
             <span className="cfg-power-value">
-              <strong>{power.toLocaleString("en-US")}</strong>
+              <strong>{power.toLocaleString(L)}</strong>
               <span> kW</span>
             </span>
           </div>
@@ -380,7 +384,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
             step={50}
             value={power}
             onChange={(e) => setPower(Number(e.target.value))}
-            aria-label="Engine power in kilowatts"
+            aria-label={a11y.power_slider}
             style={{ ["--fill" as string]: `${((power - 100) / (50000 - 100)) * 100}%` }}
           />
           <div className="cfg-power-marks" aria-hidden="true">
@@ -408,7 +412,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
             onKeyDown={(e) => {
               if (e.key === "Enter") commitPowerDraft(e.currentTarget.value);
             }}
-            aria-label="Engine power numeric input"
+            aria-label={a11y.power_input}
           />
         </div>
 
@@ -503,7 +507,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
         {/* SCADA-style live spec strip — sits inside the form column so the
             user sees the impact of every input change next to the input
             itself. Fills the space between N+1 and the static product card. */}
-        <aside className="cfg-hud" aria-label="Live build specifications">
+        <aside className="cfg-hud" aria-label={a11y.build_readout}>
           <header className="cfg-hud-head">
             <span className="cfg-hud-led" aria-hidden="true" />
             <p className="cfg-hud-title" {...ed?.hud_title}>{t.hud_title}</p>
@@ -533,8 +537,8 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
         <div className="cfg-product-card">
           <p className="kicker" {...ed?.card_kicker}>{t.card_kicker}</p>
           <ul className="cfg-product-specs">
-            <li><strong>{`${UNIT_KW.toLocaleString("en-US")} kW`}</strong><span {...ed?.card_heat}>{t.card_heat}</span></li>
-            <li><strong>{`~${k.footprintM2.toLocaleString("en-US")} m²`}</strong><span {...ed?.card_footprint}>{t.card_footprint}</span></li>
+            <li><strong>{`${UNIT_KW.toLocaleString(L)} kW`}</strong><span {...ed?.card_heat}>{t.card_heat}</span></li>
+            <li><strong>{`~${k.footprintM2.toLocaleString(L)} m²`}</strong><span {...ed?.card_footprint}>{t.card_footprint}</span></li>
             <li><strong {...ed?.card_circuits_value}>{t.card_circuits_value}</strong><span {...ed?.card_circuits}>{t.card_circuits}</span></li>
           </ul>
           <p className="cfg-product-tags">
@@ -583,7 +587,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
             <div
               className="cfg-stage"
               role="img"
-              aria-label={`Visualisation of ${totalUnits} M Tower modules`}
+              aria-label={fill(a11y.build_stage, { n: String(totalUnits) })}
               data-circuit={circuit}
             >
               <div className="cfg-stage-ground" aria-hidden="true" />
@@ -617,7 +621,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
                             loading="lazy"
                           />
                           {showCap ? (
-                            <div className="cfg-mod-cap">{UNIT_KW.toLocaleString("en-US")} kW</div>
+                            <div className="cfg-mod-cap">{UNIT_KW.toLocaleString(L)} kW</div>
                           ) : null}
                           {i < rowIdxs[rowIdxs.length - 1] ? (
                             <span className="cfg-mod-link" aria-hidden="true" />
@@ -644,7 +648,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
                 </span>
                 <span className="cfg-stage-status-sep">·</span>
                 <span className="cfg-stage-status-seg">
-                  {(totalUnits * UNIT_KW / 1000).toFixed(1).replace(/\.0$/, "")} MW
+                  {fmt(totalUnits * UNIT_KW / 1000, 1, L)} MW
                 </span>
                 <span className="cfg-stage-status-sep">·</span>
                 <span className="cfg-stage-status-seg">
@@ -668,19 +672,19 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
           <article className="cfg-metric">
             <span className="cfg-metric-label" {...ed?.metric_heat}>{t.metric_heat}</span>
             <span className="cfg-metric-value">
-              {result.heat.toLocaleString("en-US")} <small>kW</small>
+              {result.heat.toLocaleString(L)} <small>kW</small>
             </span>
           </article>
           <article className="cfg-metric">
             <span className="cfg-metric-label" {...ed?.metric_capacity}>{t.metric_capacity}</span>
             <span className="cfg-metric-value">
-              {result.capacity.toLocaleString("en-US")} <small>kW</small>
+              {result.capacity.toLocaleString(L)} <small>kW</small>
             </span>
           </article>
           <article className="cfg-metric">
             <span className="cfg-metric-label" {...ed?.metric_derated}>{t.metric_derated}</span>
             <span className="cfg-metric-value">
-              {result.effectiveUnitKw.toLocaleString("en-US")} <small>kW</small>
+              {result.effectiveUnitKw.toLocaleString(L)} <small>kW</small>
             </span>
           </article>
           <article className="cfg-metric">
@@ -727,7 +731,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
           inputs={{ power, application, circuit, ambient, altitude, redundancy }}
           result={result}
           specs={[
-            { label: t.power, value: `${fmt(power)} kW` },
+            { label: t.power, value: `${fmt(power, 0, L)} kW` },
             { label: t.application, value: APPLICATIONS.find((a) => a.value === application)?.label ?? application },
             { label: t.circuit, value: circuit === "double" ? t.circuit_double : t.circuit_single },
             { label: t.ambient, value: `${ambient} °C` },
@@ -735,17 +739,17 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
             { label: t.redundancy, value: redundancy ? t.status_redundant : t.status_base },
           ]}
           metrics={[
-            { label: t.metric_heat, value: `${fmt(result.heat)} kW` },
-            { label: t.metric_capacity, value: `${fmt(result.capacity)} kW` },
-            { label: t.hud_footprint, value: `${fmt(result.footprintM2, 1)} m²` },
-            { label: t.hud_water, value: `${fmt(result.waterLpm)} L/min` },
-            { label: t.hud_weight, value: `${fmt(result.weightT, 1)} t` },
-            { label: t.hud_electrical, value: `${fmt(result.electricalKva)} kVA` },
+            { label: t.metric_heat, value: `${fmt(result.heat, 0, L)} kW` },
+            { label: t.metric_capacity, value: `${fmt(result.capacity, 0, L)} kW` },
+            { label: t.hud_footprint, value: `${fmt(result.footprintM2, 1, L)} m²` },
+            { label: t.hud_water, value: `${fmt(result.waterLpm, 0, L)} L/min` },
+            { label: t.hud_weight, value: `${fmt(result.weightT, 1, L)} t` },
+            { label: t.hud_electrical, value: `${fmt(result.electricalKva, 0, L)} kVA` },
           ]}
           headline={{
             units: String(result.units),
             unitWord: result.units === 1 ? t.module_one : t.module_many,
-            sub: `${configFor(result.units)} · ${(totalUnits * UNIT_KW / 1000).toFixed(1).replace(/\.0$/, "")} MW`,
+            sub: `${configFor(result.units)} · ${fmt(totalUnits * UNIT_KW / 1000, 1, L)} MW`,
           }}
           moduleImg={MODULE_IMG}
           onClose={() => setQuoteOpen(false)}

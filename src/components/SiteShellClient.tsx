@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import type { EditMap } from "@/lib/kiwi-edit";
 import type { GLOBAL } from "@/content/global";
+import { useI18n } from "@/components/I18nProvider";
+import { localePath, type Lang } from "@/lib/i18n";
 
 export type NavKey = "home" | "solutions" | "technology" | "industries" | "projects" | "company" | "contact" | "legal" | "qhse" | "tower-m";
 
@@ -34,7 +36,15 @@ export type ShellContent = {
   };
 };
 
+/** Language menu (null while the Italian version isn't public). */
+export type ShellLanguages = {
+  label: string;
+  items: Array<{ lang: Lang; label: string; href: string }>;
+};
+
 type SiteShellProps = PropsWithChildren<{
+  lang: Lang;
+  languages: ShellLanguages | null;
   active: NavKey;
   content: ShellContent;
   /** Kiwi editor markers for the global blocks (undefined for visitors). */
@@ -59,9 +69,12 @@ const NAV_ITEMS: NavItem[] = [
   { key: "contact", href: "/contact" },
 ];
 
-export default function SiteShellClient({ active, content, edit, editing, children }: SiteShellProps) {
+export default function SiteShellClient({ lang, languages, active, content, edit, editing, children }: SiteShellProps) {
   const { nav, footer } = content;
-  const pathname = usePathname();
+  const { a11y } = useI18n();
+  // Path without the language prefix ("/it/projects" → "/projects").
+  const pathname = usePathname().replace(/^\/it(?=\/|$)/, "") || "/";
+  const to = (href: string) => localePath(lang, href);
   const [isSolid, setIsSolid] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -314,7 +327,7 @@ export default function SiteShellClient({ active, content, edit, editing, childr
       <div className="scroll-progress" aria-hidden="true" />
 
       <div className="topbar-wrap">
-        <Link className="floating-logo" href="/" aria-label="Enfrio home">
+        <Link className="floating-logo" href={to("/")} aria-label={a11y.home_link}>
           <Image {...edit?.images.logo} src={content.logo} alt={content.logoAlt} width={649} height={403} priority />
         </Link>
 
@@ -323,7 +336,7 @@ export default function SiteShellClient({ active, content, edit, editing, childr
             className="menu-toggle"
             aria-expanded={isMenuOpen}
             aria-controls="site-menu"
-            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            aria-label={isMenuOpen ? a11y.menu_close : a11y.menu_open}
             onClick={() => setIsMenuOpen((value) => !value)}
           >
             <span />
@@ -337,7 +350,7 @@ export default function SiteShellClient({ active, content, edit, editing, childr
                 key={item.key}
                 data-nav={item.key}
                 className={activeKey === item.key ? "active" : ""}
-                href={item.href}
+                href={to(item.href)}
                 onClick={() => setIsMenuOpen(false)}
                 {...(editing ? { "data-kiwi-page": item.key, "data-kiwi-page-title": nav[item.key] } : {})}
               >
@@ -345,6 +358,25 @@ export default function SiteShellClient({ active, content, edit, editing, childr
               </Link>
             ))}
           </nav>
+
+          {languages ? (
+            // Plain links: each language has its own root layout (full page load).
+            <div className="lang-switch" role="group" aria-label={languages.label}>
+              {languages.items.map((item) => (
+                <a
+                  key={item.lang}
+                  href={item.href}
+                  hrefLang={item.lang}
+                  lang={item.lang}
+                  className={item.lang === lang ? "active" : undefined}
+                  aria-current={item.lang === lang ? "true" : undefined}
+                  {...(item.lang === "en" ? edit?.i18n.switch_en : edit?.i18n.switch_it)}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          ) : null}
         </header>
       </div>
 
@@ -368,7 +400,7 @@ export default function SiteShellClient({ active, content, edit, editing, childr
                 <a href={`mailto:${footer.email}`} {...edit?.company.email}>{footer.email}</a>
               </p>
               <p>
-                <Link href="/contact" {...edit?.footer.contact_link}>{footer.contactLink}</Link>
+                <Link href={to("/contact")} {...edit?.footer.contact_link}>{footer.contactLink}</Link>
               </p>
             </div>
             <div>
@@ -379,10 +411,10 @@ export default function SiteShellClient({ active, content, edit, editing, childr
                 </a>
               </p>
               <p>
-                <Link href="/legal" {...edit?.footer.privacy_link}>{footer.privacyLink}</Link>
+                <Link href={to("/legal")} {...edit?.footer.privacy_link}>{footer.privacyLink}</Link>
               </p>
               <p>
-                <Link href="/qhse" {...edit?.footer.qhse_link}>{footer.qhseLink}</Link>
+                <Link href={to("/qhse")} {...edit?.footer.qhse_link}>{footer.qhseLink}</Link>
               </p>
             </div>
           </div>
@@ -394,7 +426,7 @@ export default function SiteShellClient({ active, content, edit, editing, childr
                 href="https://www.kiwienterprise.it"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="KiwiNetwork — site by Kiwi Enterprise"
+                aria-label={a11y.kiwi_credit}
               >
                 <svg
                   className="kiwi-mark"

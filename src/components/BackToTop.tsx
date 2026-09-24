@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "./I18nProvider";
 
 /**
  * BackToTop — small circular CTA pinned to the bottom-right that fades
@@ -15,6 +16,7 @@ import { useEffect, useState } from "react";
  * - Respects prefers-reduced-motion: instant scroll instead of smooth
  */
 export default function BackToTop() {
+  const { a11y } = useI18n();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -60,8 +62,8 @@ export default function BackToTop() {
       type="button"
       onClick={handleClick}
       className={`back-to-top magnetic${visible ? " is-visible" : ""}`}
-      aria-label="Back to top"
-      title="Back to top"
+      aria-label={a11y.back_to_top}
+      title={a11y.back_to_top}
       tabIndex={visible ? 0 : -1}
     >
       <svg

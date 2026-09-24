@@ -2,11 +2,13 @@
 
 import { useActionState, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { submitQuoteRequest, type QuoteFormState } from "@/app/tower-m/actions";
+import { submitQuoteRequest, type QuoteFormState } from "@/actions/quote";
 import EditSpan from "@/components/EditSpan";
 import type { EditAttrs } from "@/lib/kiwi-edit";
 import { fill } from "@/lib/content-format";
 import type { SizerInputs, SizerResult } from "@/lib/mtower-sizing";
+import { localePath } from "@/lib/i18n";
+import { useI18n } from "./I18nProvider";
 
 /** Texts of the drawer, from the Kiwi panel ("M Tower › Richiesta d'offerta —" + shared form fields). */
 export type QuoteTexts = {
@@ -87,6 +89,7 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
 
 export default function MTowerQuote({ texts, edit, inputs, result, specs, metrics, headline, moduleImg, onClose }: Props) {
   const { drawer: d, done, fields: f } = texts;
+  const { lang } = useI18n();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [state, formAction] = useActionState(submitQuoteRequest, initialState);
   const errors = state.fieldErrors ?? {};
@@ -246,6 +249,7 @@ export default function MTowerQuote({ texts, edit, inputs, result, specs, metric
           </div>
         ) : (
           <form action={formAction} className="contact-form mq-form" noValidate>
+            <input type="hidden" name="lang" value={lang} />
             {/* The configuration, recomputed on the server from these inputs. */}
             <input type="hidden" name="power" value={inputs.power} />
             <input type="hidden" name="application" value={inputs.application} />
@@ -313,7 +317,7 @@ export default function MTowerQuote({ texts, edit, inputs, result, specs, metric
               <input type="checkbox" name="consent" required defaultChecked={typed?.consent} aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? "mq-err-consent" : undefined} />
               <span>
                 <EditSpan a={edit?.fields?.consent}>{f.consent}</EditSpan>{" "}
-                <a href="/legal" target="_blank" {...edit?.fields?.consent_link}>{f.consent_link}</a>
+                <a href={localePath(lang, "/legal")} target="_blank" {...edit?.fields?.consent_link}>{f.consent_link}</a>
                 <EditSpan a={edit?.fields?.consent_end}>{f.consent_end}</EditSpan>
               </span>
             </label>

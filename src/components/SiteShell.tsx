@@ -1,8 +1,9 @@
 import type { PropsWithChildren } from "react";
 import KiwiHiddenFieldsMount from "@/components/KiwiHiddenFieldsMount";
-import SiteShellClient, { type NavKey, type ShellContent } from "@/components/SiteShellClient";
+import SiteShellClient, { type NavKey, type ShellContent, type ShellLanguages } from "@/components/SiteShellClient";
+import { localePath, type Lang } from "@/lib/i18n";
 import { getEditForClient, getEditorFields, isEditing } from "@/lib/kiwi-edit";
-import { companyInfo, getGlobal } from "@/lib/site-content";
+import { companyInfo, getGlobal, italianPublished } from "@/lib/site-content";
 import { COMPANY } from "@/content/company";
 import { CONTACT, CONTACT_FORM } from "@/content/contact";
 import { GLOBAL } from "@/content/global";
@@ -30,6 +31,20 @@ const PAGE_BLOCKS: Record<NavKey, PageDef[]> = {
   qhse: [QHSE],
 };
 
+/** English path of each page (the language menu links to the same page). */
+const PAGE_PATH: Record<NavKey, string> = {
+  home: "/",
+  solutions: "/solutions",
+  technology: "/technology",
+  "tower-m": "/tower-m",
+  industries: "/industries",
+  projects: "/projects",
+  company: "/company",
+  contact: "/contact",
+  legal: "/legal",
+  qhse: "/qhse",
+};
+
 /**
  * Server wrapper of the site chrome (menu + footer): resolves the shell
  * texts from the Kiwi panel and hands them to the interactive client shell.
@@ -38,13 +53,27 @@ const PAGE_BLOCKS: Record<NavKey, PageDef[]> = {
  * page's block list, e.g. for the 404 page).
  */
 export default async function SiteShell({
+  lang = "en",
   active,
   blocks,
   children,
-}: PropsWithChildren<{ active: NavKey; blocks?: PageDef[] }>) {
-  const [g, edit, editing] = await Promise.all([getGlobal(), getEditForClient(GLOBAL), isEditing()]);
+}: PropsWithChildren<{ lang?: Lang; active: NavKey; blocks?: PageDef[] }>) {
+  const [g, edit, editing] = await Promise.all([getGlobal(lang), getEditForClient(GLOBAL, lang), isEditing()]);
   const co = companyInfo(g);
-  const fields = editing ? await getEditorFields([...(blocks ?? PAGE_BLOCKS[active]), GLOBAL]) : null;
+  const fields = editing ? await getEditorFields([...(blocks ?? PAGE_BLOCKS[active]), GLOBAL], lang) : null;
+
+  // Language menu only once the Italian version is public (panel "Globale ›
+  // Lingue"): until then the English pages are exactly as before.
+  const path = PAGE_PATH[active];
+  const languages: ShellLanguages | null = italianPublished(g)
+    ? {
+        label: g.i18n.switch_label,
+        items: [
+          { lang: "en", label: g.i18n.switch_en, href: localePath("en", path) },
+          { lang: "it", label: g.i18n.switch_it, href: localePath("it", path) },
+        ],
+      }
+    : null;
 
   const content: ShellContent = {
     nav: {
@@ -79,7 +108,14 @@ export default async function SiteShell({
 
   return (
     <>
-      <SiteShellClient active={active} content={content} edit={edit} editing={editing || undefined}>
+      <SiteShellClient
+        lang={lang}
+        languages={languages}
+        active={active}
+        content={content}
+        edit={edit}
+        editing={editing || undefined}
+      >
         {children}
       </SiteShellClient>
       {fields && <KiwiHiddenFieldsMount fields={fields} />}

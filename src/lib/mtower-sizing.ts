@@ -100,7 +100,7 @@ export function parseSizerInputs(raw: (key: string) => string): SizerInputs | nu
   };
 }
 
-/** en-US grouping ("3,000"), at most `digits` decimals, as the configurator shows it. */
-export function fmt(n: number, digits = 0): string {
-  return n.toLocaleString("en-US", { maximumFractionDigits: digits });
+/** "3,000" (en-US) / "3.000" (it-IT), at most `digits` decimals, as the configurator shows it. */
+export function fmt(n: number, digits = 0, locale = "en-US"): string {
+  return n.toLocaleString(locale, { maximumFractionDigits: digits });
 }

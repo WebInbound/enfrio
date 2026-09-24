@@ -30,6 +30,11 @@ const nextConfig: NextConfig = {
       "./public/assets/images/site/mtower-render.png",
     ],
   },
+  experimental: {
+    // app/global-not-found.tsx: the 404 of the whole site, needed with the two
+    // root layouts of the English and Italian versions (app/(en), app/(it)).
+    globalNotFound: true,
+  },
   // Strict mode catches double-effects and cleanup bugs during dev.
   reactStrictMode: true,
   // Powered-By header leaks the framework; not a security risk but no

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useI18n } from "./I18nProvider";
 
 type Props = {
   value: number;
@@ -17,6 +18,7 @@ export default function AnimatedNumber({
   prefix = "",
   format = "int",
 }: Props) {
+  const { locale } = useI18n();
   const ref = useRef<HTMLSpanElement | null>(null);
   const [display, setDisplay] = useState(0);
   // Track whether this instance has ever entered the viewport. Once it has,
@@ -77,7 +79,13 @@ export default function AnimatedNumber({
     };
   }, [value, duration]);
 
-  const rendered = format === "float" ? display.toFixed(1) : Math.round(display).toLocaleString("en-US");
+  // English exactly as before; Italian with its separators ("12.000", "3,7").
+  const rendered =
+    format === "float"
+      ? locale === "en-US"
+        ? display.toFixed(1)
+        : display.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+      : Math.round(display).toLocaleString(locale);
 
   return (
     <span ref={ref} className="animated-number">

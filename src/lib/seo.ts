@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { localePath, ogLocale, type Lang } from "@/lib/i18n";
 
 // Shared per-page metadata builder. Next.js merges metadata SHALLOWLY, so a
 // page that declares its own `openGraph` would otherwise drop the root
@@ -12,28 +13,40 @@ import type { Metadata } from "next";
 const OG_IMAGE = "/assets/images/site/hero-main.jpg";
 const OG_ALT = "Enfrio — engineering aluminium cooling systems";
 
+/** hreflang alternates of an English path: English, Italian, x-default (English). */
+export function languageAlternates(path: string): Record<string, string> {
+  return { en: path, it: localePath("it", path), "x-default": path };
+}
+
 export function pageMetadata({
   path,
+  lang = "en",
+  bilingual = false,
   title,
   description,
   image = OG_IMAGE,
   imageAlt = OG_ALT,
 }: {
+  /** English path ("/tower-m"); the Italian one is derived. */
   path: string;
+  lang?: Lang;
+  /** Italian version public: add the hreflang alternates. */
+  bilingual?: boolean;
   title: string;
   description: string;
   image?: string;
   imageAlt?: string;
 }): Metadata {
+  const url = localePath(lang, path);
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: { canonical: url, ...(bilingual ? { languages: languageAlternates(path) } : {}) },
     openGraph: {
       type: "website",
       siteName: "Enfrio",
-      locale: "en_US",
-      url: path,
+      locale: ogLocale(lang),
+      url,
       title,
       description,
       images: [{ url: image, width: 1536, height: 1024, alt: imageAlt }],

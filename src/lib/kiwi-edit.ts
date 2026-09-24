@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import { cookies, draftMode } from "next/headers";
 import { getEntries } from "@/lib/kiwi";
 import type { BlockDef, PageDef } from "@/content/types";
+import type { Lang } from "@/lib/i18n";
 
 /**
  * Kiwi editor (edit-in-place) — server side.
@@ -141,8 +142,8 @@ export type EditMap<P extends PageDef> = {
  * `<h1 {...e.hero.title}>{hero.title}</h1>`. Visitors get {} (or the saved
  * editor style); inside the editor, the data-kiwi-* markers.
  */
-export async function getEdit<P extends PageDef>(page: P): Promise<EditMap<P>> {
-  const [editing, entries] = await Promise.all([isEditing(), getEntries(page)]);
+export async function getEdit<P extends PageDef>(page: P, lang: Lang = "en"): Promise<EditMap<P>> {
+  const [editing, entries] = await Promise.all([isEditing(), getEntries(page, lang)]);
   const out: Record<string, Record<string, EditAttrs>> = {};
   for (const [section, blocks] of Object.entries(entries as Record<string, Record<string, Parameters<typeof attrsFor>[1]>>)) {
     out[section] = {};
@@ -152,8 +153,8 @@ export async function getEdit<P extends PageDef>(page: P): Promise<EditMap<P>> {
 }
 
 /** Same map for client components: undefined for visitors without styles (keeps the RSC payload lean). */
-export async function getEditForClient<P extends PageDef>(page: P): Promise<EditMap<P> | undefined> {
-  const map = await getEdit(page);
+export async function getEditForClient<P extends PageDef>(page: P, lang: Lang = "en"): Promise<EditMap<P> | undefined> {
+  const map = await getEdit(page, lang);
   const hasAny = Object.values(map as Record<string, Record<string, EditAttrs>>).some((s) =>
     Object.values(s).some((a) => Object.keys(a).length > 0),
   );
@@ -161,10 +162,10 @@ export async function getEditForClient<P extends PageDef>(page: P): Promise<Edit
 }
 
 /** Every block of the given pages, for the editor's "hidden fields" panel. */
-export async function getEditorFields(pages: PageDef[]) {
+export async function getEditorFields(pages: PageDef[], lang: Lang = "en") {
   const lists = await Promise.all(
     pages.map(async (page) => {
-      const entries = (await getEntries(page)) as Record<string, Record<string, Parameters<typeof attrsFor>[1] & { value: string }>>;
+      const entries = (await getEntries(page, lang)) as Record<string, Record<string, Parameters<typeof attrsFor>[1] & { value: string }>>;
       return Object.values(entries).flatMap((section) =>
         Object.values(section).map((e) => ({
           slug: e.slug,
