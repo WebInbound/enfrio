@@ -22,9 +22,9 @@ principali e dati dal pannello Kiwi e riceve lì i contatti, **senza che il sito
 |---|---|---|
 | Registro dei contenuti | `src/content/*.ts` | 666 blocchi: slug = `<pagina>_<sezione>_<campo>`, etichetta e gruppo in italiano, default = testo del sito prima dell'integrazione |
 | Collection | `src/content/collections.ts` | `technology_machinery_gallery` (5), `industries_madrid_gallery` (5), `projects_references` (3), `projects_snapshots` (5) |
-| Lettura da Kiwi | `src/lib/kiwi.ts` | tutti i blocchi in una richiesta da `GET /api/site/blocks` quando Kiwi lo offre, altrimenti (e per gli slug assenti) uno per richiesta da `GET /api/site/block`; tutto in `unstable_cache` (tag `kiwi`, nessuna scadenza a tempo); timeout 2,5 s, max 4 richieste in parallelo (2 in build), circuit breaker 30 s (60 in build). Unico punto di rete: `kiwiGet()`. API in stile skill: `getBlock(slug, default, meta)` |
+| Lettura da Kiwi | `src/lib/kiwi.ts` | tutti i blocchi in una richiesta da `GET /api/site/blocks` quando Kiwi lo offre, altrimenti (e per gli slug assenti) uno per richiesta da `GET /api/site/block`; tutto in `unstable_cache` (tag `kiwi`, nessuna scadenza a tempo); timeout 8 s (2,5 s nell'editor, dove qualcuno aspetta), max 4 richieste in parallelo (2 in build), circuit breaker 30 s (60 in build). Unico punto di rete: `kiwiGet()`. API in stile skill: `getBlock(slug, default, meta)` |
 | Webhook | `src/app/api/revalidate/route.ts` | `POST ?secret=` → `revalidateTag("kiwi", "max")` |
-| Form contatti | `src/app/contact/actions.ts` | salva in Kiwi (`/api/site/contact`) **e** manda la mail con FormSubmit come prima; successo se almeno uno dei due va |
+| Form contatti | `src/app/contact/actions.ts` | salva in Kiwi (`/api/site/contact`) **e** manda la mail con FormSubmit come prima; **successo solo se la mail è partita** (dal 24 set: Kiwi oggi non avvisa nessuno, vedi sotto); IP del visitatore firmato verso Kiwi |
 | Configuratore M Tower | `src/components/MTowerSizer.tsx` | coefficienti e testi via props dalla pagina; gruppo "M Tower › Configuratore — coefficienti di calcolo (DA CONFERMARE)" |
 | Seed del database | `scripts/kiwi-seed-sql.mjs` | genera l'SQL idempotente dal registro |
 
@@ -52,9 +52,15 @@ periodica legge solo la cache dati (nessuna chiamata a Kiwi) salvo i blocchi mai
   (breaker, ultimo valore buono); l'euristica sull'header che serviva prima è stata tolta. Il parametro
   `_kv` resta (Kiwi lo ignora).
 - **Build cache Vercel**: `next build` usa la cache dati di `.next/cache` ripristinata dal deploy precedente,
-  che non sa nulla delle pubblicazioni successive. Un deploy può quindi partire con testi vecchi per la
-  prima rigenerazione (≤ 60 s + la visita successiva). Con l'endpoint in blocco si può leggere tutto fresco
-  in build (una richiesta).
+  che non sa nulla delle pubblicazioni successive. Dal 24 set la build rilegge i blocchi in blocco **una volta
+  per deploy** (chiave con `VERCEL_DEPLOYMENT_ID`, ripiego su `VERCEL_GIT_COMMIT_SHA`); se Kiwi è giù in quel
+  momento usa l'ultima fotografia della cache. Le collection restano sulla cache (le pagine le rileggono alla
+  prima rigenerazione). In locale non c'è l'id del deploy: per una build locale fresca cancellare
+  `.next/cache/fetch-cache`.
+- **La pagina 404 è un file statico** (Vercel la serve come `/404` fuori dall'ISR): nessuna pubblicazione e
+  nessuna rigenerazione la aggiornano, **solo il deploy successivo** (che ora legge Kiwi fresco, vedi sopra).
+  Vale per i testi del gruppo "Pagina 404 (online solo dal prossimo aggiornamento del sito)" e anche per
+  menu, footer e dati aziendali mostrati sulla 404. Per portarla online subito: un redeploy da Vercel.
 
 ## Parità verificata
 
@@ -131,7 +137,8 @@ pulsanti con testo maiuscolo via CSS letti col testo originale; clic su foto →
 spostamento; `KIWI_BLOCK_UPDATE` di testo e foto applicato; campo del pannello modificabile; navigazione
 dal menu e `KIWI_NAVIGATE`; schede e configuratore cliccabili; rinnovo token; `KIWI_TERMINATE` → pagina
 di nuovo pubblica; stesso browser, visita diretta → nessun attributo. Token sbagliato / di un'altra
-company → 401, nessun cookie; `next=//evil.com` → redirect a `/`.
+company → 401, nessun cookie; `next=//evil.com` → redirect a `/`. Dal 24 set `safeNext` risolve `next` come
+farebbe il browser e tiene solo un percorso sulla stessa origine: anche `/%09/evil.com`, `/%0A/…`, `/%5C…` → `/`.
 
 **Letture da Kiwi nell'editor**: in draft mode `unstable_cache` non legge né scrive la cache. Una lettura
 in blocco per rendering (non una per prefetch: le letture della stessa istanza sono condivise per 2 s),
@@ -167,9 +174,13 @@ kiwi-network **non esiste**. Per ora si cambiano dal database.
 2. ~~`/api/site/block` risponde 200 col default se il DB fallisce~~ — **risolto** (ora 503, `no-store`).
 3. `/api/site/contact` ha il rate limit per IP del chiamante: col form lato server l'IP è quello
    della function Vercel, quindi il limite (5/min) vale per tutto il sito, non per visitatore.
-   Per un sito B2B basta; da sapere.
+   **Dal 24 set** il sito manda l'IP del visitatore firmato (`x-kiwi-client-ip/-ts/-sig/-ua`, HMAC-SHA256 con
+   `KIWI_REVALIDATE_SECRET` di `ip.ts.company_id`, protocollo di kiwi-network `src/lib/site-contact-ip.ts`);
+   vale da quando la piattaforma lo verifica in produzione, prima gli header sono ignorati.
 4. `/api/site/contact` manda l'email solo al membro `owner` della company: Enfrio non ha membri,
-   quindi oggi Kiwi salva ma non avvisa nessuno. La mail arriva comunque da FormSubmit.
+   quindi oggi Kiwi salva ma non avvisa nessuno. Per questo dal 24 set il visitatore vede "inviato" solo
+   se la mail di FormSubmit è partita; con la sola copia su Kiwi vede l'errore con l'indirizzo email.
+   Quando Enfrio avrà un owner con l'avviso di Kiwi si potrà tornare a "basta uno dei due".
 5. Link "Elenchi" dell'editor verso una pagina admin inesistente (vedi sopra).
 6. ~~CDN 30-90 s su `/api/site/block` e `/api/site/collections`~~ — **risolto** (ora `no-store`).
 7. Tetto `MAX_AUTO_BLOCKS = 500` (in salita a 2000 secondo il coordinatore): Enfrio ha 666 blocchi, tutti
@@ -192,7 +203,13 @@ kiwi-network **non esiste**. Per ora si cambiano dal database.
   cancellazione definitiva di dati non la fa l'agente): la può cancellare Christopher dal pannello.
 - Controllo di parità fra due siti live: `PARITY_COOKIE="_vercel_jwt=..." node scripts/parity-check.mjs
   <preview> https://www.enfrio.it` (il cookie si ottiene aprendo il link di condivisione della preview).
-- Privacy: il form ora conserva i dati anche su Kiwi (Kiwi Network SRL + Supabase/Vercel). La pagina
-  privacy elenca Vercel e FormSubmit: va deciso se aggiungere Kiwi. C'è già il blocco facoltativo
-  `legal_recipients_processor_4` (vuoto = non mostrato), così non serve toccare il codice.
+- Privacy (**aperto, decisione di Christopher**, revisione del 24 set): il form conserva i dati anche su Kiwi
+  (Kiwi Network SRL + Supabase/Vercel), senza scadenza, ma /legal elenca solo Vercel, FormSubmit e il provider
+  email ("Last updated 29 May 2026", conservazione "fino a 24 mesi"). Serve: il testo di
+  `legal_recipients_processor_4` (vuoto = non mostrato) che nomina Kiwi Network SRL, la data
+  `legal_hero_updated`, la conservazione allineata (o cancellazione a 24 mesi anche su Kiwi) e la nomina a
+  responsabile ex art. 28 fra Enfrio e Kiwi. Tutto dal pannello, nessun codice.
+- Repo pubblico (**aperto, decisione di Christopher**): `WebInbound/enfrio` è pubblico; va reso privato
+  (prima verificare che il piano Vercel del team faccia il deploy da un repo privato dell'org). Dettaglio del
+  rischio nel repo privato kiwi-network, `docs/siti-clienti-blocchi-in-blocco.md` ("Rischi noti").
 - `vercel.json` porta le function a `dub1` (Dublino, vicino al database Kiwi).

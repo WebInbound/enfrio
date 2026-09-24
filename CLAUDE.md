@@ -136,7 +136,9 @@ his partner ("il socio") generates AI images from another machine and pushes the
 - **Sizer coefficients are placeholders** (now editable in the Kiwi panel, group "M Tower ›
   Configuratore — coefficienti di calcolo (DA CONFERMARE)"): footprint is 12 m²/module everywhere now
   (HUD reconciled from a stray 4.2). Power clamp on shared-link read = 100000 (matches the
-  number input). Awaiting Enfrio's real numbers.
+  number input, which keeps the typed text as a draft and clamps to 100–100000 on blur/Enter).
+  kW, L/min and kVA accept Italian thousands ("2.150" = 2150); a rejected value logs `[sizer]`
+  and uses the default. Awaiting Enfrio's real numbers.
 - **Pending (need owner input)** — now panel fields, no code change needed: datasheet PDF link
   (`global_documents_mtower_datasheet_url`; empty = button stays `disabled`),
   JSON-LD `sameAs` (social URLs) + `telephone`/contactPoint.
@@ -160,11 +162,24 @@ The site is connected to the Kiwi Network panel (company **Enfrio Srl**
   page and JSON-LD (`companyInfo()` in `src/lib/site-content.ts`). Never hard-code the address,
   VAT or email again.
 - **Pages stay static** (ISR, `revalidate = 60` in `layout.tsx`). Kiwi is read only while a page
-  regenerates, through `unstable_cache` (tag `kiwi`, no time expiry), 2.5 s timeout, ≤4 requests
-  in flight, circuit breaker. Kiwi slow/down → last good value, else the registry default. Never
-  call `cookies()`/`headers()` or a no-store fetch in a page render: it would make the site dynamic.
+  regenerates, through `unstable_cache` (tag `kiwi`, no time expiry), 8 s timeout (2.5 s in the
+  editor, where someone waits), ≤4 requests in flight, circuit breaker. Kiwi slow/down → last good
+  value, else the registry default. Never call `cookies()`/`headers()` or a no-store fetch in a page
+  render: it would make the site dynamic. The build reads the bulk blocks fresh once per deploy
+  (key with `VERCEL_DEPLOYMENT_ID`): the restored build cache never sees publishes.
+- **The 404 page is a static file**: no publish or regeneration refreshes it, only the next deploy
+  (panel group "Pagina 404 (online solo dal prossimo aggiornamento del sito)"; same for the footer /
+  company data shown on it).
 - **Publishing**: Kiwi POSTs `/api/revalidate?secret=` → `revalidateTag("kiwi", "max")`.
-- **Contact form**: stored in the Kiwi panel AND emailed via FormSubmit; success if either worked.
+- **Contact form**: stored in the Kiwi panel AND emailed via FormSubmit; **success only if the email
+  went out** (Kiwi notifies nobody while Enfrio has no owner member). On an error the action hands
+  back the typed values (React 19 resets action forms). The Kiwi call carries the visitor IP signed
+  with `KIWI_REVALIDATE_SECRET` (`x-kiwi-client-*`, kiwi-network `src/lib/site-contact-ip.ts`).
+- **Untrusted panel values in HTML**: JSON-LD goes through `scriptSafeJson` (layout.tsx), richtext
+  through `sanitizeRich` (a tokenizer: every stray `<` becomes `&lt;`). The parity check fails on a
+  JSON-LD block with a raw `<`. Don't type backslash-u unicode escapes (backslash + "u003c") in
+  source: the agent tooling has silently decoded them to the raw character before, which is how the
+  JSON-LD escape became a no-op. Build them from char codes and check the bytes with `od -c`.
 - **Parity check**: `npm run build` then `node scripts/parity-check.mjs` (diffs the normalised HTML of
   `.next/server/app/*.html` against www.enfrio.it). Zero diff is the bar for any integration change.
 - Env (Vercel, Preview + Production): `KIWI_COMPANY_ID`, `KIWI_API_BASE`, `KIWI_REVALIDATE_SECRET`,
