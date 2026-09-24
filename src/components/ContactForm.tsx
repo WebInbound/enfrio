@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useLayoutEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import { submitContactForm, type ContactFormState } from "@/app/contact/actions";
@@ -107,6 +107,19 @@ export default function ContactForm({
       form?.reset();
     }
   }, [state.status]);
+
+  // After an error React has reset the whole <form> too, and a controlled
+  // <select> doesn't come back by itself (it jumps to the first option):
+  // put the state values back before paint.
+  useLayoutEffect(() => {
+    if (state.status !== "error") return;
+    const form = document.getElementById("contact-form") as HTMLFormElement | null;
+    const select = (name: string) => form?.elements.namedItem(name) as HTMLSelectElement | null;
+    const scopeSelect = select("projectScope");
+    const timelineSelect = select("timeline");
+    if (scopeSelect) scopeSelect.value = scope;
+    if (timelineSelect) timelineSelect.value = timeline;
+  }, [state, scope, timeline]);
 
   return (
     <form action={formAction} className="contact-form" noValidate id="contact-form">
