@@ -2,70 +2,51 @@ import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import SiteShell from "@/components/SiteShell";
-import MTowerSizer, { type SizerCoefficients } from "@/components/MTowerSizer";
+import MTowerSizer from "@/components/MTowerSizer";
 import MTowerStage from "@/components/MTowerStage";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import DeploySwitcher from "@/components/DeploySwitcher";
 import Stat from "@/components/Stat";
 import { getContent } from "@/lib/kiwi";
 import { getEdit, getEditForClient, isEditing } from "@/lib/kiwi-edit";
-import { toNumber } from "@/lib/content-format";
+import { sizerCoefficients } from "@/lib/mtower-coefficients";
 import { getGlobal, pageSeo } from "@/lib/site-content";
-import { SIZER, TOWER_M } from "@/content/tower-m";
-import type { Content } from "@/content/types";
+import { QUOTE, SIZER, TOWER_M } from "@/content/tower-m";
+import { CONTACT_FORM } from "@/content/contact";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { seo } = await getContent(TOWER_M);
   return pageSeo("/tower-m", seo);
 }
 
-/** Coefficients typed in the panel → numbers, each range-checked (bad input → default). */
-function sizerCoefficients(c: Content<typeof SIZER>["coefficients"]): SizerCoefficients {
-  const d = SIZER.sections.coefficients.blocks;
-  const num = (key: keyof typeof d, min: number, max: number, thousands = false) => {
-    const n = toNumber(c[key], NaN, { min, max, thousands });
-    if (Number.isFinite(n)) return n;
-    // Not silent: the panel shows the typed value while the sizer uses the default.
-    console.warn(`[sizer] coefficient ${key} = "${c[key]}" is not a number in ${min}–${max}: using ${d[key].default}`);
-    return Number(d[key].default);
-  };
-  return {
-    unitKw: num("unit_kw", 100, 100000, true),
-    footprintM2: num("footprint_m2", 0.1, 1000),
-    waterLpm: num("water_lpm", 1, 100000, true),
-    weightT: num("weight_t", 0.01, 1000),
-    electricalKva: num("electrical_kva", 0.1, 100000, true),
-    factor: {
-      diesel: num("factor_diesel", 0.05, 2),
-      gas: num("factor_gas", 0.05, 2),
-      datacenter: num("factor_datacenter", 0.05, 2),
-      custom: num("factor_custom", 0.05, 2),
-    },
-    doubleCircuit: num("double_circuit", 1, 2),
-    ambientDerate: {
-      30: num("derate_30c", 0.1, 1.5),
-      40: num("derate_40c", 0.1, 1.5),
-      50: num("derate_50c", 0.1, 1.5),
-    },
-    altitudeDerate: {
-      low: num("derate_alt_low", 0.1, 1.5),
-      med: num("derate_alt_med", 0.1, 1.5),
-      high: num("derate_alt_high", 0.1, 1.5),
-    },
-  };
+/** The contact-form texts the quote drawer shares (labels, timeline, consent). */
+function quoteFields<F extends Record<string, unknown>>(f: F) {
+  const keys = [
+    "name", "company", "email", "phone", "timeline", "select_placeholder", "timeline_3m", "timeline_6m",
+    "timeline_12m", "timeline_exploring", "consent", "consent_link", "consent_end",
+  ] as const;
+  return Object.fromEntries(keys.map((k) => [k, f[k]])) as Record<(typeof keys)[number], F[(typeof keys)[number]]>;
 }
 
 export default async function TowerMPage() {
-  const [c, sizer, g] = await Promise.all([getContent(TOWER_M), getContent(SIZER), getGlobal()]);
+  const [c, sizer, g, quote, form] = await Promise.all([
+    getContent(TOWER_M),
+    getContent(SIZER),
+    getGlobal(),
+    getContent(QUOTE),
+    getContent(CONTACT_FORM),
+  ]);
   const { craft, why, scale, sizer_intro, deploy, outro } = c;
   const render = g.images.mtower_render;
   const datasheetUrl = g.documents.mtower_datasheet_url;
   const tierLabels = [scale.tier1_label, scale.tier2_label, scale.tier3_label, scale.tier4_label];
 
-  const [e, ec, sc, editing] = await Promise.all([
+  const [e, ec, sc, qe, fe, editing] = await Promise.all([
     getEdit(TOWER_M),
     getEditForClient(TOWER_M),
     getEditForClient(SIZER),
+    getEditForClient(QUOTE),
+    getEditForClient(CONTACT_FORM),
     isEditing(),
   ]);
 
@@ -321,6 +302,10 @@ export default async function TowerMPage() {
           moduleImg={render}
           edit={sc && { ...sc.inputs, ...sc.readout }}
           editing={editing || undefined}
+          quote={{
+            texts: { drawer: quote.drawer, done: quote.done, fields: quoteFields(form.fields) },
+            edit: qe || fe ? { drawer: qe?.drawer, done: qe?.done, fields: fe?.fields } : undefined,
+          }}
         />
       </section>
 

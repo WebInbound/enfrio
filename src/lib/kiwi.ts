@@ -461,7 +461,20 @@ export type KiwiContact = {
   message: string;
   source: string;
   metadata?: Record<string, unknown>;
+  /**
+   * Copy for the requester (the quote request's PDF summary): Kiwi emails it
+   * to `email`, only when the call carries the signed visitor IP, i.e. comes
+   * from this server. Texts come from the panel, never from the visitor.
+   */
+  requesterCopy?: { subject: string; text: string; filename: string; pdfBase64: string };
 };
+
+/**
+ * stored: the lead is in the Kiwi panel. requesterCopy: what happened to the
+ * copy for the requester — "unsupported" when this Kiwi doesn't know the
+ * field yet (older platform: nothing was emailed), "none" when none was asked.
+ */
+export type KiwiContactResult = { stored: boolean; requesterCopy: "sent" | "failed" | "unsupported" | "none" };
 
 export type KiwiVisitor = { ip: string; userAgent: string };
 
@@ -487,29 +500,52 @@ function signedVisitorHeaders(visitor?: KiwiVisitor): Record<string, string> {
   };
 }
 
-/** Store a contact form submission in the Kiwi panel ("Messaggi"). */
-export async function sendKiwiContact(contact: KiwiContact, visitor?: KiwiVisitor): Promise<boolean> {
-  if (!kiwiEnabled) return false;
+/** Store a contact form submission in the Kiwi panel ("Messaggi"). Never throws. */
+export async function sendKiwiContact(contact: KiwiContact, visitor?: KiwiVisitor): Promise<KiwiContactResult> {
+  const { requesterCopy, ...lead } = contact;
+  const asked = requesterCopy ? "failed" : "none";
+  if (!kiwiEnabled) return { stored: false, requesterCopy: asked };
   try {
     const res = await fetch(`${API_BASE}/api/site/contact`, {
       method: "POST",
       cache: "no-store",
-      signal: AbortSignal.timeout(6000),
+      // Kiwi sends the requester's copy before answering: allow for the email.
+      signal: AbortSignal.timeout(requesterCopy ? 12_000 : 6000),
       headers: {
         "content-type": "application/json",
         accept: "application/json",
         ...signedVisitorHeaders(visitor),
       },
-      body: JSON.stringify({ company_id: COMPANY_ID, ...contact }),
+      body: JSON.stringify({
+        company_id: COMPANY_ID,
+        ...lead,
+        ...(requesterCopy
+          ? {
+              requester_copy: {
+                subject: requesterCopy.subject,
+                text: requesterCopy.text,
+                filename: requesterCopy.filename,
+                pdf_base64: requesterCopy.pdfBase64,
+              },
+            }
+          : {}),
+      }),
     });
-    const json = (await res.json().catch(() => null)) as { success?: boolean; error?: string } | null;
+    const json = (await res.json().catch(() => null)) as
+      | { success?: boolean; error?: string; requester_copy?: unknown }
+      | null;
     if (!res.ok || json?.success !== true) {
       console.error("[contact] Kiwi not stored", res.status, json?.error ?? "<no body>");
-      return false;
+      return { stored: false, requesterCopy: asked };
     }
-    return true;
+    if (!requesterCopy) return { stored: true, requesterCopy: "none" };
+    const copy = json.requester_copy;
+    if (copy === "sent") return { stored: true, requesterCopy: "sent" };
+    if (copy === undefined) return { stored: true, requesterCopy: "unsupported" };
+    console.warn("[contact] Kiwi did not email the requester's copy:", String(copy).slice(0, 60));
+    return { stored: true, requesterCopy: "failed" };
   } catch (err) {
     console.error("[contact] Kiwi unreachable", err instanceof Error ? err.name : err);
-    return false;
+    return { stored: false, requesterCopy: asked };
   }
 }

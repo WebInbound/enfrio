@@ -23,13 +23,13 @@ import { COMPANY } from "../src/content/company.ts";
 import { CONTACT, CONTACT_FORM } from "../src/content/contact.ts";
 import { QHSE } from "../src/content/qhse.ts";
 import { LEGAL } from "../src/content/legal.ts";
-import { TOWER_M, SIZER } from "../src/content/tower-m.ts";
+import { TOWER_M, SIZER, QUOTE } from "../src/content/tower-m.ts";
 import { COLLECTIONS } from "../src/content/collections.ts";
 
 const COMPANY_ID = "9f5b766d-d5f6-4f0d-8195-da13dd435aac"; // Enfrio Srl
 const SITE = "https://www.enfrio.it";
 
-const PAGES = [GLOBAL, NOT_FOUND, HOME, SOLUTIONS, TECHNOLOGY, INDUSTRIES, PROJECTS_PAGE, COMPANY, CONTACT, CONTACT_FORM, QHSE, LEGAL, TOWER_M, SIZER];
+const PAGES = [GLOBAL, NOT_FOUND, HOME, SOLUTIONS, TECHNOLOGY, INDUSTRIES, PROJECTS_PAGE, COMPANY, CONTACT, CONTACT_FORM, QHSE, LEGAL, TOWER_M, SIZER, QUOTE];
 
 // SQL string literal, pure ASCII: E'...' with \uXXXX escapes for anything
 // outside printable ASCII (non-breaking spaces, arrows, "›" ...), so the SQL
@@ -47,9 +47,15 @@ const q = (v) => {
 // site maps them back to the same local path.
 const abs = (type, v) => ((type === "image" || type === "url") && v.startsWith("/") ? SITE + v : v);
 
+// --page <id>: only the blocks of that registry (e.g. "quote"), no collections.
+const pageArg = process.argv.indexOf("--page");
+const onlyPage = pageArg > 0 ? process.argv[pageArg + 1] : null;
+if (onlyPage && !PAGES.some((p) => p.id === onlyPage)) throw new Error(`no registry with id ${onlyPage}`);
+
 const rows = [];
 const slugs = new Set();
 for (const page of PAGES) {
+  if (onlyPage && page.id !== onlyPage) continue;
   for (const [sectionKey, section] of Object.entries(page.sections)) {
     for (const [key, def] of Object.entries(section.blocks)) {
       const slug = `${page.id}_${sectionKey}_${key}`;
@@ -126,7 +132,7 @@ ${items}
 ) as v(company_id, collection_slug, title, body, image_url, metadata, published, display_order)
 where not exists (select 1 from public.web_content_items w where w.company_id = ${q(COMPANY_ID)} and w.collection_slug = ${q(c.slug)});`);
 });
-statements.push(collectionSql.join("\n\n"));
+if (!onlyPage) statements.push(collectionSql.join("\n\n"));
 
 if (part > 0) {
   if (!statements[part - 1]) throw new Error(`no part ${part} (parts: ${statements.length})`);

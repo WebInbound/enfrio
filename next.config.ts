@@ -20,6 +20,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // The quote request (server action of /tower-m) builds the PDF summary on
+  // the server: brand fonts and the default logo/render must travel with the
+  // function (public/ is served by the CDN, not bundled).
+  outputFileTracingIncludes: {
+    "/tower-m": [
+      "./src/assets/pdf/*.ttf",
+      "./public/assets/images/logo-enfrio.png",
+      "./public/assets/images/site/mtower-render.png",
+    ],
+  },
   // Strict mode catches double-effects and cleanup bugs during dev.
   reactStrictMode: true,
   // Powered-By header leaks the framework; not a security risk but no

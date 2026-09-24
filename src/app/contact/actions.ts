@@ -5,6 +5,7 @@ import { getContent, sendKiwiContact } from "@/lib/kiwi";
 import { fill } from "@/lib/content-format";
 import { CONTACT_FORM } from "@/content/contact";
 import { GLOBAL } from "@/content/global";
+import { sendFormSubmit, TARGET_INBOX } from "@/lib/formsubmit";
 
 /** What the visitor typed in the uncontrolled fields, handed back on an error. */
 export type ContactFormValues = { name: string; company: string; email: string; phone: string; consent: boolean };
@@ -27,11 +28,6 @@ export type ContactFormState = {
 // Enfrio has none yet. So the visitor sees success only when the email went
 // out; with the Kiwi copy alone they get the "email us directly" error (the
 // copy stays in the panel all the same).
-const TARGET_INBOX = process.env.CONTACT_TO ?? "info@enfrio.eu";
-// FormSubmit ties a form to its referring domain and rejects server-side
-// calls that don't look like they came from it. Must match the live origin.
-const SITE_ORIGIN = process.env.SITE_URL ?? "https://www.enfrio.it";
-
 // Per-browser rate limit. Set after a successful send, blocks resubmits
 // from the same browser for RATE_LIMIT_SECONDS. Not a defence against
 // determined bots (a fresh cookie jar bypasses it) but it's a cheap
@@ -144,7 +140,7 @@ export async function submitContactForm(
   };
 
   try {
-    const [storedInKiwi, emailed] = await Promise.all([
+    const [{ stored: storedInKiwi }, emailed] = await Promise.all([
       sendKiwiContact({
         name,
         email,
@@ -153,7 +149,7 @@ export async function submitContactForm(
         source: "enfrio.it/contact",
         metadata: { company, projectScope, timeline, consent: true },
       }, visitor),
-      sendFormSubmit(payload),
+      sendFormSubmit(payload, "/contact"),
     ]);
 
     if (!emailed) {
@@ -189,47 +185,3 @@ export async function submitContactForm(
   }
 }
 
-/** Email the lead to the company inbox through FormSubmit. Never throws. */
-async function sendFormSubmit(payload: Record<string, string>): Promise<boolean> {
-  const endpoint = `https://formsubmit.co/ajax/${encodeURIComponent(TARGET_INBOX)}`;
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      signal: AbortSignal.timeout(10_000),
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        // FormSubmit's anti-abuse check rejects server-side calls with no
-        // browser Origin/Referer ("...open this page through a web server"),
-        // and it's the domain it ties the form + activation to. This runs as
-        // a server action, so set them explicitly to the live site origin.
-        Origin: SITE_ORIGIN,
-        Referer: `${SITE_ORIGIN}/contact`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    // FormSubmit returns HTTP 200 even on logical failures (missing referer,
-    // form not yet activated, captcha, etc.) with {"success":"false"}. Only
-    // checking response.ok would report a FALSE success and silently drop the
-    // lead — so validate the JSON success flag (it comes back as a string).
-    const result = (await response.json().catch(() => null)) as
-      | { success?: string | boolean; message?: string }
-      | null;
-    const delivered =
-      response.ok &&
-      (result?.success === true || result?.success === "true");
-
-    if (!delivered) {
-      console.error(
-        "[contact] FormSubmit not delivered",
-        response.status,
-        result?.message ?? "<no body>",
-      );
-    }
-    return delivered;
-  } catch (error) {
-    console.error("[contact] FormSubmit unreachable", error instanceof Error ? error.name : error);
-    return false;
-  }
-}

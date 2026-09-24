@@ -13,7 +13,7 @@ import { PROJECTS_PAGE } from "@/content/projects";
 import { QHSE } from "@/content/qhse";
 import { SOLUTIONS } from "@/content/solutions";
 import { TECHNOLOGY } from "@/content/technology";
-import { SIZER, TOWER_M } from "@/content/tower-m";
+import { QUOTE, SIZER, TOWER_M } from "@/content/tower-m";
 import type { PageDef } from "@/content/types";
 
 /** Blocks listed in the Kiwi editor's "other texts" panel, per page. */
@@ -21,7 +21,7 @@ const PAGE_BLOCKS: Record<NavKey, PageDef[]> = {
   home: [HOME],
   solutions: [SOLUTIONS],
   technology: [TECHNOLOGY],
-  "tower-m": [TOWER_M, SIZER],
+  "tower-m": [TOWER_M, SIZER, QUOTE],
   industries: [INDUSTRIES],
   projects: [PROJECTS_PAGE],
   company: [COMPANY],

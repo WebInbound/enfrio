@@ -389,3 +389,112 @@ export const SIZER = {
     },
   },
 } satisfies PageDef;
+
+// Quote request from the configurator (proposal KW-2026-002, A.5): the drawer
+// that sends the sized build to Enfrio, the confirmation, the PDF summary and
+// the email the requester receives. Field labels, timeline options, consent
+// and error messages are shared with the contact form ("Form contatti ›").
+// {ref} = request reference, {email} = requester's email, {company} = requester's company.
+export const QUOTE = {
+  id: "quote",
+  sections: {
+    drawer: {
+      group: "M Tower › Richiesta d'offerta — pannello",
+      blocks: {
+        kicker: { label: "Occhiello", default: "REQUEST A QUOTE" },
+        title: { label: "Titolo", default: "Send this build to Enfrio engineering" },
+        lead: {
+          label: "Testo sotto il titolo",
+          default: "Your configuration travels with the request. Our engineers check it against real platform data and reply with a sized offer.",
+          type: "textarea",
+        },
+        build_label: { label: "Riepilogo configurazione — titolo", default: "YOUR CONFIGURATION" },
+        edit: { label: "Link per tornare a modificare la configurazione", default: "Edit" },
+        close: { label: "Pulsante chiudi (letto dagli screen reader)", default: "Close" },
+        location: { label: "Campo luogo del progetto", default: "Project location" },
+        location_placeholder: { label: "Suggerimento nel campo luogo", default: "City, country" },
+        notes: { label: "Campo note", default: "Notes for engineering" },
+        notes_placeholder: {
+          label: "Suggerimento nel campo note",
+          default: "Engine model, installation constraints, delivery milestones...",
+          type: "textarea",
+        },
+        email_note: {
+          label: "Nota sopra il pulsante (PDF via email)",
+          default: "You will receive a PDF summary of this configuration at your work email.",
+          type: "textarea",
+        },
+        submit: { label: "Pulsante invia", default: "Send request" },
+        sending: { label: "Pulsante durante l'invio", default: "Sending..." },
+        config_invalid: {
+          label: "Errore: configurazione non valida",
+          default: "This configuration can't be sent. Reload the page and try again.",
+          type: "textarea",
+        },
+      },
+    },
+    done: {
+      group: "M Tower › Richiesta d'offerta — conferma",
+      blocks: {
+        kicker: { label: "Occhiello", default: "REQUEST SENT" },
+        title: { label: "Titolo", default: "Your build is with Enfrio engineering." },
+        ref_label: { label: "Etichetta del numero di riferimento", default: "Reference" },
+        emailed: {
+          label: "Testo se il PDF è partito per email ({email})",
+          default: "A PDF summary is on its way to {email}. We will reply to the same address.",
+          type: "textarea",
+        },
+        not_emailed: {
+          label: "Testo se il PDF non è partito per email ({email})",
+          default: "We will reply to {email}. Download the PDF summary of your configuration here.",
+          type: "textarea",
+        },
+        download: { label: "Pulsante scarica PDF", default: "Download PDF summary" },
+        back: { label: "Pulsante torna al configuratore", default: "Back to the configurator" },
+      },
+    },
+    pdf: {
+      group: "M Tower › Richiesta d'offerta — PDF di riepilogo",
+      blocks: {
+        title: { label: "Titolo del PDF", default: "M Tower configuration summary" },
+        ref_label: { label: "Etichetta riferimento", default: "Reference" },
+        date_label: { label: "Etichetta data", default: "Date" },
+        inputs_title: { label: "Titolo dati di progetto", default: "Design inputs" },
+        results_title: { label: "Titolo risultato", default: "Sized build" },
+        units_label: { label: "Scritta accanto al numero di moduli", default: "M Tower modules" },
+        spare: { label: "Nota sul modulo di riserva (N+1)", default: "incl. 1 spare module" },
+        disclaimer: {
+          label: "Avvertenza (valore orientativo, art. 4 del contratto)",
+          default:
+            "Indicative sizing calculated by the configurator on www.enfrio.it with provisional coefficients. It is not an offer: final sizing is confirmed by Enfrio engineering on actual platform data.",
+          type: "textarea",
+        },
+        next_title: { label: "Prossimi passi — titolo", default: "What happens next" },
+        next_text: {
+          label: "Prossimi passi — testo",
+          default: "Enfrio engineering reviews your configuration and replies with a sized offer to the email address you provided.",
+          type: "textarea",
+        },
+        filename: { label: "Nome del file PDF (senza .pdf; si aggiunge il riferimento)", default: "Enfrio-M-Tower" },
+      },
+    },
+    email: {
+      group: "M Tower › Richiesta d'offerta — email al richiedente",
+      blocks: {
+        subject: { label: "Oggetto ({ref})", default: "Your M Tower configuration {ref} — Enfrio" },
+        text: {
+          label: "Testo ({ref}); il PDF è allegato",
+          default:
+            "Thank you for your request.\n\nAttached is the summary of the M Tower configuration you sent us (reference {ref}). Enfrio engineering will review it and reply to this address.\n\nEnfrio Srl",
+          type: "textarea",
+        },
+      },
+    },
+    notify: {
+      group: "M Tower › Richiesta d'offerta — avviso a Enfrio",
+      blocks: {
+        subject: { label: "Oggetto dell'email a Enfrio ({ref}, {company})", default: "M Tower quote request {ref} — {company}" },
+      },
+    },
+  },
+} satisfies PageDef;

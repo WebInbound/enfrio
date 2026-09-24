@@ -1,30 +1,27 @@
 "use client";
 
 import type { EditAttrs } from "@/lib/kiwi-edit";
+import {
+  ALTITUDE_VALUES,
+  AMBIENT_VALUES,
+  APPLICATION_VALUES,
+  POWER_MAX,
+  POWER_MIN,
+  fmt,
+  sizeBuild,
+  type AltitudeValue,
+  type ApplicationValue,
+  type SizerCoefficients,
+} from "@/lib/mtower-sizing";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AnimatedNumber from "./AnimatedNumber";
+import type { QuoteEdit, QuoteTexts } from "./MTowerQuote";
 
-/** Engine power accepted by the numeric field and by a shared link (kW). */
-const POWER_MIN = 100;
-const POWER_MAX = 100000;
-
-/**
- * Calculation coefficients, editable in the Kiwi panel ("M Tower ›
- * Configuratore — coefficienti"). PLACEHOLDER values pending confirmation
- * by Enfrio engineering; the tower-m page parses and range-checks them.
- */
-export type SizerCoefficients = {
-  unitKw: number;
-  footprintM2: number;
-  waterLpm: number;
-  weightT: number;
-  electricalKva: number;
-  factor: { diesel: number; gas: number; datacenter: number; custom: number };
-  doubleCircuit: number;
-  ambientDerate: { 30: number; 40: number; 50: number };
-  altitudeDerate: { low: number; med: number; high: number };
-};
+// The quote drawer (form + PDF download) is loaded on the first click only.
+const loadQuote = () => import("./MTowerQuote");
+const MTowerQuote = dynamic(loadQuote, { ssr: false });
 
 /** Interface texts of the simulator, from the Kiwi panel. */
 export type SizerText = {
@@ -82,14 +79,6 @@ export type SizerText = {
   share_error: string;
 };
 
-const APPLICATION_VALUES = ["diesel", "gas", "datacenter", "custom"] as const;
-type ApplicationValue = (typeof APPLICATION_VALUES)[number];
-
-const AMBIENT_VALUES = [30, 40, 50] as const;
-
-const ALTITUDE_VALUES = ["low", "med", "high"] as const;
-type AltitudeValue = (typeof ALTITUDE_VALUES)[number];
-
 type SizerProps = {
   text: SizerText;
   coefficients: SizerCoefficients;
@@ -99,9 +88,11 @@ type SizerProps = {
   edit?: Partial<Record<keyof SizerText, EditAttrs>>;
   /** Inside the Kiwi editor the configurator keeps working (the overlay lets its controls through). */
   editing?: boolean;
+  /** Quote request drawer texts (absent = the button only links to Contact). */
+  quote?: { texts: QuoteTexts; edit?: QuoteEdit };
 };
 
-export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODULE_IMG, edit: ed, editing }: SizerProps) {
+export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODULE_IMG, edit: ed, editing, quote }: SizerProps) {
   const UNIT_KW = k.unitKw;
 
   const APPLICATIONS = useMemo(
@@ -225,20 +216,10 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
     }
   };
 
-  const result = useMemo(() => {
-    const appFactor = APPLICATIONS.find((a) => a.value === application)?.factor ?? 1;
-    const ambientDerate = AMBIENT_TEMPS.find((a) => a.value === ambient)?.derate ?? 1;
-    const altDerate = ALTITUDES.find((a) => a.value === altitude)?.derate ?? 1;
-    const circuitMul = circuit === "double" ? k.doubleCircuit : 1;
-    const heat = Math.round(Math.max(0, power) * appFactor * circuitMul);
-    const effectiveUnitKw = Math.round(UNIT_KW * ambientDerate * altDerate);
-    const baseUnits = Math.max(1, Math.ceil(heat / effectiveUnitKw));
-    const units = baseUnits + (redundancy ? 1 : 0);
-    const capacity = units * effectiveUnitKw;
-    const headroom = capacity - heat;
-    const headroomPct = heat > 0 ? Math.round((headroom / heat) * 100) : 0;
-    return { heat, units, baseUnits, effectiveUnitKw, capacity, headroom, headroomPct };
-  }, [power, application, circuit, ambient, altitude, redundancy, APPLICATIONS, AMBIENT_TEMPS, ALTITUDES, UNIT_KW, k.doubleCircuit]);
+  const result = useMemo(
+    () => sizeBuild({ power, application, circuit, ambient, altitude, redundancy }, k),
+    [power, application, circuit, ambient, altitude, redundancy, k],
+  );
 
   const ctaHref = useMemo(() => {
     const summary =
@@ -272,6 +253,19 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
     });
     return `/contact?${params.toString()}#contact-form`;
   }, [power, application, circuit, ambient, altitude, redundancy, result, APPLICATIONS, ALTITUDES]);
+
+  // Quote request drawer. The CTA keeps its /contact link (no JavaScript,
+  // new tab, middle click); a plain click opens the drawer instead. Inside the
+  // Kiwi editor a click selects the button text, so the drawer stays closed.
+  const [quoteOpen, setQuoteOpen] = useState(false);
+  const openQuote = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!quote || editing || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    setQuoteOpen(true);
+  };
+  const warmQuote = () => {
+    if (quote && !editing) void loadQuote();
+  };
 
   const totalUnits = result.units;
   const spareIndex = redundancy ? totalUnits - 1 : -1;
@@ -701,7 +695,14 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
         <p className="cfg-note" {...ed?.note}>{t.note}</p>
 
         <div className="cfg-cta">
-          <Link className="btn solid magnetic" href={ctaHref} {...ed?.cta}>
+          <Link
+            className="btn solid magnetic"
+            href={ctaHref}
+            onClick={openQuote}
+            onPointerEnter={warmQuote}
+            onFocus={warmQuote}
+            {...ed?.cta}
+          >
             {t.cta}
           </Link>
           <button
@@ -718,6 +719,38 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
           </button>
         </div>
       </div>
+
+      {quote && quoteOpen ? (
+        <MTowerQuote
+          texts={quote.texts}
+          edit={quote.edit}
+          inputs={{ power, application, circuit, ambient, altitude, redundancy }}
+          result={result}
+          specs={[
+            { label: t.power, value: `${fmt(power)} kW` },
+            { label: t.application, value: APPLICATIONS.find((a) => a.value === application)?.label ?? application },
+            { label: t.circuit, value: circuit === "double" ? t.circuit_double : t.circuit_single },
+            { label: t.ambient, value: `${ambient} °C` },
+            { label: t.altitude, value: ALTITUDES.find((a) => a.value === altitude)?.label ?? altitude },
+            { label: t.redundancy, value: redundancy ? t.status_redundant : t.status_base },
+          ]}
+          metrics={[
+            { label: t.metric_heat, value: `${fmt(result.heat)} kW` },
+            { label: t.metric_capacity, value: `${fmt(result.capacity)} kW` },
+            { label: t.hud_footprint, value: `${fmt(result.footprintM2, 1)} m²` },
+            { label: t.hud_water, value: `${fmt(result.waterLpm)} L/min` },
+            { label: t.hud_weight, value: `${fmt(result.weightT, 1)} t` },
+            { label: t.hud_electrical, value: `${fmt(result.electricalKva)} kVA` },
+          ]}
+          headline={{
+            units: String(result.units),
+            unitWord: result.units === 1 ? t.module_one : t.module_many,
+            sub: `${configFor(result.units)} · ${(totalUnits * UNIT_KW / 1000).toFixed(1).replace(/\.0$/, "")} MW`,
+          }}
+          moduleImg={MODULE_IMG}
+          onClose={() => setQuoteOpen(false)}
+        />
+      ) : null}
     </div>
   );
 }
