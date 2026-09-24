@@ -64,11 +64,15 @@ export default function ContactForm({
 }) {
   const [state, formAction] = useActionState(submitContactForm, initialState);
   const errors = state.fieldErrors ?? {};
+  // After an error the action hands back what was typed: React resets an
+  // action <form> after every submission, to these defaults (empty on success).
+  const typed = state.values;
 
   const params = useSearchParams();
 
   // Pre-fill from URL when the sizer (or any external link) hands us a config
   const [scope, setScope] = useState("");
+  const [timeline, setTimeline] = useState("");
   const [message, setMessage] = useState("");
   const [prefilled, setPrefilled] = useState(false);
 
@@ -96,6 +100,7 @@ export default function ContactForm({
   useEffect(() => {
     if (state.status === "success") {
       setScope("");
+      setTimeline("");
       setMessage("");
       setPrefilled(false);
       const form = document.getElementById("contact-form") as HTMLFormElement | null;
@@ -123,22 +128,22 @@ export default function ContactForm({
       <div className="form-grid">
         <label className="form-field">
           <span {...ed?.name}>{t.name}</span>
-          <input type="text" name="name" required autoComplete="name" aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? "err-name" : undefined} />
+          <input type="text" name="name" required autoComplete="name" defaultValue={typed?.name} aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? "err-name" : undefined} />
           {errors.name ? <em className="form-error" id="err-name" role="alert">{errors.name}</em> : null}
         </label>
         <label className="form-field">
           <span {...ed?.company}>{t.company}</span>
-          <input type="text" name="company" required autoComplete="organization" aria-invalid={Boolean(errors.company)} aria-describedby={errors.company ? "err-company" : undefined} />
+          <input type="text" name="company" required autoComplete="organization" defaultValue={typed?.company} aria-invalid={Boolean(errors.company)} aria-describedby={errors.company ? "err-company" : undefined} />
           {errors.company ? <em className="form-error" id="err-company" role="alert">{errors.company}</em> : null}
         </label>
         <label className="form-field">
           <span {...ed?.email}>{t.email}</span>
-          <input type="email" name="email" required autoComplete="email" aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? "err-email" : undefined} />
+          <input type="email" name="email" required autoComplete="email" defaultValue={typed?.email} aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? "err-email" : undefined} />
           {errors.email ? <em className="form-error" id="err-email" role="alert">{errors.email}</em> : null}
         </label>
         <label className="form-field">
           <span {...ed?.phone}>{t.phone}</span>
-          <input type="tel" name="phone" autoComplete="tel" />
+          <input type="tel" name="phone" autoComplete="tel" defaultValue={typed?.phone} />
         </label>
         <label className="form-field">
           <span {...ed?.scope}>{t.scope}</span>
@@ -157,7 +162,7 @@ export default function ContactForm({
         </label>
         <label className="form-field">
           <span {...ed?.timeline}>{t.timeline}</span>
-          <select name="timeline" defaultValue="">
+          <select name="timeline" value={timeline} onChange={(e) => setTimeline(e.target.value)}>
             <option value="" disabled>{t.select_placeholder}</option>
             <option value="under-3m">{t.timeline_3m}</option>
             <option value="3-6m">{t.timeline_6m}</option>
@@ -183,7 +188,7 @@ export default function ContactForm({
       </label>
 
       <label className="form-check">
-        <input type="checkbox" name="consent" required aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? "err-consent" : undefined} />
+        <input type="checkbox" name="consent" required defaultChecked={typed?.consent} aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? "err-consent" : undefined} />
         <span>
           <EditSpan a={ed?.consent}>{t.consent}</EditSpan>{" "}
           <a href="/legal" {...ed?.consent_link}>{t.consent_link}</a><EditSpan a={ed?.consent_end}>{t.consent_end}</EditSpan>

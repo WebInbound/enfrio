@@ -132,7 +132,9 @@ export const NOT_FOUND = {
   id: "notfound",
   sections: {
     main: {
-      group: "Pagina 404",
+      // The 404 is a static file: no publish or regeneration refreshes it,
+      // only the next deploy (see HANDOFF-kiwi-panel.md). Said in the panel.
+      group: "Pagina 404 (online solo dal prossimo aggiornamento del sito)",
       blocks: {
         kicker: { label: "Occhiello", default: "404" },
         title: { label: "Titolo", default: "We couldn't find that page." },

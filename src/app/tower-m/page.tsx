@@ -22,14 +22,19 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Coefficients typed in the panel → numbers, each range-checked (bad input → default). */
 function sizerCoefficients(c: Content<typeof SIZER>["coefficients"]): SizerCoefficients {
   const d = SIZER.sections.coefficients.blocks;
-  const num = (key: keyof typeof d, min: number, max: number) =>
-    toNumber(c[key], Number(d[key].default), { min, max });
+  const num = (key: keyof typeof d, min: number, max: number, thousands = false) => {
+    const n = toNumber(c[key], NaN, { min, max, thousands });
+    if (Number.isFinite(n)) return n;
+    // Not silent: the panel shows the typed value while the sizer uses the default.
+    console.warn(`[sizer] coefficient ${key} = "${c[key]}" is not a number in ${min}–${max}: using ${d[key].default}`);
+    return Number(d[key].default);
+  };
   return {
-    unitKw: num("unit_kw", 100, 100000),
+    unitKw: num("unit_kw", 100, 100000, true),
     footprintM2: num("footprint_m2", 0.1, 1000),
-    waterLpm: num("water_lpm", 1, 100000),
+    waterLpm: num("water_lpm", 1, 100000, true),
     weightT: num("weight_t", 0.01, 1000),
-    electricalKva: num("electrical_kva", 0.1, 100000),
+    electricalKva: num("electrical_kva", 0.1, 100000, true),
     factor: {
       diesel: num("factor_diesel", 0.05, 2),
       gas: num("factor_gas", 0.05, 2),

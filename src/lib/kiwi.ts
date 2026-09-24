@@ -1,4 +1,6 @@
 import "server-only";
+import { createHmac } from "node:crypto";
+import { isIP } from "node:net";
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { draftMode } from "next/headers";
@@ -18,8 +20,9 @@ import type { BlockDef, Content, PageDef } from "@/content/types";
  * 2. Kiwi slow, down or rate-limiting = the site renders the last good
  *    value (unstable_cache keeps it when a revalidation fails) or, if it
  *    never had one, the registry default, which is the text the site had
- *    before the integration. Short timeout, small concurrency, and a
- *    circuit breaker so one failure doesn't turn into hundreds of requests.
+ *    before the integration. Bounded timeout (8 s in the background, 2.5 s
+ *    in the editor), small concurrency, and a circuit breaker so one
+ *    failure doesn't turn into hundreds of requests.
  * 3. No time-based expiry on the data: values change only when Kiwi calls
  *    /api/revalidate (the panel's "Pubblica"), which marks the `kiwi` tag
  *    stale.
@@ -38,7 +41,13 @@ const API_BASE = (process.env.KIWI_API_BASE ?? "https://app.kiwienterprise.it")
   .replace(/\/+$/, "");
 
 const IS_BUILD = process.env.NEXT_PHASE === "phase-production-build";
-const TIMEOUT_MS = 2500;
+// Build and background regeneration: no visitor waits, so wait as long as
+// Kiwi's own budget (/api/site/blocks gives up on its DB after 6 s) — a
+// shorter timeout would throw away slow-but-good answers and keep a publish
+// off the site for as long as Kiwi stays slow.
+const TIMEOUT_MS = 8000;
+// Kiwi editor (draft mode): someone is waiting for the page to render.
+const EDIT_TIMEOUT_MS = 2500;
 const MAX_IN_FLIGHT = IS_BUILD ? 2 : 4;
 const BREAKER_MS = IS_BUILD ? 60_000 : 30_000;
 
@@ -80,7 +89,7 @@ async function withSlot<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 /** The only function that talks to Kiwi (GET). */
-async function kiwiGet(url: URL, opts: { allow404?: boolean } = {}): Promise<Response> {
+async function kiwiGet(url: URL, opts: { allow404?: boolean; timeoutMs?: number } = {}): Promise<Response> {
   assertBreakerClosed();
   // Cache-buster: Kiwi's public GETs used to be CDN-cached for 30-90 s (the
   // site would have cached a stale value with no expiry). They are no-store
@@ -92,7 +101,7 @@ async function kiwiGet(url: URL, opts: { allow404?: boolean } = {}): Promise<Res
     try {
       res = await fetch(url, {
         cache: "no-store",
-        signal: AbortSignal.timeout(TIMEOUT_MS),
+        signal: AbortSignal.timeout(opts.timeoutMs ?? TIMEOUT_MS),
         headers: { accept: "application/json" },
       });
     } catch (err) {
@@ -129,6 +138,7 @@ async function fetchBlockEntry(
   label: string,
   group: string,
   type: string,
+  timeoutMs?: number,
 ): Promise<BlockEntry> {
   const url = new URL(`${API_BASE}/api/site/block`);
   url.searchParams.set("company_id", companyId);
@@ -142,7 +152,7 @@ async function fetchBlockEntry(
   // Since kiwi-network PR #245/#246 (23 Sep 2026) a failed database read is a
   // 503 (kiwiGet trips the breaker, the last good value is kept) and every
   // answer is `no-store`: a 200 is always the stored value.
-  const res = await kiwiGet(url);
+  const res = await kiwiGet(url, { timeoutMs });
   const json = (await res.json()) as { value?: unknown; styleOverrides?: unknown };
   if (typeof json?.value !== "string") throw new Error("invalid block payload");
   return { value: json.value, style: styleObject(json.styleOverrides) };
@@ -196,10 +206,10 @@ function parseBulk(json: unknown): BulkBlocks {
   return { blocks, styles };
 }
 
-async function fetchAllBlocks(companyId: string): Promise<BulkBlocks> {
+async function fetchAllBlocks(companyId: string, timeoutMs?: number): Promise<BulkBlocks> {
   const url = new URL(`${API_BASE}/api/site/blocks`);
   url.searchParams.set("company_id", companyId);
-  const res = await kiwiGet(url, { allow404: true });
+  const res = await kiwiGet(url, { allow404: true, timeoutMs });
   if (res.status === 404) throw new BulkUnsupportedError("no bulk endpoint");
   return parseBulk(await res.json());
 }
@@ -208,6 +218,22 @@ const cachedAllBlocks = unstable_cache(fetchAllBlocks.bind(null), ["kiwi-blocks-
   tags: [KIWI_TAG],
   revalidate: false,
 });
+
+// `next build` reads the data cache restored from the previous deploy's build
+// cache (.next/cache), which never sees the panel's publishes. Pages catch up
+// at their first regeneration, but the 404 page is a static file that no
+// regeneration touches: it would keep the first snapshot ever cached, deploy
+// after deploy. So each deploy's build reads Kiwi once more, under a key of
+// its own (runtime keeps the stable key above); Kiwi down → last snapshot.
+const DEPLOY_ID = IS_BUILD
+  ? (process.env.VERCEL_DEPLOYMENT_ID ?? process.env.VERCEL_GIT_COMMIT_SHA ?? "").trim()
+  : "";
+const cachedAllBlocksThisDeploy = DEPLOY_ID
+  ? unstable_cache(fetchAllBlocks.bind(null), ["kiwi-blocks-all-v2", `build-${DEPLOY_ID}`], {
+      tags: [KIWI_TAG],
+      revalidate: false,
+    })
+  : null;
 
 // Draft mode (Kiwi editor) skips unstable_cache: every render, and every
 // router prefetch of the menu links, would read Kiwi again (the bulk endpoint
@@ -227,9 +253,20 @@ async function inDraftMode(): Promise<boolean> {
 }
 
 async function readAllBlocks(): Promise<BulkBlocks> {
-  if (!(await inDraftMode())) return cachedAllBlocks(COMPANY_ID);
+  if (!(await inDraftMode())) {
+    if (cachedAllBlocksThisDeploy) {
+      try {
+        return await cachedAllBlocksThisDeploy(COMPANY_ID);
+      } catch (err) {
+        if (err instanceof BulkUnsupportedError) throw err;
+        // Kiwi down during the build: the last snapshot, below.
+      }
+    }
+    return cachedAllBlocks(COMPANY_ID);
+  }
   if (!editRead || Date.now() - editRead.at > EDIT_SHARE_MS) {
-    editRead = { at: Date.now(), promise: cachedAllBlocks(COMPANY_ID) };
+    // Short timeout: the editor is waiting (the cache is skipped in draft mode).
+    editRead = { at: Date.now(), promise: cachedAllBlocks(COMPANY_ID, EDIT_TIMEOUT_MS) };
   }
   try {
     return await editRead.promise;
@@ -299,7 +336,10 @@ const readBlockEntry = cache(async (slug: string, group: string, def: BlockDef):
       return { value: finalize(def, all.blocks[slug]), style: all.styles[slug] ?? null };
     }
     // No bulk read, or a block Kiwi doesn't have yet: single get-or-create.
-    const entry = await cachedBlockEntry(COMPANY_ID, slug, def.default, def.label, group, def.type ?? "text");
+    const args = [COMPANY_ID, slug, def.default, def.label, group, def.type ?? "text"] as const;
+    const entry = (await inDraftMode())
+      ? await cachedBlockEntry(...args, EDIT_TIMEOUT_MS)
+      : await cachedBlockEntry(...args); // same arguments as before = same cache key
     return { value: finalize(def, entry.value), style: entry.style };
   } catch (err) {
     if (!(err instanceof KiwiUnavailableError)) {
@@ -376,11 +416,11 @@ export type KiwiItem = {
   display_order: number;
 };
 
-async function fetchCollectionItems(companyId: string, slug: string): Promise<KiwiItem[]> {
+async function fetchCollectionItems(companyId: string, slug: string, timeoutMs?: number): Promise<KiwiItem[]> {
   const url = new URL(`${API_BASE}/api/site/collections/${encodeURIComponent(slug)}`);
   url.searchParams.set("company_id", companyId);
   url.searchParams.set("limit", "50");
-  const res = await kiwiGet(url);
+  const res = await kiwiGet(url, { timeoutMs });
   const json = (await res.json()) as { items?: unknown };
   if (!Array.isArray(json?.items)) throw new Error("invalid collection payload");
   return json.items as KiwiItem[];
@@ -403,7 +443,9 @@ export async function getCollection<T>(
 ): Promise<T[]> {
   if (!kiwiEnabled) return fallback;
   try {
-    const items = await cachedCollectionItems(COMPANY_ID, slug);
+    const items = (await inDraftMode())
+      ? await cachedCollectionItems(COMPANY_ID, slug, EDIT_TIMEOUT_MS)
+      : await cachedCollectionItems(COMPANY_ID, slug);
     const mapped = items.map(map).filter((x): x is T => x !== null);
     return mapped.length > 0 ? mapped : fallback;
   } catch (err) {
@@ -439,15 +481,43 @@ export type KiwiContact = {
   metadata?: Record<string, unknown>;
 };
 
+export type KiwiVisitor = { ip: string; userAgent: string };
+
+/**
+ * The visitor's IP, signed for Kiwi (kiwi-network src/lib/site-contact-ip.ts):
+ * the form posts from our server, so without it Kiwi's per-IP limit on
+ * /api/site/contact (5/min) would apply to the whole site. Signature =
+ * hex(HMAC-SHA256(KIWI_REVALIDATE_SECRET, ip + "." + ts + "." + company_id)).
+ * No secret or no valid IP → no headers (Kiwi then behaves as before).
+ */
+function signedVisitorHeaders(visitor?: KiwiVisitor): Record<string, string> {
+  const secret = process.env.KIWI_REVALIDATE_SECRET ?? "";
+  const ip = visitor?.ip.trim() ?? "";
+  if (!secret || !ip || ip.length > 45 || isIP(ip) === 0) return {};
+  const ts = String(Math.floor(Date.now() / 1000));
+  const sig = createHmac("sha256", secret).update(`${ip}.${ts}.${COMPANY_ID}`).digest("hex");
+  const ua = (visitor?.userAgent ?? "").trim().slice(0, 300);
+  return {
+    "x-kiwi-client-ip": ip,
+    "x-kiwi-client-ts": ts,
+    "x-kiwi-client-sig": sig,
+    ...(ua ? { "x-kiwi-client-ua": ua } : {}),
+  };
+}
+
 /** Store a contact form submission in the Kiwi panel ("Messaggi"). */
-export async function sendKiwiContact(contact: KiwiContact): Promise<boolean> {
+export async function sendKiwiContact(contact: KiwiContact, visitor?: KiwiVisitor): Promise<boolean> {
   if (!kiwiEnabled) return false;
   try {
     const res = await fetch(`${API_BASE}/api/site/contact`, {
       method: "POST",
       cache: "no-store",
       signal: AbortSignal.timeout(6000),
-      headers: { "content-type": "application/json", accept: "application/json" },
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json",
+        ...signedVisitorHeaders(visitor),
+      },
       body: JSON.stringify({ company_id: COMPANY_ID, ...contact }),
     });
     const json = (await res.json().catch(() => null)) as { success?: boolean; error?: string } | null;

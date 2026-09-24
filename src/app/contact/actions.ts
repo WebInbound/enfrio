@@ -1,21 +1,32 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getContent, sendKiwiContact } from "@/lib/kiwi";
 import { fill } from "@/lib/content-format";
 import { CONTACT_FORM } from "@/content/contact";
 import { GLOBAL } from "@/content/global";
 
+/** What the visitor typed in the uncontrolled fields, handed back on an error. */
+export type ContactFormValues = { name: string; company: string; email: string; phone: string; consent: boolean };
+
 export type ContactFormState = {
   status: "idle" | "success" | "error";
   message: string;
   fieldErrors?: Partial<Record<"name" | "email" | "company" | "message" | "consent", string>>;
+  /**
+   * On "error" only: the submitted values, used as the fields' defaultValue.
+   * React 19 resets an action <form> after every submission, error or not;
+   * without these the visitor would retype everything after one typo.
+   */
+  values?: ContactFormValues;
 };
 
-// Leads are delivered twice, independently: stored in the Kiwi panel
-// ("Messaggi") AND emailed to the company inbox through FormSubmit, as
-// before the integration. The visitor sees success if at least one of the
-// two worked, so a lead is never lost because one channel is down.
+// Every lead is stored in the Kiwi panel ("Messaggi") AND emailed to the
+// company inbox through FormSubmit, as before the integration. Only the email
+// reaches a person today: Kiwi notifies the company's "owner" member, and
+// Enfrio has none yet. So the visitor sees success only when the email went
+// out; with the Kiwi copy alone they get the "email us directly" error (the
+// copy stays in the panel all the same).
 const TARGET_INBOX = process.env.CONTACT_TO ?? "info@enfrio.eu";
 // FormSubmit ties a form to its referring domain and rejects server-side
 // calls that don't look like they came from it. Must match the live origin.
@@ -28,6 +39,9 @@ const SITE_ORIGIN = process.env.SITE_URL ?? "https://www.enfrio.it";
 // against scripted reload-and-resubmit loops.
 const RATE_LIMIT_SECONDS = 30;
 const RATE_LIMIT_COOKIE = "enfrio_contact_sent";
+
+// /api/site/contact refuses (400) a message longer than this.
+const KIWI_MAX_MESSAGE = 10_000;
 
 // Only the company data section of the global blocks (same slugs).
 const COMPANY_DATA = { id: GLOBAL.id, sections: { company: GLOBAL.sections.company } };
@@ -64,6 +78,7 @@ export async function submitContactForm(
   const message = String(formData.get("message") ?? "").trim();
   const consent = formData.get("consent") === "on" || formData.get("consent") === "true";
   const honeypot = String(formData.get("company_url") ?? "").trim();
+  const values: ContactFormValues = { name, company, email, phone, consent };
 
   if (honeypot) {
     return { status: "success", message: m.spam_success };
@@ -82,6 +97,7 @@ export async function submitContactForm(
       status: "error",
       message: m.review,
       fieldErrors,
+      values,
     };
   }
 
@@ -111,7 +127,21 @@ export async function submitContactForm(
     `Timeline: ${timeline || "—"}`,
     "",
     message,
-  ].join("\n");
+  ]
+    .join("\n")
+    // Capped to what Kiwi accepts, so a very long message is still stored
+    // there (the email carries it in full).
+    .slice(0, KIWI_MAX_MESSAGE);
+
+  // Kiwi rate-limits /api/site/contact per caller IP, and the caller is this
+  // server: hand it the visitor's IP too (signed, see sendKiwiContact).
+  const requestHeaders = await headers();
+  const visitor = {
+    ip:
+      (requestHeaders.get("x-forwarded-for") ?? "").split(",")[0].trim() ||
+      (requestHeaders.get("x-real-ip") ?? "").trim(),
+    userAgent: requestHeaders.get("user-agent") ?? "",
+  };
 
   try {
     const [storedInKiwi, emailed] = await Promise.all([
@@ -122,16 +152,21 @@ export async function submitContactForm(
         message: kiwiMessage,
         source: "enfrio.it/contact",
         metadata: { company, projectScope, timeline, consent: true },
-      }),
+      }, visitor),
       sendFormSubmit(payload),
     ]);
 
-    if (!storedInKiwi && !emailed) {
-      return { status: "error", message: withEmail(m.not_delivered) };
-    }
     if (!emailed) {
-      console.error("[contact] lead stored ONLY in the Kiwi panel — email to", TARGET_INBOX, "not delivered");
-    } else if (!storedInKiwi) {
+      // Nobody is notified of a lead that exists only in the Kiwi panel:
+      // the visitor is asked to write directly (and can retry).
+      console.error(
+        "[contact] email to", TARGET_INBOX, "not delivered —",
+        storedInKiwi ? "lead kept in the Kiwi panel only" : "lead not stored anywhere",
+        "— visitor asked to email directly",
+      );
+      return { status: "error", message: withEmail(m.not_delivered), values };
+    }
+    if (!storedInKiwi) {
       console.warn("[contact] lead emailed but NOT stored in the Kiwi panel");
     }
 
@@ -150,7 +185,7 @@ export async function submitContactForm(
     return { status: "success", message: m.success };
   } catch (error) {
     console.error("[contact] unexpected error", error);
-    return { status: "error", message: withEmail(m.unexpected) };
+    return { status: "error", message: withEmail(m.unexpected), values };
   }
 }
 

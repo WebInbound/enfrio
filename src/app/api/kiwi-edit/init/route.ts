@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
   const next = safeNext(req.nextUrl.searchParams.get("next"));
   const payload = await verifyEditToken(token);
   if (payload && token) await startEditSession(token, payload);
-  const res = NextResponse.redirect(new URL(next, req.url), 303);
+  // Built on this site's own origin: `next` is a normalised path, never a URL.
+  const res = NextResponse.redirect(new URL(next, req.nextUrl.origin), 303);
   res.headers.set("Cache-Control", "no-store");
   return res;
 }

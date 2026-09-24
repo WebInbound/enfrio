@@ -27,11 +27,23 @@ function parseNumberToken(token: string): number {
 
 /**
  * Numeric coefficient from a block: decimal comma or point ("0,85" / "0.85"),
- * no thousands separators. Out of range or invalid → fallback.
+ * spaces ignored. With `thousands` (quantities that are never fractions of a
+ * unit, e.g. L/min or kW) a separator followed by exactly three digits is a
+ * thousands separator, as written in Italy: "2.150" → 2150, "1,5" → 1.5.
+ * Without it "1.850" stays 1.85 (tonnes). Out of range or invalid → fallback.
  */
-export function toNumber(text: string, fallback: number, opts: { min?: number; max?: number } = {}): number {
+export function toNumber(
+  text: string,
+  fallback: number,
+  opts: { min?: number; max?: number; thousands?: boolean } = {},
+): number {
   const t = String(text).trim().replace(/\s/g, "").replace("−", "-");
-  const n = /^-?\d+([.,]\d+)?$/.test(t) ? Number(t.replace(",", ".")) : NaN;
+  const n =
+    opts.thousands && /^-?\d{1,3}([.,]\d{3})+$/.test(t)
+      ? Number(t.replace(/[.,]/g, ""))
+      : /^-?\d+([.,]\d+)?$/.test(t)
+        ? Number(t.replace(",", "."))
+        : NaN;
   if (!Number.isFinite(n)) return fallback;
   if (opts.min !== undefined && n < opts.min) return fallback;
   if (opts.max !== undefined && n > opts.max) return fallback;
@@ -58,27 +70,44 @@ function escapeHtml(s: string): string {
 const RICH_TAGS = new Set(["strong", "b", "em", "i", "br", "a"]);
 const SAFE_HREF_RE = /^(https?:\/\/|mailto:|tel:|\/(?!\/)|#)/i;
 
+// No "<" inside a tag: "a < b <strong>" is text + <strong>, not one bogus tag.
+const TAG_RE = /<\s*(\/?)\s*([a-zA-Z][a-zA-Z0-9]*)\b([^<>]*)>/g;
+
+/** An allowed tag rebuilt from scratch (no original attribute survives), or "". */
+function rebuildTag(close: string, rawTag: string, attrs: string): string {
+  const tag = rawTag.toLowerCase();
+  if (!RICH_TAGS.has(tag)) return "";
+  if (close) return tag === "br" ? "" : `</${tag}>`;
+  if (tag === "br") return "<br/>";
+  if (tag !== "a") return `<${tag}>`;
+  const href = /\bhref\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(attrs);
+  const value = (href?.[1] ?? href?.[2] ?? "").trim();
+  if (!value || !SAFE_HREF_RE.test(value)) return "<a>";
+  const blank = /\btarget\s*=\s*["']_blank["']/i.test(attrs);
+  return `<a href="${escapeHtml(value)}"${blank ? ' target="_blank" rel="noopener noreferrer"' : ""}>`;
+}
+
 /**
  * Minimal allow-list sanitiser for richtext blocks (defence in depth: Kiwi
- * already sanitises on write and on read). Keeps strong/b/em/i/br and links
- * with a safe href; drops every other tag and attribute.
+ * already sanitises on write and on read, but its regexes — like ours —
+ * only see a tag when it has a closing ">"). Keeps strong/b/em/i/br and
+ * links with a safe href; drops every other tag and attribute. It is a
+ * tokenizer: only the tags it rebuilds are emitted as markup, and every "<"
+ * in the text between them becomes "&lt;", so an unterminated
+ * "<img src=x onerror=…" at the end of a value stays text.
  */
 export function sanitizeRich(html: string): string {
-  return html
+  const cleaned = html
     .replace(/<\s*(script|style|iframe|object|embed|svg|math|template)\b[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
-    .replace(/<!--[\s\S]*?-->/g, "")
-    .replace(/<\s*(\/?)\s*([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>/g, (_m, close: string, rawTag: string, attrs: string) => {
-      const tag = rawTag.toLowerCase();
-      if (!RICH_TAGS.has(tag)) return "";
-      if (close) return tag === "br" ? "" : `</${tag}>`;
-      if (tag === "br") return "<br/>";
-      if (tag !== "a") return `<${tag}>`;
-      const href = /\bhref\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(attrs);
-      const value = (href?.[1] ?? href?.[2] ?? "").trim();
-      if (!value || !SAFE_HREF_RE.test(value)) return "<a>";
-      const blank = /\btarget\s*=\s*["']_blank["']/i.test(attrs);
-      return `<a href="${escapeHtml(value)}"${blank ? ' target="_blank" rel="noopener noreferrer"' : ""}>`;
-    });
+    .replace(/<!--[\s\S]*?-->/g, "");
+  let out = "";
+  let last = 0;
+  for (const m of cleaned.matchAll(TAG_RE)) {
+    out += cleaned.slice(last, m.index).replace(/</g, "&lt;");
+    out += rebuildTag(m[1], m[2], m[3]);
+    last = m.index + m[0].length;
+  }
+  return out + cleaned.slice(last).replace(/</g, "&lt;");
 }
 
 /** Richtext block → sanitized HTML, with {placeholders} filled (escaped). */

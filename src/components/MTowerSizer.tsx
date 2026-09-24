@@ -5,6 +5,10 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AnimatedNumber from "./AnimatedNumber";
 
+/** Engine power accepted by the numeric field and by a shared link (kW). */
+const POWER_MIN = 100;
+const POWER_MAX = 100000;
+
 /**
  * Calculation coefficients, editable in the Kiwi panel ("M Tower ›
  * Configuratore — coefficienti"). PLACEHOLDER values pending confirmation
@@ -135,6 +139,17 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
     `${(units * k.footprintM2).toLocaleString("en-US")} m²`;
 
   const [power, setPower] = useState(3000);
+  // Numeric field: the text being typed ("", "3", "30"…), null when it shows
+  // `power`. Clamped only on blur/Enter, so typing "3000" isn't forced to 100
+  // on the first key and `power` (URL, share link, CTA) stays in range.
+  const [powerDraft, setPowerDraft] = useState<string | null>(null);
+  const commitPowerDraft = (raw: string) => {
+    const n = Number(raw);
+    if (raw.trim() !== "" && Number.isFinite(n)) {
+      setPower(Math.min(POWER_MAX, Math.max(POWER_MIN, Math.round(n))));
+    }
+    setPowerDraft(null);
+  };
   const [application, setApplication] = useState<ApplicationValue>("diesel");
   const [circuit, setCircuit] = useState<"single" | "double">("single");
   const [ambient, setAmbient] = useState(30);
@@ -149,7 +164,7 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const p = Number(params.get("power"));
-    if (Number.isFinite(p) && p >= 100 && p <= 100000) setPower(p);
+    if (Number.isFinite(p) && p >= POWER_MIN && p <= POWER_MAX) setPower(p);
     const a = params.get("application");
     if (APPLICATION_VALUES.some((v) => v === a))
       setApplication(a as ApplicationValue);
@@ -384,11 +399,21 @@ export default function MTowerSizer({ text: t, coefficients: k, moduleImg: MODUL
           <input
             type="number"
             className="cfg-power-number"
-            min={100}
-            max={100000}
+            min={POWER_MIN}
+            max={POWER_MAX}
             step={50}
-            value={power}
-            onChange={(e) => setPower(Math.max(100, Number(e.target.value) || 0))}
+            value={powerDraft ?? power}
+            onChange={(e) => {
+              // Keep what is being typed; the sizer follows only valid values.
+              const raw = e.target.value;
+              setPowerDraft(raw);
+              const n = Number(raw);
+              if (raw.trim() !== "" && Number.isFinite(n) && n >= POWER_MIN && n <= POWER_MAX) setPower(Math.round(n));
+            }}
+            onBlur={(e) => commitPowerDraft(e.currentTarget.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitPowerDraft(e.currentTarget.value);
+            }}
             aria-label="Engine power numeric input"
           />
         </div>

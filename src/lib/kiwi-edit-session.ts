@@ -38,8 +38,23 @@ export async function endEditSession() {
   jar.set({ ...expired, name: EDIT_COOKIE });
 }
 
-/** Relative same-site path only (no open redirect). */
+const PROBE_ORIGIN = "https://enfrio.invalid";
+
+/**
+ * Relative same-site path only (no open redirect). Prefix checks are not
+ * enough: the URL parser drops tabs/newlines and reads "\" as "/", so
+ * "/<TAB>/evil.com" becomes "//evil.com". Resolve it like the browser would,
+ * keep it only if it stays on our origin, and return a path that can't start
+ * with "//".
+ */
 export function safeNext(next: string | null): string {
-  if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) return "/";
-  return next;
+  if (!next || !next.startsWith("/") || /[\x00-\x1f\x7f\\]/.test(next)) return "/";
+  let url: URL;
+  try {
+    url = new URL(next, PROBE_ORIGIN);
+  } catch {
+    return "/";
+  }
+  if (url.origin !== PROBE_ORIGIN) return "/";
+  return `/${url.pathname.replace(/^\/+/, "")}${url.search}${url.hash}`;
 }

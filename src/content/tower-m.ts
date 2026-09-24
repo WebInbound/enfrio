@@ -302,11 +302,11 @@ export const SIZER = {
     coefficients: {
       group: "M Tower › Configuratore — coefficienti di calcolo (DA CONFERMARE)",
       blocks: {
-        unit_kw: { label: "Potenza di un modulo (kW)", default: "1500" },
-        footprint_m2: { label: "Ingombro a terra per modulo (m²)", default: "12" },
-        water_lpm: { label: "Portata acqua per modulo (L/min)", default: "240" },
-        weight_t: { label: "Peso per modulo (tonnellate)", default: "1.85" },
-        electrical_kva: { label: "Assorbimento elettrico per modulo (kVA)", default: "18" },
+        unit_kw: { label: "Potenza di un modulo (kW) — solo il numero, es. 1500 o 1.500", default: "1500" },
+        footprint_m2: { label: "Ingombro a terra per modulo (m²) — solo il numero, decimali con la virgola, es. 12,5", default: "12" },
+        water_lpm: { label: "Portata acqua per modulo (L/min) — solo il numero, es. 2150 o 2.150", default: "240" },
+        weight_t: { label: "Peso per modulo (tonnellate) — solo il numero, decimali con la virgola, es. 1,85", default: "1.85" },
+        electrical_kva: { label: "Assorbimento elettrico per modulo (kVA) — solo il numero, es. 18 o 1.500", default: "18" },
         factor_diesel: { label: "Fattore calore: motore diesel (0–2)", default: "0.85" },
         factor_gas: { label: "Fattore calore: motore a gas (0–2)", default: "0.75" },
         factor_datacenter: { label: "Fattore calore: carico IT datacenter (0–2)", default: "1.0" },

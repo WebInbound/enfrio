@@ -28,6 +28,21 @@ const rajdhani = Rajdhani({
 
 const SITE_URL = process.env.SITE_URL ?? "https://www.enfrio.it";
 
+/**
+ * JSON for an inline <script>: company data comes from the Kiwi panel, and
+ * a "</script" (or "<!--") in a value must not close the tag. <, >, & and
+ * U+2028/2029 become \uXXXX escapes — still the same JSON for any parser.
+ * The backslash is built from its char code on purpose: a literal escape
+ * sequence here was once silently decoded back to "<" and escaped nothing.
+ */
+const BACKSLASH = String.fromCharCode(92);
+function scriptSafeJson(data: unknown): string {
+  return JSON.stringify(data).replace(
+    /[<>&\u2028\u2029]/g,
+    (ch) => `${BACKSLASH}u${ch.charCodeAt(0).toString(16).padStart(4, "0")}`,
+  );
+}
+
 // Pages are static and are refreshed by the Kiwi panel through
 // /api/revalidate. The periodic regeneration only retries content that
 // could not be read from Kiwi and replaces, within a minute, a deploy built
@@ -128,7 +143,7 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: scriptSafeJson({
               "@context": "https://schema.org",
               "@type": "Organization",
               name: company.name,
@@ -147,7 +162,7 @@ export default async function RootLayout({
               email: company.email,
               ...(company.phone.trim() ? { telephone: company.phone.trim() } : {}),
               sameAs: lines(company.social_links).filter((u) => /^https:\/\//i.test(u)),
-            }).replace(/</g, "\u003c"),
+            }),
           }}
         />
         <SmoothScroll />

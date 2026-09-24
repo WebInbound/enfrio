@@ -11,7 +11,9 @@
 //                                   (two live sites: the first one takes the place of the local build;
 //                                    PARITY_COOKIE="_vercel_jwt=..." is sent to it, for a protected preview)
 //
-// Exit code 1 when any page differs; the diffs are written to .parity/.
+// Exit code 1 when any page differs, or when a JSON-LD block of the checked build
+// contains a raw "<" or is not valid JSON (a "</script" from a panel value
+// would close the tag); the diffs are written to .parity/.
 import fs from "node:fs";
 import path from "node:path";
 
@@ -73,11 +75,22 @@ for (const [route, file] of PAGES) {
   }
   const remote = await (await fetch(`${BASE}/${route}`)).text();
   const a = normalize(remote);
-  const b = normalize(
-    SITE
-      ? await (await fetch(`${SITE}/${route}`, { headers: COOKIE ? { cookie: COOKIE } : {} })).text()
-      : fs.readFileSync(local, "utf8"),
-  );
+  const candidate = SITE
+    ? await (await fetch(`${SITE}/${route}`, { headers: COOKIE ? { cookie: COOKIE } : {} })).text()
+    : fs.readFileSync(local, "utf8");
+  const b = normalize(candidate);
+  for (const [, json] of candidate.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+    let ok = !json.includes("<");
+    try {
+      JSON.parse(json);
+    } catch {
+      ok = false;
+    }
+    if (!ok) {
+      console.log(`${route || "/"}: UNSAFE or invalid JSON-LD: ${json.slice(0, 120)}`);
+      failed++;
+    }
+  }
   const diff = [];
   const n = Math.max(a.length, b.length);
   for (let i = 0; i < n; i++) if (a[i] !== b[i]) diff.push(`@${i}\n- ${a[i] ?? ""}\n+ ${b[i] ?? ""}`);
